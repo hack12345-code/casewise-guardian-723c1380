@@ -25,20 +25,20 @@ export const CaseInput = ({ onSubmit, isLoading }: CaseInputProps) => {
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto space-y-4">
+    <div className="w-full max-w-3xl mx-auto space-y-4">
       <Textarea
-        placeholder="Enter the case details here..."
-        className="min-h-[200px] p-4 text-lg"
+        placeholder="Enter your case details here... Be specific about the patient's condition, your planned approach, and any concerns."
+        className="min-h-[200px] p-4 text-lg resize-none border-gray-200 focus:border-blue-500 focus:ring-blue-500"
         value={caseDetails}
         onChange={(e) => setCaseDetails(e.target.value)}
       />
       <Button 
-        className="w-full" 
+        className="w-full bg-blue-600 hover:bg-blue-700 text-white" 
         size="lg" 
         onClick={handleSubmit}
         disabled={isLoading}
       >
-        {isLoading ? "Analyzing..." : "Get Guidance"}
+        {isLoading ? "Analyzing..." : "Get Professional Guidance"}
       </Button>
     </div>
   );

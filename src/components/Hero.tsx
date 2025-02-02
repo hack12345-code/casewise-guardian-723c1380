@@ -1,5 +1,6 @@
 import { CaseInput } from "./CaseInput";
 import { Response } from "./Response";
+import { Sectors } from "./Sectors";
 import { useState } from "react";
 
 export const Hero = () => {
@@ -40,19 +41,39 @@ export const Hero = () => {
   };
 
   return (
-    <div className="min-h-screen gradient-bg">
+    <div className="min-h-screen bg-[#f8f9ff]">
       <div className="container mx-auto px-4 py-16">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Medical Malpractice Prevention Assistant
+        <div className="text-center mb-12 max-w-4xl mx-auto">
+          <h1 className="text-5xl font-bold text-[#1a1a1a] mb-6">
+            Protect and <span className="text-blue-600">Guide</span>
           </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Enter your case details below to receive guidance on preventing malpractice risks
+          <h2 className="text-5xl font-bold text-[#1a1a1a] mb-6">
+            Your Medical Practice
+          </h2>
+          <p className="text-xl text-gray-600 mb-8">
+            Get AI-powered guidance on preventing malpractice risks. Enter your case details
+            and receive professional recommendations for safer patient care.
           </p>
+          
+          <div className="flex justify-center gap-4 mb-16">
+            <button 
+              onClick={() => document.querySelector('textarea')?.focus()}
+              className="px-6 py-3 bg-black text-white rounded-full font-semibold hover:bg-gray-800 transition-colors flex items-center gap-2"
+            >
+              Get Started →
+            </button>
+            <button className="px-6 py-3 bg-white text-gray-800 rounded-full font-semibold border border-gray-200 hover:bg-gray-50 transition-colors">
+              Learn More
+            </button>
+          </div>
         </div>
         
-        <CaseInput onSubmit={handleSubmit} isLoading={isLoading} />
-        <Response response={response} />
+        <Sectors />
+        
+        <div className="mt-12 bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+          <CaseInput onSubmit={handleSubmit} isLoading={isLoading} />
+          <Response response={response} />
+        </div>
       </div>
     </div>
   );
