@@ -42,7 +42,7 @@ export const Hero = () => {
 
   return (
     <div className="min-h-screen bg-[#f8f9ff]">
-      <div className="container mx-auto px-4 py-16">
+      <div className="container mx-auto px-4 py-12"> {/* Adjusted padding */}
         <div className="text-center mb-12 max-w-4xl mx-auto">
           <h1 className="text-5xl font-bold text-[#1a1a1a] mb-6">
             Protect and <span className="text-blue-600">Guide</span>

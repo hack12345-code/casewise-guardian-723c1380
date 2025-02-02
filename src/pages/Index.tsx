@@ -1,12 +1,16 @@
-import { Hero } from "@/components/Hero";
 import { ApiKeyInput } from "@/components/ApiKeyInput";
+import { Hero } from "@/components/Hero";
+import { Navbar } from "@/components/Navbar";
 
 const Index = () => {
   return (
-    <>
-      <ApiKeyInput />
-      <Hero />
-    </>
+    <div className="min-h-screen">
+      <Navbar />
+      <div className="pt-16"> {/* Add padding top to account for fixed navbar */}
+        <ApiKeyInput />
+        <Hero />
+      </div>
+    </div>
   );
 };
 
