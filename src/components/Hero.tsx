@@ -42,7 +42,7 @@ export const Hero = () => {
 
   return (
     <div className="min-h-screen bg-[#f8f9ff]">
-      <div className="container mx-auto px-4 py-12"> {/* Adjusted padding */}
+      <div className="container mx-auto px-4 py-12">
         <div className="text-center mb-12 max-w-4xl mx-auto">
           <h1 className="text-5xl font-bold text-[#1a1a1a] mb-6">
             Protect and <span className="text-blue-600">Guide</span>
@@ -54,18 +54,6 @@ export const Hero = () => {
             Get AI-powered guidance on preventing malpractice risks. Enter your case details
             and receive professional recommendations for safer patient care.
           </p>
-          
-          <div className="flex justify-center gap-4 mb-16">
-            <button 
-              onClick={() => document.querySelector('textarea')?.focus()}
-              className="px-6 py-3 bg-black text-white rounded-full font-semibold hover:bg-gray-800 transition-colors flex items-center gap-2"
-            >
-              Get Started →
-            </button>
-            <button className="px-6 py-3 bg-white text-gray-800 rounded-full font-semibold border border-gray-200 hover:bg-gray-50 transition-colors">
-              Learn More
-            </button>
-          </div>
         </div>
         
         <Sectors />
