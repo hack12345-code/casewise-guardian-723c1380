@@ -1,9 +1,16 @@
-import { User, LogIn } from "lucide-react";
+import { User, LogIn, Home, FileText, Stethoscope } from "lucide-react";
 import { Link } from "react-router-dom";
+import { NavBar } from "@/components/ui/tubelight-navbar";
 
 export const Navbar = () => {
+  const navItems = [
+    { name: "Home", url: "/", icon: Home },
+    { name: "Cases", url: "/cases", icon: FileText },
+    { name: "Practice", url: "/practice", icon: Stethoscope },
+  ];
+
   return (
-    <nav className="fixed top-0 left-0 right-0 bg-white border-b border-gray-100 z-50">
+    <nav className="fixed top-0 left-0 right-0 bg-white/50 backdrop-blur-lg border-b border-gray-100 z-50">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -11,17 +18,9 @@ export const Navbar = () => {
             Save
           </Link>
 
-          {/* Navigation Links */}
-          <div className="hidden md:flex items-center space-x-8">
-            <Link to="/" className="text-gray-600 hover:text-gray-900">
-              Home
-            </Link>
-            <Link to="/features" className="text-gray-600 hover:text-gray-900">
-              Features
-            </Link>
-            <Link to="/pricing" className="text-gray-600 hover:text-gray-900">
-              Pricing
-            </Link>
+          {/* Tubelight Navigation */}
+          <div className="flex-1 flex justify-center">
+            <NavBar items={navItems} className="relative !fixed:none !bottom-auto !top-auto !mb-0 !pt-0" />
           </div>
 
           {/* Auth Buttons */}
