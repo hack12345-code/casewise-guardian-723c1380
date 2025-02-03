@@ -12,53 +12,19 @@ export const Hero = () => {
   const { toast } = useToast();
 
   const handleSubmit = async (caseDetails: string) => {
-    const apiKey = localStorage.getItem("OPENAI_API_KEY");
-    
-    if (!apiKey) {
-      toast({
-        title: "API Key Required",
-        description: "Please enter your OpenAI API key in the top right corner",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setIsLoading(true);
     try {
-      const response = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify({
-          model: "gpt-4",
-          messages: [
-            {
-              role: "system",
-              content: "You are an expert in medical malpractice prevention. Provide clear, professional guidance to doctors on how to handle patient cases while minimizing legal risks. Focus on communication, documentation, and best practices."
-            },
-            {
-              role: "user",
-              content: caseDetails
-            }
-          ],
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error?.message || 'Failed to get response');
-      }
-
-      const data = await response.json();
-      setResponse(data.choices[0].message.content);
+      // Simulate a brief loading state
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // For now, we'll just set an empty response and trigger the transition
+      setResponse("");
       setHasResponse(true);
     } catch (error) {
       console.error("Error:", error);
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to get response",
+        description: "Something went wrong",
         variant: "destructive",
       });
     } finally {
