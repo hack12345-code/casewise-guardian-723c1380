@@ -58,7 +58,7 @@ export const Hero = () => {
         
         <Sectors />
         
-        <div className="mt-12 bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+        <div className="mt-12">
           <AIInput 
             placeholder="Enter your case details here... Be specific about the patient's condition, your planned approach, and any concerns."
             minHeight={200}

@@ -18,8 +18,8 @@ export const Navbar = () => {
             Save
           </Link>
 
-          {/* Tubelight Navigation */}
-          <div className="flex-1 flex justify-center">
+          {/* Tubelight Navigation - Centered */}
+          <div className="absolute left-1/2 -translate-x-1/2">
             <NavBar items={navItems} className="relative !fixed:none !bottom-auto !top-auto !mb-0 !pt-0" />
           </div>
 
