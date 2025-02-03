@@ -3,20 +3,33 @@ import { Response } from "./Response";
 import { Sectors } from "./Sectors";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/components/ui/use-toast";
 
 export const Hero = () => {
   const [response, setResponse] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [hasResponse, setHasResponse] = useState(false);
+  const { toast } = useToast();
 
   const handleSubmit = async (caseDetails: string) => {
+    const apiKey = localStorage.getItem("OPENAI_API_KEY");
+    
+    if (!apiKey) {
+      toast({
+        title: "API Key Required",
+        description: "Please enter your OpenAI API key in the top right corner",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
     try {
       const response = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("OPENAI_API_KEY")}`,
+          Authorization: `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
           model: "gpt-4",
@@ -33,11 +46,21 @@ export const Hero = () => {
         }),
       });
 
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error?.message || 'Failed to get response');
+      }
+
       const data = await response.json();
       setResponse(data.choices[0].message.content);
       setHasResponse(true);
     } catch (error) {
       console.error("Error:", error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to get response",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
