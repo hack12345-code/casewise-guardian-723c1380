@@ -1,20 +1,30 @@
 import { User, LogIn, Home, FileText, Stethoscope } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { NavBar } from "@/components/ui/tubelight-navbar";
 
 export const Navbar = () => {
+  const navigate = useNavigate();
+
   const navItems = [
     { name: "Home", url: "/", icon: Home },
     { name: "Cases", url: "/cases", icon: FileText },
     { name: "Practice", url: "/practice", icon: Stethoscope },
   ];
 
+  const handleHomeNavigation = () => {
+    navigate('/');
+  };
+
   return (
     <nav className="fixed top-0 left-0 right-0 bg-white/50 backdrop-blur-lg border-b border-gray-100 z-50">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link to="/" className="text-2xl font-bold text-blue-600">
+          {/* Logo - Now clickable */}
+          <Link 
+            to="/" 
+            className="text-2xl font-bold text-blue-600 cursor-pointer hover:text-blue-700 transition-colors"
+            onClick={handleHomeNavigation}
+          >
             Save
           </Link>
 
