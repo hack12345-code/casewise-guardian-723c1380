@@ -1,4 +1,4 @@
-import { CaseInput } from "./CaseInput";
+import { AIInput } from "./ui/ai-input";
 import { Response } from "./Response";
 import { Sectors } from "./Sectors";
 import { useState } from "react";
@@ -59,7 +59,13 @@ export const Hero = () => {
         <Sectors />
         
         <div className="mt-12 bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
-          <CaseInput onSubmit={handleSubmit} isLoading={isLoading} />
+          <AIInput 
+            placeholder="Enter your case details here... Be specific about the patient's condition, your planned approach, and any concerns."
+            minHeight={200}
+            maxHeight={400}
+            onSubmit={handleSubmit}
+            className="max-w-3xl mx-auto"
+          />
           <Response response={response} />
         </div>
       </div>
