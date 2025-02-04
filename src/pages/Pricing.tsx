@@ -1,7 +1,9 @@
 import { Navbar } from "@/components/Navbar";
 import { Check } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Pricing = () => {
+  const navigate = useNavigate();
   const plans = [
     {
       name: "Basic",
@@ -19,6 +21,10 @@ const Pricing = () => {
       features: ["Everything in Pro", "Custom integration", "Dedicated account manager", "SLA guarantee"],
     },
   ];
+
+  const handleGetStarted = (plan: typeof plans[0]) => {
+    navigate('/payment', { state: { plan } });
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -50,7 +56,10 @@ const Pricing = () => {
                 ))}
               </ul>
               
-              <button className="w-full mt-8 bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors">
+              <button 
+                className="w-full mt-8 bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors"
+                onClick={() => handleGetStarted(plan)}
+              >
                 Get Started
               </button>
             </div>
