@@ -1,16 +1,16 @@
 import type { Config } from "tailwindcss";
 import { flattenColorPalette } from "tailwindcss/lib/util/flattenColorPalette";
 
-function addVariablesForColors({ addBase, theme }: any) {
-  let allColors = flattenColorPalette(theme("colors"));
-  let newVars = Object.fromEntries(
-    Object.entries(allColors).map(([key, val]) => [`--${key}`, val])
+const addVariablesForColors = ({ addBase, theme }: any) => {
+  const colors = flattenColorPalette(theme("colors"));
+  const newVars = Object.fromEntries(
+    Object.entries(colors).map(([key, val]) => [`--${key}`, val])
   );
-
+  
   addBase({
     ":root": newVars,
   });
-}
+};
 
 export default {
   darkMode: ["class"],
