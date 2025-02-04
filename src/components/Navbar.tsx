@@ -1,4 +1,4 @@
-import { User, LogIn, Home, FileText, Stethoscope } from "lucide-react";
+import { User, LogIn, Home, FileText, DollarSign } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { NavBar } from "@/components/ui/tubelight-navbar";
 
@@ -8,7 +8,7 @@ export const Navbar = () => {
   const navItems = [
     { name: "Home", url: "/", icon: Home },
     { name: "Cases", url: "/cases", icon: FileText },
-    { name: "Practice", url: "/practice", icon: Stethoscope },
+    { name: "Pricing", url: "/pricing", icon: DollarSign },
   ];
 
   const handleHomeNavigation = () => {
