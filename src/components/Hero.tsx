@@ -4,6 +4,7 @@ import { Sectors } from "./Sectors";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/components/ui/use-toast";
+import DisplayCards from "./ui/display-cards";
 
 export const Hero = () => {
   const [response, setResponse] = useState("");
@@ -82,6 +83,22 @@ export const Hero = () => {
               onSubmit={handleSubmit}
               className="max-w-3xl mx-auto"
             />
+          </div>
+
+          {/* Companies Bar */}
+          <div className="mt-16 text-center">
+            <p className="text-sm text-gray-500 mb-6">TRUSTED BY LEADING HEALTHCARE INSTITUTIONS</p>
+            <div className="flex justify-center items-center gap-12 py-8 px-4 bg-white/50 rounded-lg backdrop-blur-sm">
+              <span className="text-2xl font-bold text-gray-400">Mayo Clinic</span>
+              <span className="text-2xl font-bold text-gray-400">Cleveland Clinic</span>
+              <span className="text-2xl font-bold text-gray-400">Johns Hopkins</span>
+              <span className="text-2xl font-bold text-gray-400">Mass General</span>
+            </div>
+          </div>
+
+          {/* Display Cards */}
+          <div className="mt-20">
+            <DisplayCards />
           </div>
         </div>
       </div>
