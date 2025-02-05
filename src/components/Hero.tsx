@@ -5,6 +5,9 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/components/ui/use-toast";
 import DisplayCards from "./ui/display-cards";
+import { Cases } from "./Cases";
+import { FAQs } from "./FAQs";
+import { Footer } from "./Footer";
 
 export const Hero = () => {
   const [response, setResponse] = useState("");
@@ -102,6 +105,19 @@ export const Hero = () => {
           </div>
         </div>
       </div>
+      
+      {/* Cases Section */}
+      <div className="mt-20">
+        <Cases />
+      </div>
+
+      {/* FAQs Section */}
+      <div className="mt-20">
+        <FAQs />
+      </div>
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 };
