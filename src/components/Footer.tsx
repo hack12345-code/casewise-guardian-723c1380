@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 export const Footer = () => {
   const links = {
-    product: ["Features", "Security", "Pricing", "Resources"],
+    product: ["Features", "Security", "Pricing", "Resources", "Blog"],
     company: ["About", "Careers", "Partners", "Contact"],
     legal: ["Privacy", "Terms", "License"]
   };
@@ -22,7 +22,10 @@ export const Footer = () => {
               <ul className="space-y-2">
                 {items.map((item) => (
                   <li key={item}>
-                    <Link to="#" className="text-gray-400 hover:text-white transition-colors">
+                    <Link 
+                      to={item.toLowerCase() === "blog" ? "/blog" : "#"} 
+                      className="text-gray-400 hover:text-white transition-colors"
+                    >
                       {item}
                     </Link>
                   </li>
