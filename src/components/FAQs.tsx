@@ -1,4 +1,4 @@
-import { QuestionMarkCircle } from "lucide-react";
+import { HelpCircle } from "lucide-react";
 
 export const FAQs = () => {
   const faqs = [
@@ -24,7 +24,7 @@ export const FAQs = () => {
     <section className="py-20 bg-gray-50">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-center gap-2 mb-12">
-          <QuestionMarkCircle className="w-8 h-8 text-blue-600" />
+          <HelpCircle className="w-8 h-8 text-blue-600" />
           <h2 className="text-4xl font-bold text-center">Frequently Asked Questions</h2>
         </div>
         <div className="max-w-3xl mx-auto space-y-6">
