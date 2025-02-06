@@ -1,8 +1,17 @@
-import { User, LogIn, Home, FileText, DollarSign, LogOut, MessageSquare } from "lucide-react";
+import { User, LogIn, Home, FileText, DollarSign, LogOut, MessageSquare, Settings, Grid } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { NavBar } from "@/components/ui/tubelight-navbar";
 import { useEffect, useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 
 export const Navbar = () => {
   const navigate = useNavigate();
@@ -21,7 +30,7 @@ export const Navbar = () => {
     { name: "Home", url: "/", icon: Home },
     { name: "Cases", url: "/cases", icon: FileText },
     { name: "Pricing", url: "/pricing", icon: DollarSign },
-    { name: "Support", url: "/support", icon: MessageSquare }, // Added Support
+    { name: "Support", url: "/support", icon: MessageSquare },
   ];
 
   const handleHomeNavigation = () => {
@@ -59,17 +68,47 @@ export const Navbar = () => {
           <div className="flex items-center space-x-4">
             {isAuthenticated ? (
               <>
-                <div className="flex items-center gap-2 px-4 py-2 text-gray-600">
-                  <User className="w-4 h-4" />
-                  <span>{userName}</span>
-                </div>
-                <button 
-                  onClick={handleLogout}
-                  className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 transition-colors"
+                <Button
+                  variant="ghost"
+                  className="flex items-center gap-2"
+                  onClick={() => navigate('/dashboard')}
                 >
-                  <LogOut className="w-4 h-4" />
-                  <span>Log out</span>
-                </button>
+                  <Grid className="w-4 h-4" />
+                  <span>Dashboard</span>
+                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="flex items-center gap-2">
+                      <User className="w-4 h-4" />
+                      <span>{userName}</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => navigate('/dashboard')}>
+                      <Grid className="w-4 h-4 mr-2" />
+                      <span>Dashboard</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate('/dashboard/chats')}>
+                      <MessageSquare className="w-4 h-4 mr-2" />
+                      <span>My Chats</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate('/dashboard/settings')}>
+                      <Settings className="w-4 h-4 mr-2" />
+                      <span>Settings</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate('/dashboard/billing')}>
+                      <DollarSign className="w-4 h-4 mr-2" />
+                      <span>Billing</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleLogout}>
+                      <LogOut className="w-4 h-4 mr-2" />
+                      <span>Log out</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </>
             ) : (
               <>
