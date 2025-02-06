@@ -5,7 +5,7 @@ export const Footer = () => {
   const links = {
     product: ["Features", "Security", "Pricing", "Resources", "Blog"],
     company: ["About", "Careers", "Partners", "Contact"],
-    legal: ["Privacy", "Terms", "License"]
+    legal: ["Privacy Policy", "Terms of Service", "License"]
   };
 
   return (
@@ -23,7 +23,11 @@ export const Footer = () => {
                 {items.map((item) => (
                   <li key={item}>
                     <Link 
-                      to={item.toLowerCase() === "blog" ? "/blog" : "#"} 
+                      to={
+                        item === "Privacy Policy" ? "/privacy-policy" :
+                        item === "Terms of Service" ? "/terms-of-service" :
+                        item.toLowerCase() === "blog" ? "/blog" : "#"
+                      } 
                       className="text-gray-400 hover:text-white transition-colors"
                     >
                       {item}
@@ -40,9 +44,8 @@ export const Footer = () => {
             <p>Save 2025. All rights reserved.</p>
           </div>
           <div className="flex gap-6 mt-4 md:mt-0">
-            <Link to="#" className="hover:text-white transition-colors">Twitter</Link>
-            <Link to="#" className="hover:text-white transition-colors">LinkedIn</Link>
-            <Link to="#" className="hover:text-white transition-colors">GitHub</Link>
+            <Link to="/privacy-policy" className="hover:text-white transition-colors">Privacy Policy</Link>
+            <Link to="/terms-of-service" className="hover:text-white transition-colors">Terms of Service</Link>
           </div>
         </div>
       </div>
