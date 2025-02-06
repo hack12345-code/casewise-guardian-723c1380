@@ -21,7 +21,7 @@ const SignUp = () => {
       title: "Account created successfully!",
       description: "Welcome to Save!",
     });
-    navigate("/");
+    navigate("/dashboard");
   };
 
   return (

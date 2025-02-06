@@ -20,7 +20,7 @@ const Login = () => {
       title: "Logged in successfully!",
       description: "Welcome back!",
     });
-    navigate("/");
+    navigate("/dashboard");
   };
 
   return (
