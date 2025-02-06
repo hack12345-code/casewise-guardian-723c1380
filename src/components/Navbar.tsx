@@ -26,9 +26,22 @@ export const Navbar = () => {
     setUserName(storedUserName || "");
   }, []);
 
+  const handleCasesClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const casesSection = document.querySelector('#cases-section');
+    if (casesSection) {
+      casesSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   const navItems = [
     { name: "Home", url: "/", icon: Home },
-    { name: "Cases", url: "/cases", icon: FileText },
+    { 
+      name: "Cases", 
+      url: "#cases-section", 
+      icon: FileText,
+      onClick: handleCasesClick 
+    },
     { name: "Pricing", url: "/pricing", icon: DollarSign },
     { name: "Support", url: "/support", icon: MessageSquare },
   ];

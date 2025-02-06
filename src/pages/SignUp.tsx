@@ -5,14 +5,47 @@ import { Button } from "@/components/ui/button";
 import { useNavigate, Link } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const SignUp = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [country, setCountry] = useState("");
+  const [sector, setSector] = useState("");
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const countries = [
+    "United States", "Canada", "United Kingdom", "Australia", "Germany", "France", "Japan", 
+    "Brazil", "India", "China", "South Africa", "Mexico", "Spain", "Italy", "Russia",
+    // Add more countries as needed
+  ];
+
+  const medicalSectors = [
+    "Primary Care",
+    "Emergency Medicine",
+    "Surgery",
+    "Pediatrics",
+    "Obstetrics & Gynecology",
+    "Cardiology",
+    "Neurology",
+    "Oncology",
+    "Psychiatry",
+    "Radiology",
+    "Anesthesiology",
+    "Dermatology",
+    "Internal Medicine",
+    "Family Medicine",
+    "Other"
+  ];
 
   const handleSignUp = (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,6 +54,15 @@ const SignUp = () => {
       toast({
         title: "Terms not accepted",
         description: "Please accept the Terms of Service and Privacy Policy to continue.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!country || !sector) {
+      toast({
+        title: "Missing information",
+        description: "Please select your country and medical sector.",
         variant: "destructive",
       });
       return;
@@ -68,6 +110,40 @@ const SignUp = () => {
                 required
                 placeholder="you@example.com"
               />
+            </div>
+            <div>
+              <label htmlFor="country" className="block text-sm font-medium text-gray-700 mb-1">
+                Country
+              </label>
+              <Select value={country} onValueChange={setCountry}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select your country" />
+                </SelectTrigger>
+                <SelectContent>
+                  {countries.map((c) => (
+                    <SelectItem key={c} value={c}>
+                      {c}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label htmlFor="sector" className="block text-sm font-medium text-gray-700 mb-1">
+                Medical Sector
+              </label>
+              <Select value={sector} onValueChange={setSector}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select your medical sector" />
+                </SelectTrigger>
+                <SelectContent>
+                  {medicalSectors.map((s) => (
+                    <SelectItem key={s} value={s}>
+                      {s}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
