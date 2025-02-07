@@ -1,6 +1,6 @@
 
 import { User, LogIn, Home, FileText, DollarSign, LogOut, MessageSquare, Settings, Grid } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { NavBar } from "@/components/ui/tubelight-navbar";
 import { useEffect, useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 
 export const Navbar = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userName, setUserName] = useState("");
@@ -45,7 +46,12 @@ export const Navbar = () => {
     },
     { name: "Pricing", url: "/pricing", icon: DollarSign },
     { name: "Support", url: "/support", icon: MessageSquare },
-  ];
+  ].map(item => ({
+    ...item,
+    active: location.pathname === item.url || 
+            (item.url === "#cases-section" && location.pathname === "/") ||
+            (item.url === "/" && location.pathname === "")
+  }));
 
   const handleHomeNavigation = () => {
     navigate('/');
@@ -135,7 +141,7 @@ export const Navbar = () => {
                 </Link>
                 <Link
                   to="/signup"
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors focus:outline-none focus:ring-0"
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors"
                 >
                   <User className="w-4 h-4" />
                   <span>Sign up</span>

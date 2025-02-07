@@ -37,7 +37,3 @@
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
-
-.gradient-bg {
-  background: linear-gradient(to bottom right, #2563eb11, #2563eb05);
-}

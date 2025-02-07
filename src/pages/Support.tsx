@@ -1,4 +1,5 @@
-import { MessageCircle, Mail, Phone, HelpCircle } from "lucide-react";
+
+import { MessageCircle, Mail } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,7 +48,6 @@ const Support = () => {
       <div className="flex-grow pt-24 pb-16">
         <div className="container mx-auto px-4 max-w-4xl">
           <div className="text-center mb-12">
-            <HelpCircle className="w-12 h-12 text-blue-600 mx-auto mb-4" />
             <h1 className="text-4xl font-bold mb-4">How can we help?</h1>
             <p className="text-gray-600 text-lg">
               Our support team is here to help you 24/7
@@ -122,13 +122,6 @@ const Support = () => {
               </div>
             </div>
           )}
-
-          <div className="text-center">
-            <div className="inline-flex items-center gap-2 text-gray-600">
-              <Phone className="w-5 h-5" />
-              <span>Or call us at: +1 (555) 123-4567</span>
-            </div>
-          </div>
         </div>
       </div>
       <Footer />
