@@ -35,10 +35,10 @@ const Dashboard = () => {
   ])
 
   const handleNewChat = () => {
-    navigate("/")
+    navigate("/chat")
     toast({
-      title: "Starting new chat",
-      description: "Redirecting to chat interface...",
+      title: "Starting new case",
+      description: "Creating a new case for you...",
     })
   }
 
@@ -51,10 +51,10 @@ const Dashboard = () => {
   }
 
   const handleOpenChat = (chatId: string) => {
-    navigate("/")
+    navigate(`/chat/${chatId}`)
     toast({
-      title: "Opening chat",
-      description: "Loading your conversation...",
+      title: "Opening case",
+      description: "Loading your case...",
     })
   }
 
