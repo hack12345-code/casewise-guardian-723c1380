@@ -13,6 +13,15 @@ import {
 import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/Navbar";
 import { Users, Settings, Building2, BarChart3 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { useToast } from "@/components/ui/use-toast";
 
 interface User {
   id: string;
@@ -22,6 +31,7 @@ interface User {
   country: string;
   sector: string;
   lastActive: string;
+  isBlocked?: boolean;
 }
 
 interface EnterpriseLead {
@@ -35,7 +45,7 @@ interface EnterpriseLead {
 }
 
 const AdminDashboard = () => {
-  const [users] = useState<User[]>([
+  const [users, setUsers] = useState<User[]>([
     {
       id: "1",
       name: "Dr. John Smith",
@@ -44,8 +54,8 @@ const AdminDashboard = () => {
       country: "United States",
       sector: "Cardiology",
       lastActive: "2024-02-20",
+      isBlocked: false,
     },
-    // ... Add more mock users as needed
   ]);
 
   const [enterpriseLeads] = useState<EnterpriseLead[]>([
@@ -58,8 +68,58 @@ const AdminDashboard = () => {
       message: "Interested in enterprise plan for 50 doctors",
       date: "2024-02-19",
     },
-    // ... Add more mock leads as needed
   ]);
+
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [isManageDialogOpen, setIsManageDialogOpen] = useState(false);
+  const { toast } = useToast();
+
+  const handleManageUser = (user: User) => {
+    setSelectedUser(user);
+    setIsManageDialogOpen(true);
+  };
+
+  const handleCancelSubscription = () => {
+    if (!selectedUser) return;
+    
+    setUsers(users.map(user => 
+      user.id === selectedUser.id 
+        ? { ...user, subscription: "Cancelled" }
+        : user
+    ));
+    
+    toast({
+      title: "Subscription cancelled",
+      description: `Subscription cancelled for ${selectedUser.email}`,
+    });
+  };
+
+  const handleDeleteAccount = () => {
+    if (!selectedUser) return;
+    
+    setUsers(users.filter(user => user.id !== selectedUser.id));
+    setIsManageDialogOpen(false);
+    
+    toast({
+      title: "Account deleted",
+      description: `Account deleted for ${selectedUser.email}`,
+    });
+  };
+
+  const handleBlockUser = () => {
+    if (!selectedUser) return;
+    
+    setUsers(users.map(user => 
+      user.id === selectedUser.id 
+        ? { ...user, isBlocked: !user.isBlocked }
+        : user
+    ));
+    
+    toast({
+      title: selectedUser.isBlocked ? "User unblocked" : "User blocked",
+      description: `${selectedUser.email} has been ${selectedUser.isBlocked ? 'unblocked' : 'blocked'}`,
+    });
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -87,7 +147,7 @@ const AdminDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {users.filter((u) => u.subscription !== "Free").length}
+                {users.filter((u) => u.subscription !== "Free" && u.subscription !== "Cancelled").length}
               </div>
             </CardContent>
           </Card>
@@ -120,6 +180,7 @@ const AdminDashboard = () => {
                       <TableHead>Country</TableHead>
                       <TableHead>Sector</TableHead>
                       <TableHead>Last Active</TableHead>
+                      <TableHead>Status</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -133,7 +194,18 @@ const AdminDashboard = () => {
                         <TableCell>{user.sector}</TableCell>
                         <TableCell>{user.lastActive}</TableCell>
                         <TableCell>
-                          <Button variant="outline" size="sm">
+                          <span className={`px-2 py-1 rounded-full text-xs ${
+                            user.isBlocked ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+                          }`}>
+                            {user.isBlocked ? 'Blocked' : 'Active'}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleManageUser(user)}
+                          >
                             Manage
                           </Button>
                         </TableCell>
@@ -185,8 +257,52 @@ const AdminDashboard = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      <Dialog open={isManageDialogOpen} onOpenChange={setIsManageDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Manage User Account</DialogTitle>
+            <DialogDescription>
+              {selectedUser?.email}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid gap-4 py-4">
+            <Button
+              variant="destructive"
+              onClick={handleCancelSubscription}
+              className="w-full"
+            >
+              Cancel Subscription
+            </Button>
+            
+            <Button
+              variant={selectedUser?.isBlocked ? "outline" : "destructive"}
+              onClick={handleBlockUser}
+              className="w-full"
+            >
+              {selectedUser?.isBlocked ? 'Unblock User' : 'Block User'}
+            </Button>
+            
+            <Button
+              variant="destructive"
+              onClick={handleDeleteAccount}
+              className="w-full"
+            >
+              Delete Account
+            </Button>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsManageDialogOpen(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
 
 export default AdminDashboard;
+

@@ -5,14 +5,15 @@ import {
   CreditCard,
   HelpCircle,
   FileText,
+  LayoutDashboard,
 } from "lucide-react"
 
 import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
-  SidebarGroupContent,
   SidebarGroupLabel,
+  SidebarGroupContent,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -50,6 +51,16 @@ const settingsItems = [
 ]
 
 export function DashboardSidebar() {
+  const isAdmin = localStorage.getItem("userEmail") === "savesuppo@gmail.com";
+  
+  const adminItems = [
+    {
+      title: "Admin Dashboard",
+      icon: LayoutDashboard,
+      url: "/admin",
+    },
+  ];
+
   return (
     <Sidebar>
       <SidebarContent>
@@ -70,6 +81,26 @@ export function DashboardSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {isAdmin && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Admin</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {adminItems.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild tooltip={item.title}>
+                      <a href={item.url}>
+                        <item.icon className="h-4 w-4" />
+                        <span>{item.title}</span>
+                      </a>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
 
         <SidebarGroup>
           <SidebarGroupLabel>Account</SidebarGroupLabel>
