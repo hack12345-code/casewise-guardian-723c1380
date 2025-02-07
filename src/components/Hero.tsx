@@ -2,7 +2,7 @@
 import { AIInput } from "./ui/ai-input";
 import { Response } from "./Response";
 import { Sectors } from "./Sectors";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/components/ui/use-toast";
 import DisplayCards from "./ui/display-cards";
@@ -16,6 +16,11 @@ interface Prompt {
   caseTitle: string;
 }
 
+interface PromptUsage {
+  lastPromptDate: string;
+  promptCount: number;
+}
+
 export const Hero = () => {
   const [response, setResponse] = useState("");
   const [currentPrompt, setCurrentPrompt] = useState("");
@@ -25,7 +30,84 @@ export const Hero = () => {
   const [caseCounter, setCaseCounter] = useState(1);
   const { toast } = useToast();
 
+  // Check prompt usage on component mount
+  useEffect(() => {
+    const today = new Date().toISOString().split('T')[0];
+    const storedUsage = localStorage.getItem('promptUsage');
+    let usage: PromptUsage;
+
+    if (storedUsage) {
+      usage = JSON.parse(storedUsage);
+      // Reset count if it's a new day
+      if (usage.lastPromptDate !== today) {
+        usage = {
+          lastPromptDate: today,
+          promptCount: 0
+        };
+        localStorage.setItem('promptUsage', JSON.stringify(usage));
+      }
+    } else {
+      usage = {
+        lastPromptDate: today,
+        promptCount: 0
+      };
+      localStorage.setItem('promptUsage', JSON.stringify(usage));
+    }
+  }, []);
+
+  const checkPromptLimit = (): boolean => {
+    const today = new Date().toISOString().split('T')[0];
+    const storedUsage = localStorage.getItem('promptUsage');
+    
+    if (storedUsage) {
+      const usage: PromptUsage = JSON.parse(storedUsage);
+      
+      // If it's a new day, reset the count
+      if (usage.lastPromptDate !== today) {
+        localStorage.setItem('promptUsage', JSON.stringify({
+          lastPromptDate: today,
+          promptCount: 0
+        }));
+        return true;
+      }
+      
+      // Check if user has reached their daily limit
+      if (usage.promptCount >= 1) {
+        toast({
+          title: "Daily limit reached",
+          description: "You've reached your daily prompt limit. Please upgrade to a paid plan for unlimited prompts.",
+          variant: "destructive",
+        });
+        return false;
+      }
+    }
+    return true;
+  };
+
+  const updatePromptUsage = () => {
+    const today = new Date().toISOString().split('T')[0];
+    const storedUsage = localStorage.getItem('promptUsage');
+    let usage: PromptUsage;
+
+    if (storedUsage) {
+      usage = JSON.parse(storedUsage);
+      usage.lastPromptDate = today;
+      usage.promptCount += 1;
+    } else {
+      usage = {
+        lastPromptDate: today,
+        promptCount: 1
+      };
+    }
+
+    localStorage.setItem('promptUsage', JSON.stringify(usage));
+  };
+
   const handleSubmit = async (caseDetails: string) => {
+    if (!checkPromptLimit()) {
+      return;
+    }
+
     setIsLoading(true);
     try {
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -41,6 +123,9 @@ export const Hero = () => {
       setResponse("");
       setHasResponse(true);
       setCaseCounter(prev => prev + 1);
+      
+      // Update prompt usage after successful submission
+      updatePromptUsage();
     } catch (error) {
       console.error("Error:", error);
       toast({
