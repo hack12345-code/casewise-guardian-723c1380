@@ -10,25 +10,37 @@ import { Cases } from "./Cases";
 import { FAQs } from "./FAQs";
 import { Footer } from "./Footer";
 
+interface Prompt {
+  text: string;
+  response: string;
+  caseTitle: string;
+}
+
 export const Hero = () => {
   const [response, setResponse] = useState("");
+  const [currentPrompt, setCurrentPrompt] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [hasResponse, setHasResponse] = useState(false);
-  const [prompts, setPrompts] = useState<string[]>([]);
+  const [prompts, setPrompts] = useState<Prompt[]>([]);
+  const [caseCounter, setCaseCounter] = useState(1);
   const { toast } = useToast();
 
   const handleSubmit = async (caseDetails: string) => {
     setIsLoading(true);
     try {
-      // Simulate a brief loading state
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Add the new prompt to the list
-      setPrompts(prev => [...prev, caseDetails]);
+      const newPrompt: Prompt = {
+        text: caseDetails,
+        response: "",
+        caseTitle: `Case ${caseCounter}`
+      };
       
-      // For now, we'll just set an empty response and trigger the transition
+      setPrompts(prev => [...prev, newPrompt]);
+      setCurrentPrompt(caseDetails);
       setResponse("");
       setHasResponse(true);
+      setCaseCounter(prev => prev + 1);
     } catch (error) {
       console.error("Error:", error);
       toast({
@@ -39,6 +51,14 @@ export const Hero = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleRename = (index: number, newTitle: string) => {
+    setPrompts(prev => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], caseTitle: newTitle };
+      return updated;
+    });
   };
 
   return (
@@ -78,7 +98,10 @@ export const Hero = () => {
               <div className="flex-grow overflow-y-auto p-4 space-y-4">
                 {prompts.map((prompt, index) => (
                   <div key={index} className="p-3 bg-gray-50 rounded-lg">
-                    <p className="text-sm text-gray-700">{prompt}</p>
+                    <div className="flex justify-between items-center mb-2">
+                      <h4 className="text-sm font-medium text-gray-900">{prompt.caseTitle}</h4>
+                    </div>
+                    <p className="text-sm text-gray-700">{prompt.text}</p>
                   </div>
                 ))}
               </div>
@@ -96,7 +119,12 @@ export const Hero = () => {
 
             {/* Right Panel - 2/3 width */}
             <div className="w-2/3 bg-white rounded-lg shadow-sm border p-6 overflow-y-auto">
-              <Response response={response} />
+              <Response 
+                response={response}
+                prompt={currentPrompt}
+                caseTitle={prompts[prompts.length - 1]?.caseTitle}
+                onRename={(newTitle) => handleRename(prompts.length - 1, newTitle)}
+              />
             </div>
           </div>
         ) : (
