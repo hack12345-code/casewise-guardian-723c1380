@@ -18,6 +18,7 @@ import DashboardSettings from "./pages/DashboardSettings"
 import TermsOfService from "./pages/TermsOfService"
 import PrivacyPolicy from "./pages/PrivacyPolicy"
 import AdminDashboard from "./pages/AdminDashboard"
+import ContactSales from "./pages/ContactSales"
 import { AdminRoute } from "./components/AdminRoute"
 
 const queryClient = new QueryClient()
@@ -42,6 +43,7 @@ const App = () => (
           <Route path="/dashboard/settings" element={<DashboardSettings />} />
           <Route path="/terms-of-service" element={<TermsOfService />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/contact-sales" element={<ContactSales />} />
           <Route
             path="/admin"
             element={
