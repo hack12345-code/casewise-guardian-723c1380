@@ -1,3 +1,4 @@
+
 import { Copyright } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -13,7 +14,7 @@ export const Footer = () => {
       <div className="container mx-auto px-4 py-16">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
           <div>
-            <Link to="/" className="text-2xl font-bold text-white mb-4 block">Save</Link>
+            <Link to="/" className="text-2xl font-bold text-white mb-4 block">Saver</Link>
             <p className="text-gray-400 mt-4">Empowering healthcare professionals with AI-driven insights and risk management.</p>
           </div>
           {Object.entries(links).map(([category, items]) => (
@@ -41,7 +42,7 @@ export const Footer = () => {
         <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
           <div className="flex items-center gap-2">
             <Copyright className="w-4 h-4" />
-            <p>Save 2025. All rights reserved.</p>
+            <p>Saver 2025. All rights reserved.</p>
           </div>
           <div className="flex gap-6 mt-4 md:mt-0">
             <Link to="/privacy-policy" className="hover:text-white transition-colors">Privacy Policy</Link>

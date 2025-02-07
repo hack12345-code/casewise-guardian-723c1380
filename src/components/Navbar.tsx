@@ -71,7 +71,7 @@ export const Navbar = () => {
             className="text-2xl font-bold text-blue-600 cursor-pointer hover:text-blue-700 transition-colors"
             onClick={handleHomeNavigation}
           >
-            Save
+            Saver
           </Link>
 
           <div className="absolute left-1/2 -translate-x-1/2">

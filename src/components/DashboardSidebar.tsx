@@ -4,6 +4,7 @@ import {
   Home,
   CreditCard,
   HelpCircle,
+  FileText,
 } from "lucide-react"
 
 import {
@@ -22,6 +23,11 @@ const menuItems = [
     title: "Overview",
     icon: Home,
     url: "/dashboard",
+  },
+  {
+    title: "My Cases",
+    icon: FileText,
+    url: "/dashboard/cases",
   },
 ]
 
