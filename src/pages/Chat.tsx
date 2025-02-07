@@ -1,5 +1,5 @@
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useParams } from "react-router-dom"
 import { Navbar } from "@/components/Navbar"
 import { Button } from "@/components/ui/button"
@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card"
 import { useToast } from "@/components/ui/use-toast"
 import { DashboardSidebar } from "@/components/DashboardSidebar"
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
+import { Response } from "@/components/Response"
 
 interface Message {
   id: string
@@ -27,6 +28,17 @@ const Chat = () => {
       return savedMessages ? JSON.parse(savedMessages) : []
     }
     return []
+  })
+  const [caseTitle, setCaseTitle] = useState(() => {
+    if (chatId) {
+      const savedChats = localStorage.getItem("chats")
+      if (savedChats) {
+        const chats = JSON.parse(savedChats)
+        const currentChat = chats.find((chat: any) => chat.id === chatId)
+        return currentChat?.title || "New Case"
+      }
+    }
+    return "New Case"
   })
 
   const handleSendMessage = () => {
@@ -48,6 +60,22 @@ const Chat = () => {
       localStorage.setItem(`chat-${chatId}`, JSON.stringify(updatedMessages))
     }
 
+    // Update last message in chats list
+    const savedChats = localStorage.getItem("chats")
+    if (savedChats && chatId) {
+      const chats = JSON.parse(savedChats)
+      const updatedChats = chats.map((chat: any) => {
+        if (chat.id === chatId) {
+          return {
+            ...chat,
+            lastMessage: input.slice(0, 100) + (input.length > 100 ? "..." : ""),
+          }
+        }
+        return chat
+      })
+      localStorage.setItem("chats", JSON.stringify(updatedChats))
+    }
+
     // Simulate AI response
     setTimeout(() => {
       const aiResponse: Message = {
@@ -64,6 +92,23 @@ const Chat = () => {
     }, 1000)
   }
 
+  const handleRename = (newTitle: string) => {
+    setCaseTitle(newTitle)
+    if (chatId) {
+      const savedChats = localStorage.getItem("chats")
+      if (savedChats) {
+        const chats = JSON.parse(savedChats)
+        const updatedChats = chats.map((chat: any) => {
+          if (chat.id === chatId) {
+            return { ...chat, title: newTitle }
+          }
+          return chat
+        })
+        localStorage.setItem("chats", JSON.stringify(updatedChats))
+      }
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
@@ -71,57 +116,79 @@ const Chat = () => {
         <div className="flex min-h-[calc(100vh-4rem)] pt-16">
           <DashboardSidebar />
           <main className="flex-1 p-8">
-            <Card className="max-w-4xl mx-auto">
-              <div className="h-[calc(100vh-16rem)] flex flex-col">
-                <div className="flex-1 overflow-y-auto p-6 space-y-4">
-                  {messages.map((message) => (
-                    <div
-                      key={message.id}
-                      className={`flex ${
-                        message.sender === "user" ? "justify-end" : "justify-start"
-                      }`}
-                    >
-                      <div
-                        className={`max-w-[80%] p-4 rounded-lg ${
-                          message.sender === "user"
-                            ? "bg-blue-600 text-white"
-                            : "bg-gray-100 text-gray-900"
-                        }`}
-                      >
-                        <p className="text-sm">{message.text}</p>
-                        <span className="text-xs opacity-70 mt-2 block">
-                          {new Date(message.timestamp).toLocaleTimeString()}
-                        </span>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* Chat Input Section (2/3) */}
+              <div className="lg:col-span-2">
+                <Card className="h-[calc(100vh-16rem)]">
+                  <div className="h-full flex flex-col">
+                    <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                      {messages.map((message) => (
+                        <div
+                          key={message.id}
+                          className={`flex ${
+                            message.sender === "user"
+                              ? "justify-end"
+                              : "justify-start"
+                          }`}
+                        >
+                          <div
+                            className={`max-w-[80%] p-4 rounded-lg ${
+                              message.sender === "user"
+                                ? "bg-blue-600 text-white"
+                                : "bg-gray-100 text-gray-900"
+                            }`}
+                          >
+                            <p className="text-sm">{message.text}</p>
+                            <span className="text-xs opacity-70 mt-2 block">
+                              {new Date(message.timestamp).toLocaleTimeString()}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="p-4 border-t">
+                      <div className="flex gap-2">
+                        <Textarea
+                          value={input}
+                          onChange={(e) => setInput(e.target.value)}
+                          placeholder="Enter your case details here..."
+                          className="resize-none"
+                          rows={3}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" && !e.shiftKey) {
+                              e.preventDefault()
+                              handleSendMessage()
+                            }
+                          }}
+                        />
+                        <Button
+                          onClick={handleSendMessage}
+                          className="self-end"
+                          size="icon"
+                        >
+                          Send
+                        </Button>
                       </div>
                     </div>
-                  ))}
-                </div>
-                <div className="p-4 border-t">
-                  <div className="flex gap-2">
-                    <Textarea
-                      value={input}
-                      onChange={(e) => setInput(e.target.value)}
-                      placeholder="Enter your case details here..."
-                      className="resize-none"
-                      rows={3}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" && !e.shiftKey) {
-                          e.preventDefault()
-                          handleSendMessage()
-                        }
-                      }}
-                    />
-                    <Button
-                      onClick={handleSendMessage}
-                      className="self-end"
-                      size="icon"
-                    >
-                      Send
-                    </Button>
                   </div>
-                </div>
+                </Card>
               </div>
-            </Card>
+              {/* Response Section (1/3) */}
+              <div className="lg:col-span-1">
+                <Card className="h-[calc(100vh-16rem)] p-6 overflow-y-auto">
+                  <Response
+                    response={
+                      messages.length > 0
+                        ? messages[messages.length - 1].text
+                        : ""
+                    }
+                    prompt={messages.length > 0 ? messages[0].text : ""}
+                    caseTitle={caseTitle}
+                    onRename={handleRename}
+                  />
+                </Card>
+              </div>
+            </div>
           </main>
           <SidebarTrigger className="fixed bottom-4 right-4 md:hidden" />
         </div>
@@ -131,4 +198,3 @@ const Chat = () => {
 }
 
 export default Chat
-
