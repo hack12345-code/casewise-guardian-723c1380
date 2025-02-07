@@ -1,3 +1,4 @@
+
 import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -61,7 +62,7 @@ const Dashboard = () => {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       <SidebarProvider>
-        <div className="flex min-h-[calc(100vh-4rem)]">
+        <div className="flex min-h-[calc(100vh-4rem)] pt-16">
           <DashboardSidebar />
           <main className="flex-1 p-8">
             <div className="flex justify-between items-center mb-8">

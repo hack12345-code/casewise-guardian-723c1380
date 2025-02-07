@@ -1,3 +1,4 @@
+
 import { User, LogIn, Home, FileText, DollarSign, LogOut, MessageSquare, Settings, Grid } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { NavBar } from "@/components/ui/tubelight-navbar";
@@ -103,9 +104,9 @@ export const Navbar = () => {
                       <Grid className="w-4 h-4 mr-2" />
                       <span>Dashboard</span>
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate('/dashboard/chats')}>
-                      <MessageSquare className="w-4 h-4 mr-2" />
-                      <span>My Chats</span>
+                    <DropdownMenuItem onClick={() => navigate('/dashboard/cases')}>
+                      <FileText className="w-4 h-4 mr-2" />
+                      <span>My Cases</span>
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => navigate('/dashboard/settings')}>
                       <Settings className="w-4 h-4 mr-2" />
