@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -124,7 +123,7 @@ const AdminDashboard = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 pt-20">
         <div className="flex items-center gap-2 mb-8">
           <BarChart3 className="w-8 h-8 text-blue-600" />
           <h1 className="text-3xl font-bold">Admin Dashboard</h1>
@@ -305,4 +304,3 @@ const AdminDashboard = () => {
 };
 
 export default AdminDashboard;
-

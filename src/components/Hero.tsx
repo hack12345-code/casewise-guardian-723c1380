@@ -30,7 +30,6 @@ export const Hero = () => {
   const [caseCounter, setCaseCounter] = useState(1);
   const { toast } = useToast();
 
-  // Check prompt usage on component mount
   useEffect(() => {
     const today = new Date().toISOString().split('T')[0];
     const storedUsage = localStorage.getItem('promptUsage');
@@ -38,7 +37,6 @@ export const Hero = () => {
 
     if (storedUsage) {
       usage = JSON.parse(storedUsage);
-      // Reset count if it's a new day
       if (usage.lastPromptDate !== today) {
         usage = {
           lastPromptDate: today,
@@ -56,13 +54,18 @@ export const Hero = () => {
   }, []);
 
   const checkPromptLimit = (): boolean => {
+    // Admin email check - unlimited prompts
+    const userEmail = localStorage.getItem('userEmail');
+    if (userEmail === 'savesuppo@gmail.com') {
+      return true;
+    }
+
     const today = new Date().toISOString().split('T')[0];
     const storedUsage = localStorage.getItem('promptUsage');
     
     if (storedUsage) {
       const usage: PromptUsage = JSON.parse(storedUsage);
       
-      // If it's a new day, reset the count
       if (usage.lastPromptDate !== today) {
         localStorage.setItem('promptUsage', JSON.stringify({
           lastPromptDate: today,
@@ -71,7 +74,6 @@ export const Hero = () => {
         return true;
       }
       
-      // Check if user has reached their daily limit
       if (usage.promptCount >= 1) {
         toast({
           title: "Daily limit reached",
@@ -85,6 +87,11 @@ export const Hero = () => {
   };
 
   const updatePromptUsage = () => {
+    // Don't update usage for admin
+    if (localStorage.getItem('userEmail') === 'savesuppo@gmail.com') {
+      return;
+    }
+
     const today = new Date().toISOString().split('T')[0];
     const storedUsage = localStorage.getItem('promptUsage');
     let usage: PromptUsage;
@@ -124,7 +131,6 @@ export const Hero = () => {
       setHasResponse(true);
       setCaseCounter(prev => prev + 1);
       
-      // Update prompt usage after successful submission
       updatePromptUsage();
     } catch (error) {
       console.error("Error:", error);
@@ -177,9 +183,7 @@ export const Hero = () => {
         
         {hasResponse ? (
           <div className="flex h-[calc(100vh-200px)] gap-4">
-            {/* Left Panel - 1/3 width */}
             <div className="w-1/3 flex flex-col bg-white rounded-lg shadow-sm border">
-              {/* Prompts History */}
               <div className="flex-grow overflow-y-auto p-4 space-y-4">
                 {prompts.map((prompt, index) => (
                   <div key={index} className="p-3 bg-gray-50 rounded-lg">
@@ -191,18 +195,16 @@ export const Hero = () => {
                 ))}
               </div>
               
-              {/* Input Box */}
               <div className="p-4 border-t">
                 <AIInput 
                   placeholder="Enter your case details here..."
-                  minHeight={150}  // Increased height
-                  maxHeight={250}  // Increased max height
+                  minHeight={150}
+                  maxHeight={250}
                   onSubmit={handleSubmit}
                 />
               </div>
             </div>
 
-            {/* Right Panel - 2/3 width */}
             <div className="w-2/3 bg-white rounded-lg shadow-sm border p-6 overflow-y-auto">
               <Response 
                 response={response}
@@ -213,21 +215,18 @@ export const Hero = () => {
             </div>
           </div>
         ) : (
-          <div className="mt-12">
-            <AIInput 
-              placeholder="Enter your case details here... Be specific about the patient's condition, your planned approach, and any concerns."
-              minHeight={250}  // Increased height
-              maxHeight={450}  // Increased max height
-              onSubmit={handleSubmit}
-              className="max-w-3xl mx-auto"
-            />
-          </div>
-        )}
-
-        {!hasResponse && (
           <>
-            {/* Companies Bar */}
-            <div className="mt-16 text-center">
+            <div className="mt-8">
+              <AIInput 
+                placeholder="Enter your case details here... Be specific about the patient's condition, your planned approach, and any concerns."
+                minHeight={250}
+                maxHeight={450}
+                onSubmit={handleSubmit}
+                className="max-w-3xl mx-auto"
+              />
+            </div>
+
+            <div className="mt-12 text-center">
               <p className="text-sm text-gray-500 mb-6">TRUSTED BY LEADING HEALTHCARE INSTITUTIONS</p>
               <div className="flex justify-center items-center gap-12 py-8 px-4 bg-white/50 rounded-lg backdrop-blur-sm">
                 <span className="text-2xl font-bold text-gray-400">Mayo Clinic</span>
@@ -237,22 +236,18 @@ export const Hero = () => {
               </div>
             </div>
 
-            {/* Display Cards */}
-            <div className="mt-20">
+            <div className="mt-12">
               <DisplayCards />
             </div>
             
-            {/* Cases Section */}
             <div className="mt-20">
               <Cases />
             </div>
 
-            {/* FAQs Section */}
             <div className="mt-20">
               <FAQs />
             </div>
 
-            {/* Footer */}
             <Footer />
           </>
         )}
