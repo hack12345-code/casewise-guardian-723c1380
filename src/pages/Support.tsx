@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
 
 const Support = () => {
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -41,9 +42,9 @@ const Support = () => {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen flex flex-col">
       <Navbar />
-      <div className="pt-24 pb-16">
+      <div className="flex-grow pt-24 pb-16">
         <div className="container mx-auto px-4 max-w-4xl">
           <div className="text-center mb-12">
             <HelpCircle className="w-12 h-12 text-blue-600 mx-auto mb-4" />
@@ -130,6 +131,7 @@ const Support = () => {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 };

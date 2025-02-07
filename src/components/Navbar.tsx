@@ -68,7 +68,7 @@ export const Navbar = () => {
         <div className="flex items-center justify-between h-16">
           <Link 
             to="/" 
-            className="text-2xl font-bold text-blue-600 cursor-pointer hover:text-blue-700 transition-colors"
+            className="text-3xl font-bold text-blue-600 cursor-pointer hover:text-blue-700 transition-colors"
             onClick={handleHomeNavigation}
           >
             Saver
