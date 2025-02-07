@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Input } from "@/components/ui/input";
@@ -16,11 +17,19 @@ const Login = () => {
     // For now, just simulate successful login
     localStorage.setItem("isAuthenticated", "true");
     localStorage.setItem("userName", email.split("@")[0]);
+    localStorage.setItem("userEmail", email);
+    
     toast({
       title: "Logged in successfully!",
       description: "Welcome back!",
     });
-    navigate("/dashboard");
+
+    // Redirect to admin dashboard if admin user
+    if (email === "savesuppo@gmail.com") {
+      navigate("/admin");
+    } else {
+      navigate("/dashboard");
+    }
   };
 
   return (
