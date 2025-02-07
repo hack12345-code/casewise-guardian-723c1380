@@ -2,12 +2,9 @@
 import { useState, useEffect } from "react"
 import { useParams } from "react-router-dom"
 import { Navbar } from "@/components/Navbar"
-import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
 import { Card } from "@/components/ui/card"
 import { useToast } from "@/components/ui/use-toast"
-import { DashboardSidebar } from "@/components/DashboardSidebar"
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
+import { AIInput } from "@/components/ui/ai-input"
 import { Response } from "@/components/Response"
 
 interface Message {
@@ -20,9 +17,7 @@ interface Message {
 const Chat = () => {
   const { chatId } = useParams()
   const { toast } = useToast()
-  const [input, setInput] = useState("")
   const [messages, setMessages] = useState<Message[]>(() => {
-    // Initialize with existing messages if this is an existing chat
     if (chatId) {
       const savedMessages = localStorage.getItem(`chat-${chatId}`)
       return savedMessages ? JSON.parse(savedMessages) : []
@@ -41,7 +36,7 @@ const Chat = () => {
     return "New Case"
   })
 
-  const handleSendMessage = () => {
+  const handleSendMessage = (input: string) => {
     if (!input.trim()) return
 
     const newMessage: Message = {
@@ -53,7 +48,6 @@ const Chat = () => {
 
     const updatedMessages = [...messages, newMessage]
     setMessages(updatedMessages)
-    setInput("")
 
     // Save messages to localStorage
     if (chatId) {
@@ -112,87 +106,68 @@ const Chat = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      <SidebarProvider>
-        <div className="flex min-h-[calc(100vh-4rem)] pt-16">
-          <DashboardSidebar />
-          <main className="flex-1 p-8">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Chat Input Section (2/3) */}
-              <div className="lg:col-span-2">
-                <Card className="h-[calc(100vh-16rem)]">
-                  <div className="h-full flex flex-col">
-                    <div className="flex-1 overflow-y-auto p-6 space-y-4">
-                      {messages.map((message) => (
+      <div className="flex min-h-[calc(100vh-4rem)] pt-16">
+        <main className="flex-1 p-8">
+          <div className="grid grid-cols-3 gap-8">
+            {/* Response Section (1/3) */}
+            <div className="col-span-1">
+              <Card className="h-[calc(100vh-16rem)] p-6 overflow-y-auto">
+                <Response
+                  response={
+                    messages.length > 0
+                      ? messages[messages.length - 1].text
+                      : ""
+                  }
+                  prompt={messages.length > 0 ? messages[0].text : ""}
+                  caseTitle={caseTitle}
+                  onRename={handleRename}
+                />
+              </Card>
+            </div>
+
+            {/* Chat Messages Section (2/3) */}
+            <div className="col-span-2">
+              <Card className="h-[calc(100vh-16rem)]">
+                <div className="h-full flex flex-col">
+                  <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                    {messages.map((message) => (
+                      <div
+                        key={message.id}
+                        className={`flex ${
+                          message.sender === "user"
+                            ? "justify-end"
+                            : "justify-start"
+                        }`}
+                      >
                         <div
-                          key={message.id}
-                          className={`flex ${
+                          className={`max-w-[80%] p-4 rounded-lg ${
                             message.sender === "user"
-                              ? "justify-end"
-                              : "justify-start"
+                              ? "bg-blue-600 text-white"
+                              : "bg-gray-100 text-gray-900"
                           }`}
                         >
-                          <div
-                            className={`max-w-[80%] p-4 rounded-lg ${
-                              message.sender === "user"
-                                ? "bg-blue-600 text-white"
-                                : "bg-gray-100 text-gray-900"
-                            }`}
-                          >
-                            <p className="text-sm">{message.text}</p>
-                            <span className="text-xs opacity-70 mt-2 block">
-                              {new Date(message.timestamp).toLocaleTimeString()}
-                            </span>
-                          </div>
+                          <p className="text-sm">{message.text}</p>
+                          <span className="text-xs opacity-70 mt-2 block">
+                            {new Date(message.timestamp).toLocaleTimeString()}
+                          </span>
                         </div>
-                      ))}
-                    </div>
-                    <div className="p-4 border-t">
-                      <div className="flex gap-2">
-                        <Textarea
-                          value={input}
-                          onChange={(e) => setInput(e.target.value)}
-                          placeholder="Enter your case details here..."
-                          className="resize-none"
-                          rows={3}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter" && !e.shiftKey) {
-                              e.preventDefault()
-                              handleSendMessage()
-                            }
-                          }}
-                        />
-                        <Button
-                          onClick={handleSendMessage}
-                          className="self-end"
-                          size="icon"
-                        >
-                          Send
-                        </Button>
                       </div>
-                    </div>
+                    ))}
                   </div>
-                </Card>
-              </div>
-              {/* Response Section (1/3) */}
-              <div className="lg:col-span-1">
-                <Card className="h-[calc(100vh-16rem)] p-6 overflow-y-auto">
-                  <Response
-                    response={
-                      messages.length > 0
-                        ? messages[messages.length - 1].text
-                        : ""
-                    }
-                    prompt={messages.length > 0 ? messages[0].text : ""}
-                    caseTitle={caseTitle}
-                    onRename={handleRename}
-                  />
-                </Card>
-              </div>
+                  <div className="p-4 border-t">
+                    <AIInput
+                      placeholder="Enter your case details here..."
+                      minHeight={100}
+                      maxHeight={200}
+                      onSubmit={handleSendMessage}
+                    />
+                  </div>
+                </div>
+              </Card>
             </div>
-          </main>
-          <SidebarTrigger className="fixed bottom-4 right-4 md:hidden" />
-        </div>
-      </SidebarProvider>
+          </div>
+        </main>
+      </div>
     </div>
   )
 }
