@@ -69,7 +69,7 @@ export const Navbar = () => {
         <div className="flex items-center justify-between h-16">
           <Link 
             to="/" 
-            className="text-3xl font-bold text-blue-600 cursor-pointer hover:text-blue-700 transition-colors"
+            className="text-3xl font-bold cursor-pointer transition-colors bg-gradient-to-r from-[#1EAEDB] to-[#9b87f5] bg-clip-text text-transparent"
             onClick={handleHomeNavigation}
           >
             Saver
@@ -135,7 +135,7 @@ export const Navbar = () => {
                 </Link>
                 <Link
                   to="/signup"
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors focus:outline-none focus:ring-0"
                 >
                   <User className="w-4 h-4" />
                   <span>Sign up</span>
