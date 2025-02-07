@@ -228,11 +228,32 @@ export const Hero = () => {
 
             <div className="mt-12 text-center">
               <p className="text-sm text-gray-500 mb-6">TRUSTED BY LEADING HEALTHCARE INSTITUTIONS</p>
-              <div className="flex justify-center items-center gap-12 py-8 px-4 bg-white/50 rounded-lg backdrop-blur-sm">
-                <span className="text-2xl font-bold text-gray-400">Mayo Clinic</span>
-                <span className="text-2xl font-bold text-gray-400">Cleveland Clinic</span>
-                <span className="text-2xl font-bold text-gray-400">Johns Hopkins</span>
-                <span className="text-2xl font-bold text-gray-400">Mass General</span>
+              <div className="flex justify-center items-center gap-8 py-8 px-4 bg-white/50 rounded-lg backdrop-blur-sm flex-wrap">
+                <img 
+                  src="/lovable-uploads/1510baf5-fa8b-42a8-9f74-ef904389fa4a.png" 
+                  alt="HIPAA" 
+                  className="h-16 object-contain"
+                />
+                <img 
+                  src="/lovable-uploads/fdc5f2a1-dc7e-4165-80cd-67c6ec32dc13.png" 
+                  alt="GDPR" 
+                  className="h-16 object-contain"
+                />
+                <img 
+                  src="/lovable-uploads/c9b981d9-8d96-48a5-9637-093c2dfee8a0.png" 
+                  alt="HHS" 
+                  className="h-16 object-contain"
+                />
+                <img 
+                  src="/lovable-uploads/b4b50947-99f9-4652-8f8f-5d1ad9d1025a.png" 
+                  alt="AMA" 
+                  className="h-16 object-contain"
+                />
+                <img 
+                  src="/lovable-uploads/64d59b40-6f92-4424-863b-4954432c53b1.png" 
+                  alt="AHA" 
+                  className="h-16 object-contain"
+                />
               </div>
             </div>
 

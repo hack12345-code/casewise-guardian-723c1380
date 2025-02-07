@@ -1,3 +1,4 @@
+
 "use client";
 
 import { cn } from "@/lib/utils";
@@ -67,13 +68,6 @@ export default function DisplayCards({ cards }: DisplayCardsProps) {
       description: "Healthcare regulation adherence",
       date: "Always current",
       className: "[grid-area:stack] translate-x-32 translate-y-20 hover:translate-y-10",
-    },
-    {
-      icon: <Sparkles className="size-4 text-blue-300" />,
-      title: "AI Insights",
-      description: "Advanced medical decision support",
-      date: "Continuous updates",
-      className: "[grid-area:stack] translate-x-48 translate-y-30 hover:translate-y-20",
     }
   ];
 
