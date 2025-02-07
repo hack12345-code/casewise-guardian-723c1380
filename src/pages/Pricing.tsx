@@ -17,11 +17,6 @@ const Pricing = () => {
 
   const plans = [
     {
-      name: "Basic",
-      price: "$9",
-      features: ["5 cases per day", "Basic analytics", "24/7 support"],
-    },
-    {
       name: "Pro",
       price: 29,
       features: ["Unlimited cases", "Advanced analytics", "Priority support", "Custom templates"],
@@ -34,7 +29,11 @@ const Pricing = () => {
   ];
 
   const handleGetStarted = (plan: typeof plans[0]) => {
-    navigate('/payment', { state: { plan } });
+    if (plan.name === "Enterprise") {
+      navigate('/contact-sales');
+    } else {
+      navigate('/payment', { state: { plan } });
+    }
   };
 
   const FREQUENCIES = ["monthly", "yearly"];
@@ -62,7 +61,7 @@ const Pricing = () => {
           </div>
         </div>
         
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
           {plans.map((plan) => (
             <div
               key={plan.name}
@@ -91,7 +90,7 @@ const Pricing = () => {
                 className="w-full mt-8 bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors"
                 onClick={() => handleGetStarted(plan)}
               >
-                Get Started
+                {plan.name === "Enterprise" ? "Contact Sales" : "Get Started"}
               </button>
             </div>
           ))}
