@@ -1,3 +1,4 @@
+
 import { AIInput } from "./ui/ai-input";
 import { Response } from "./Response";
 import { Sectors } from "./Sectors";
@@ -13,6 +14,7 @@ export const Hero = () => {
   const [response, setResponse] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [hasResponse, setHasResponse] = useState(false);
+  const [prompts, setPrompts] = useState<string[]>([]);
   const { toast } = useToast();
 
   const handleSubmit = async (caseDetails: string) => {
@@ -20,6 +22,9 @@ export const Hero = () => {
     try {
       // Simulate a brief loading state
       await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Add the new prompt to the list
+      setPrompts(prev => [...prev, caseDetails]);
       
       // For now, we'll just set an empty response and trigger the transition
       setResponse("");
@@ -65,20 +70,37 @@ export const Hero = () => {
           <Sectors />
         </div>
         
-        <div className={cn(
-          "flex flex-col flex-grow transition-all duration-500",
-          hasResponse ? "h-[calc(100vh-200px)]" : ""
-        )}>
-          {hasResponse && (
-            <div className="flex-grow overflow-auto mb-8 animate-fade-in">
+        {hasResponse ? (
+          <div className="flex h-[calc(100vh-200px)] gap-4">
+            {/* Left Panel - 1/3 width */}
+            <div className="w-1/3 flex flex-col bg-white rounded-lg shadow-sm border">
+              {/* Prompts History */}
+              <div className="flex-grow overflow-y-auto p-4 space-y-4">
+                {prompts.map((prompt, index) => (
+                  <div key={index} className="p-3 bg-gray-50 rounded-lg">
+                    <p className="text-sm text-gray-700">{prompt}</p>
+                  </div>
+                ))}
+              </div>
+              
+              {/* Input Box */}
+              <div className="p-4 border-t">
+                <AIInput 
+                  placeholder="Enter your case details here..."
+                  minHeight={100}
+                  maxHeight={200}
+                  onSubmit={handleSubmit}
+                />
+              </div>
+            </div>
+
+            {/* Right Panel - 2/3 width */}
+            <div className="w-2/3 bg-white rounded-lg shadow-sm border p-6 overflow-y-auto">
               <Response response={response} />
             </div>
-          )}
-          
-          <div className={cn(
-            "mt-12",
-            hasResponse ? "mt-auto" : ""
-          )}>
+          </div>
+        ) : (
+          <div className="mt-12">
             <AIInput 
               placeholder="Enter your case details here... Be specific about the patient's condition, your planned approach, and any concerns."
               minHeight={200}
@@ -87,37 +109,41 @@ export const Hero = () => {
               className="max-w-3xl mx-auto"
             />
           </div>
+        )}
 
-          {/* Companies Bar */}
-          <div className="mt-16 text-center">
-            <p className="text-sm text-gray-500 mb-6">TRUSTED BY LEADING HEALTHCARE INSTITUTIONS</p>
-            <div className="flex justify-center items-center gap-12 py-8 px-4 bg-white/50 rounded-lg backdrop-blur-sm">
-              <span className="text-2xl font-bold text-gray-400">Mayo Clinic</span>
-              <span className="text-2xl font-bold text-gray-400">Cleveland Clinic</span>
-              <span className="text-2xl font-bold text-gray-400">Johns Hopkins</span>
-              <span className="text-2xl font-bold text-gray-400">Mass General</span>
+        {!hasResponse && (
+          <>
+            {/* Companies Bar */}
+            <div className="mt-16 text-center">
+              <p className="text-sm text-gray-500 mb-6">TRUSTED BY LEADING HEALTHCARE INSTITUTIONS</p>
+              <div className="flex justify-center items-center gap-12 py-8 px-4 bg-white/50 rounded-lg backdrop-blur-sm">
+                <span className="text-2xl font-bold text-gray-400">Mayo Clinic</span>
+                <span className="text-2xl font-bold text-gray-400">Cleveland Clinic</span>
+                <span className="text-2xl font-bold text-gray-400">Johns Hopkins</span>
+                <span className="text-2xl font-bold text-gray-400">Mass General</span>
+              </div>
             </div>
-          </div>
 
-          {/* Display Cards */}
-          <div className="mt-20">
-            <DisplayCards />
-          </div>
-        </div>
-      </div>
-      
-      {/* Cases Section */}
-      <div className="mt-20">
-        <Cases />
-      </div>
+            {/* Display Cards */}
+            <div className="mt-20">
+              <DisplayCards />
+            </div>
+            
+            {/* Cases Section */}
+            <div className="mt-20">
+              <Cases />
+            </div>
 
-      {/* FAQs Section */}
-      <div className="mt-20">
-        <FAQs />
-      </div>
+            {/* FAQs Section */}
+            <div className="mt-20">
+              <FAQs />
+            </div>
 
-      {/* Footer */}
-      <Footer />
+            {/* Footer */}
+            <Footer />
+          </>
+        )}
+      </div>
     </div>
   );
 };

@@ -1,3 +1,4 @@
+
 import { Card } from "@/components/ui/card";
 
 interface ResponseProps {
@@ -5,10 +6,16 @@ interface ResponseProps {
 }
 
 export const Response = ({ response }: ResponseProps) => {
-  if (!response) return null;
+  if (!response) {
+    return (
+      <div className="flex items-center justify-center h-full text-gray-500">
+        Enter your case details to get professional guidance
+      </div>
+    );
+  }
 
   return (
-    <Card className="w-full max-w-5xl mx-auto p-8 bg-transparent border-none shadow-none">
+    <Card className="w-full bg-transparent border-none shadow-none">
       <h3 className="text-2xl font-semibold mb-6 text-gray-900">Recommended Approach:</h3>
       <div className="prose prose-blue max-w-none">
         {response.split('\n').map((paragraph, index) => (
