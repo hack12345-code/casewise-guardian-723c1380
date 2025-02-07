@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Navbar } from "@/components/Navbar"
 import { MessageSquare, Plus, Trash2 } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useToast } from "@/components/ui/use-toast"
 import { DashboardSidebar } from "@/components/DashboardSidebar"
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
@@ -19,23 +19,39 @@ interface Chat {
 const Dashboard = () => {
   const navigate = useNavigate()
   const { toast } = useToast()
-  const [chats, setChats] = useState<Chat[]>([
-    {
-      id: "1",
-      title: "Cardiac Case Discussion",
-      lastMessage: "Patient presents with chest pain...",
-      date: "2024-02-20",
-    },
-    {
-      id: "2",
-      title: "Orthopedic Consultation",
-      lastMessage: "Post-operative care for knee replacement...",
-      date: "2024-02-19",
-    },
-  ])
+  const [chats, setChats] = useState<Chat[]>(() => {
+    const savedChats = localStorage.getItem("chats")
+    return savedChats
+      ? JSON.parse(savedChats)
+      : [
+          {
+            id: "1",
+            title: "Cardiac Case Discussion",
+            lastMessage: "Patient presents with chest pain...",
+            date: "2024-02-20",
+          },
+          {
+            id: "2",
+            title: "Orthopedic Consultation",
+            lastMessage: "Post-operative care for knee replacement...",
+            date: "2024-02-19",
+          },
+        ]
+  })
+
+  useEffect(() => {
+    localStorage.setItem("chats", JSON.stringify(chats))
+  }, [chats])
 
   const handleNewChat = () => {
-    navigate("/chat")
+    const newChat: Chat = {
+      id: Date.now().toString(),
+      title: "New Case",
+      lastMessage: "Start discussing your case...",
+      date: new Date().toISOString().split("T")[0],
+    }
+    setChats([newChat, ...chats])
+    navigate(`/chat/${newChat.id}`)
     toast({
       title: "Starting new case",
       description: "Creating a new case for you...",
@@ -44,6 +60,7 @@ const Dashboard = () => {
 
   const handleDeleteChat = (chatId: string) => {
     setChats(chats.filter((chat) => chat.id !== chatId))
+    localStorage.removeItem(`chat-${chatId}`)
     toast({
       title: "Chat deleted",
       description: "The chat has been removed from your history.",

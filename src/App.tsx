@@ -20,6 +20,7 @@ import PrivacyPolicy from "./pages/PrivacyPolicy"
 import AdminDashboard from "./pages/AdminDashboard"
 import ContactSales from "./pages/ContactSales"
 import { AdminRoute } from "./components/AdminRoute"
+import Chat from "./pages/Chat"
 
 const queryClient = new QueryClient()
 
@@ -44,6 +45,8 @@ const App = () => (
           <Route path="/terms-of-service" element={<TermsOfService />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/contact-sales" element={<ContactSales />} />
+          <Route path="/chat" element={<Chat />} />
+          <Route path="/chat/:chatId" element={<Chat />} />
           <Route
             path="/admin"
             element={
