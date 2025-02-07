@@ -156,8 +156,8 @@ export const Hero = () => {
           "text-center mb-12 max-w-4xl mx-auto transition-all duration-500",
           hasResponse ? "opacity-0 h-0 mb-0 overflow-hidden" : "opacity-100"
         )}>
-          <h1 className="text-5xl font-bold text-[#1a1a1a] mb-6">
-            Protect and <span className="text-blue-600">Guide</span>
+          <h1 className="text-6xl font-bold text-[#1a1a1a] mb-6">
+            <span className="text-7xl">Save</span>
           </h1>
           <h2 className="text-5xl font-bold text-[#1a1a1a] mb-6">
             Your Medical Practice
@@ -195,8 +195,8 @@ export const Hero = () => {
               <div className="p-4 border-t">
                 <AIInput 
                   placeholder="Enter your case details here..."
-                  minHeight={100}
-                  maxHeight={200}
+                  minHeight={150}  // Increased height
+                  maxHeight={250}  // Increased max height
                   onSubmit={handleSubmit}
                 />
               </div>
@@ -216,8 +216,8 @@ export const Hero = () => {
           <div className="mt-12">
             <AIInput 
               placeholder="Enter your case details here... Be specific about the patient's condition, your planned approach, and any concerns."
-              minHeight={200}
-              maxHeight={400}
+              minHeight={250}  // Increased height
+              maxHeight={450}  // Increased max height
               onSubmit={handleSubmit}
               className="max-w-3xl mx-auto"
             />
