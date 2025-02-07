@@ -1,10 +1,8 @@
+
 import {
   Settings,
   Home,
   CreditCard,
-  History,
-  MessageSquare,
-  User,
   HelpCircle,
 } from "lucide-react"
 
@@ -25,24 +23,9 @@ const menuItems = [
     icon: Home,
     url: "/dashboard",
   },
-  {
-    title: "My Cases",
-    icon: MessageSquare,
-    url: "/dashboard/cases",
-  },
-  {
-    title: "History",
-    icon: History,
-    url: "/dashboard/history",
-  },
 ]
 
 const settingsItems = [
-  {
-    title: "Profile",
-    icon: User,
-    url: "/dashboard/profile",
-  },
   {
     title: "Billing",
     icon: CreditCard,
