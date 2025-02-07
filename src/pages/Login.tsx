@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { Footer } from "@/components/Footer";
 
@@ -106,6 +106,13 @@ const Login = () => {
               Continue with Google
             </Button>
           </div>
+
+          <p className="mt-6 text-center text-sm text-gray-600">
+            Don't have an account?{" "}
+            <Link to="/signup" className="text-blue-600 hover:underline font-medium">
+              Sign Up
+            </Link>
+          </p>
         </div>
       </div>
       <Footer />

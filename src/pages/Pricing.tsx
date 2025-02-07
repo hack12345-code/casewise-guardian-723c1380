@@ -4,11 +4,19 @@ import { Footer } from "@/components/Footer";
 import { Check } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Tab } from "@/components/ui/pricing-tab";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useToast } from "@/components/ui/use-toast";
 
 const Pricing = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [selected, setSelected] = useState("monthly");
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    const authStatus = localStorage.getItem("isAuthenticated");
+    setIsAuthenticated(authStatus === "true");
+  }, []);
 
   const getPrice = (basePrice: string | number, billingCycle: string) => {
     if (typeof basePrice === "string") return basePrice;
@@ -32,7 +40,15 @@ const Pricing = () => {
     if (plan.name === "Enterprise") {
       navigate('/contact-sales');
     } else {
-      navigate('/payment', { state: { plan } });
+      if (!isAuthenticated) {
+        toast({
+          title: "Authentication required",
+          description: "Please sign up to continue with the Pro plan",
+        });
+        navigate('/signup');
+      } else {
+        navigate('/payment', { state: { plan } });
+      }
     }
   };
 
