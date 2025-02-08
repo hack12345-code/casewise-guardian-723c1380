@@ -1,4 +1,5 @@
-import { CornerRightUp, Mic } from "lucide-react";
+
+import { CornerRightUp, Mic, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,6 +12,7 @@ interface AIInputProps {
   maxHeight?: number
   onSubmit?: (value: string) => void
   className?: string
+  isLoading?: boolean
 }
 
 export function AIInput({
@@ -19,7 +21,8 @@ export function AIInput({
   minHeight = 52,
   maxHeight = 200,
   onSubmit,
-  className
+  className,
+  isLoading = false
 }: AIInputProps) {
   const { textareaRef, adjustHeight } = useAutoResizeTextarea({
     minHeight,
@@ -65,30 +68,39 @@ export function AIInput({
               handleReset();
             }
           }}
+          disabled={isLoading}
         />
 
-        <div
-          className={cn(
-            "absolute top-1/2 -translate-y-1/2 rounded-xl bg-black/5 dark:bg-white/5 py-1 px-1 transition-all duration-200",
-            inputValue ? "right-10" : "right-3"
-          )}
-        >
-          <Mic className="w-4 h-4 text-black/70 dark:text-white/70" />
-        </div>
-        <button
-          onClick={handleReset}
-          type="button"
-          className={cn(
-            "absolute top-1/2 -translate-y-1/2 right-3",
-            "rounded-xl bg-black/5 dark:bg-white/5 py-1 px-1",
-            "transition-all duration-200",
-            inputValue 
-              ? "opacity-100 scale-100" 
-              : "opacity-0 scale-95 pointer-events-none"
-          )}
-        >
-          <CornerRightUp className="w-4 h-4 text-black/70 dark:text-white/70" />
-        </button>
+        {isLoading ? (
+          <div className="absolute top-1/2 -translate-y-1/2 right-3">
+            <Loader2 className="w-4 h-4 text-black/70 dark:text-white/70 animate-spin" />
+          </div>
+        ) : (
+          <>
+            <div
+              className={cn(
+                "absolute top-1/2 -translate-y-1/2 rounded-xl bg-black/5 dark:bg-white/5 py-1 px-1 transition-all duration-200",
+                inputValue ? "right-10" : "right-3"
+              )}
+            >
+              <Mic className="w-4 h-4 text-black/70 dark:text-white/70" />
+            </div>
+            <button
+              onClick={handleReset}
+              type="button"
+              className={cn(
+                "absolute top-1/2 -translate-y-1/2 right-3",
+                "rounded-xl bg-black/5 dark:bg-white/5 py-1 px-1",
+                "transition-all duration-200",
+                inputValue 
+                  ? "opacity-100 scale-100" 
+                  : "opacity-0 scale-95 pointer-events-none"
+              )}
+            >
+              <CornerRightUp className="w-4 h-4 text-black/70 dark:text-white/70" />
+            </button>
+          </>
+        )}
       </div>
     </div>
   );
