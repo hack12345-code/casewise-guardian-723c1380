@@ -50,7 +50,8 @@ export const Navbar = () => {
     ...item,
     active: location.pathname === item.url || 
             (item.url === "#cases-section" && location.pathname === "/") ||
-            (item.url === "/" && location.pathname === "")
+            (item.url === "/" && location.pathname === "") ||
+            (location.pathname === item.url.toLowerCase())
   }));
 
   const handleHomeNavigation = () => {
@@ -75,7 +76,7 @@ export const Navbar = () => {
         <div className="flex items-center justify-between h-16">
           <Link 
             to="/" 
-            className="text-3xl font-bold cursor-pointer transition-colors bg-gradient-to-r from-[#0A4D68] to-[#9b87f5] bg-clip-text text-transparent"
+            className="text-3xl font-bold cursor-pointer transition-colors bg-gradient-to-r from-[#33C3F0] to-[#9b87f5] bg-clip-text text-transparent"
             onClick={handleHomeNavigation}
           >
             Saver
