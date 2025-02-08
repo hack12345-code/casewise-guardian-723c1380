@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 export const Footer = () => {
   const links = {
     company: ["Home", "Cases", "Support"],
-    resources: ["Pricing", "Blog"],
+    resources: [],
     legal: []
   };
 
@@ -15,6 +15,11 @@ export const Footer = () => {
     if (casesSection) {
       casesSection.scrollIntoView({ behavior: 'smooth' });
     }
+  };
+
+  // Function to scroll to top after navigation
+  const handleNavigationClick = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
@@ -28,32 +33,58 @@ export const Footer = () => {
               Against Malpractice & Seamless Report Writing.
             </p>
           </div>
-          {Object.entries(links).map(([category, items]) => (
-            items.length > 0 && (
-              <div key={category}>
-                <h3 className="text-white font-semibold uppercase mb-4">{category}</h3>
-                <ul className="space-y-2">
-                  {items.map((item) => (
-                    <li key={item}>
-                      <Link 
-                        to={
-                          item === "Home" ? "/" :
-                          item === "Cases" ? "#cases-section" :
-                          item === "Support" ? "/support" :
-                          item === "Pricing" ? "/pricing" :
-                          item.toLowerCase() === "blog" ? "/blog" : "#"
-                        } 
-                        onClick={item === "Cases" ? handleCasesClick : undefined}
-                        className="text-gray-400 hover:text-white transition-colors"
-                      >
-                        {item}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )
-          ))}
+          <div className="flex justify-between">
+            {/* Company Links */}
+            <div>
+              <h3 className="text-white font-semibold uppercase mb-4">Company</h3>
+              <ul className="space-y-2">
+                {links.company.map((item) => (
+                  <li key={item}>
+                    <Link 
+                      to={
+                        item === "Home" ? "/" :
+                        item === "Cases" ? "#cases-section" :
+                        item === "Support" ? "/support" : "#"
+                      } 
+                      onClick={(e) => {
+                        if (item === "Cases") {
+                          handleCasesClick(e);
+                        } else {
+                          handleNavigationClick();
+                        }
+                      }}
+                      className="text-gray-400 hover:text-white transition-colors"
+                    >
+                      {item}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            {/* Additional Links without heading */}
+            <div>
+              <ul className="space-y-2 mt-10">
+                <li>
+                  <Link 
+                    to="/pricing" 
+                    onClick={handleNavigationClick}
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
+                    Pricing
+                  </Link>
+                </li>
+                <li>
+                  <Link 
+                    to="/blog" 
+                    onClick={handleNavigationClick}
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
+                    Blog
+                  </Link>
+                </li>
+              </ul>
+            </div>
+          </div>
         </div>
         <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
           <div className="flex items-center gap-2">
@@ -61,8 +92,20 @@ export const Footer = () => {
             <p>Saver 2025. All rights reserved.</p>
           </div>
           <div className="flex gap-6 mt-4 md:mt-0">
-            <Link to="/privacy-policy" className="hover:text-white transition-colors">Privacy Policy</Link>
-            <Link to="/terms-of-service" className="hover:text-white transition-colors">Terms of Service</Link>
+            <Link 
+              to="/privacy-policy" 
+              onClick={handleNavigationClick}
+              className="hover:text-white transition-colors"
+            >
+              Privacy Policy
+            </Link>
+            <Link 
+              to="/terms-of-service" 
+              onClick={handleNavigationClick}
+              className="hover:text-white transition-colors"
+            >
+              Terms of Service
+            </Link>
           </div>
         </div>
       </div>
