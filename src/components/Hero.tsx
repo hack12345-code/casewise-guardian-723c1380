@@ -1,4 +1,3 @@
-
 import { AIInput } from "./ui/ai-input";
 import { Response } from "./Response";
 import { Sectors } from "./Sectors";
@@ -182,30 +181,32 @@ export const Hero = () => {
         </div>
         
         {hasResponse ? (
-          <div className="flex h-[calc(100vh-200px)] gap-4">
-            <div className="w-1/3 flex flex-col bg-white rounded-lg shadow-sm border">
-              <div className="flex-grow overflow-y-auto p-4 space-y-4">
-                {prompts.map((prompt, index) => (
-                  <div key={index} className="p-3 bg-gray-50 rounded-lg">
-                    <div className="flex justify-between items-center mb-2">
-                      <h4 className="text-sm font-medium text-gray-900">{prompt.caseTitle}</h4>
+          <div className="grid grid-cols-3 gap-8">
+            <div className="col-span-1">
+              <div className="bg-white rounded-lg shadow-sm border h-[calc(100vh-16rem)]">
+                <div className="flex-grow overflow-y-auto p-4 space-y-4">
+                  {prompts.map((prompt, index) => (
+                    <div key={index} className="p-3 bg-gray-50 rounded-lg">
+                      <div className="flex justify-between items-center mb-2">
+                        <h4 className="text-sm font-medium text-gray-900">{prompt.caseTitle}</h4>
+                      </div>
+                      <p className="text-sm text-gray-700">{prompt.text}</p>
                     </div>
-                    <p className="text-sm text-gray-700">{prompt.text}</p>
-                  </div>
-                ))}
-              </div>
-              
-              <div className="p-4 border-t">
-                <AIInput 
-                  placeholder="Enter your case details here..."
-                  minHeight={150}
-                  maxHeight={250}
-                  onSubmit={handleSubmit}
-                />
+                  ))}
+                </div>
+                
+                <div className="p-4 border-t">
+                  <AIInput 
+                    placeholder="Enter your case details here..."
+                    minHeight={150}
+                    maxHeight={250}
+                    onSubmit={handleSubmit}
+                  />
+                </div>
               </div>
             </div>
 
-            <div className="w-2/3 bg-white rounded-lg shadow-sm border p-6 overflow-y-auto">
+            <div className="col-span-2 bg-white rounded-lg shadow-sm border p-6 h-[calc(100vh-16rem)] overflow-y-auto">
               <Response 
                 response={response}
                 prompt={currentPrompt}
@@ -257,7 +258,6 @@ export const Hero = () => {
               </div>
             </div>
 
-            {/* New Demo Video Section */}
             <div className="mt-20 mb-20">
               <div className="max-w-5xl mx-auto">
                 <div className="flex justify-center gap-4 mb-8">
@@ -280,7 +280,6 @@ export const Hero = () => {
                 </div>
                 
                 <div className="aspect-video w-full bg-white rounded-xl shadow-lg overflow-hidden">
-                  {/* Replace the src with your actual video URLs */}
                   {demoType === 'regular' ? (
                     <iframe 
                       className="w-full h-full"
@@ -323,4 +322,3 @@ export const Hero = () => {
     </div>
   );
 };
-
