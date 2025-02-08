@@ -20,13 +20,21 @@ export const Navbar = () => {
   const { toast } = useToast();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userName, setUserName] = useState("");
+  const [activeTab, setActiveTab] = useState("Home");
 
   useEffect(() => {
     const authStatus = localStorage.getItem("isAuthenticated");
     const storedUserName = localStorage.getItem("userName");
     setIsAuthenticated(authStatus === "true");
     setUserName(storedUserName || "");
-  }, []);
+
+    // Set active tab based on current path
+    const path = location.pathname;
+    if (path === "/") setActiveTab("Home");
+    else if (path === "/pricing") setActiveTab("Pricing");
+    else if (path === "/support") setActiveTab("Support");
+    else if (path.includes("cases")) setActiveTab("Cases");
+  }, [location.pathname]);
 
   const handleCasesClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -48,14 +56,12 @@ export const Navbar = () => {
     { name: "Support", url: "/support", icon: MessageSquare },
   ].map(item => ({
     ...item,
-    active: location.pathname === item.url || 
-            (item.url === "#cases-section" && location.pathname === "/") ||
-            (item.url === "/" && location.pathname === "") ||
-            (location.pathname === item.url.toLowerCase())
+    active: activeTab === item.name
   }));
 
   const handleHomeNavigation = () => {
     navigate('/');
+    setActiveTab("Home");
   };
 
   const handleLogout = () => {
