@@ -38,6 +38,7 @@ export const Navbar = () => {
 
   const handleCasesClick = (e: React.MouseEvent) => {
     e.preventDefault();
+    setActiveTab("Cases");
     const casesSection = document.querySelector('#cases-section');
     if (casesSection) {
       casesSection.scrollIntoView({ behavior: 'smooth' });
@@ -52,16 +53,26 @@ export const Navbar = () => {
       icon: FileText,
       onClick: handleCasesClick 
     },
-    { name: "Pricing", url: "/pricing", icon: DollarSign },
-    { name: "Support", url: "/support", icon: MessageSquare },
+    { 
+      name: "Pricing", 
+      url: "/pricing", 
+      icon: DollarSign,
+      onClick: () => setActiveTab("Pricing")
+    },
+    { 
+      name: "Support", 
+      url: "/support", 
+      icon: MessageSquare,
+      onClick: () => setActiveTab("Support")
+    },
   ].map(item => ({
     ...item,
     active: activeTab === item.name
   }));
 
   const handleHomeNavigation = () => {
-    navigate('/');
     setActiveTab("Home");
+    navigate('/');
   };
 
   const handleLogout = () => {
