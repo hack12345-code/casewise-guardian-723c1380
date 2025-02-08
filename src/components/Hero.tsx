@@ -122,7 +122,17 @@ export const Hero = () => {
       
       const newPrompt: Prompt = {
         text: caseDetails,
-        response: "",
+        response: `Thank you for sharing your case. I'm analyzing the details and will provide professional guidance shortly.
+
+Based on the information provided, here are my initial recommendations:
+
+1. Document everything thoroughly
+2. Maintain clear communication with the patient
+3. Follow standard protocols
+4. Consult with colleagues if needed
+5. Keep detailed records of all decisions
+
+Would you like me to elaborate on any of these points or provide more specific guidance?`,
         caseTitle: `Case ${caseCounter}`
       };
       
@@ -183,12 +193,12 @@ export const Hero = () => {
         </div>
         
         {hasResponse ? (
-          <div className="flex min-h-[calc(100vh-4rem)] pt-16">
-            <main className="flex-1 p-8">
+          <div className="flex min-h-[calc(100vh-4rem)] pt-8">
+            <main className="flex-1">
               <div className="grid grid-cols-3 gap-8">
                 {/* Response Section (1/3) */}
                 <div className="col-span-1">
-                  <Card className="h-[calc(100vh-16rem)] p-6 overflow-y-auto">
+                  <Card className="h-[calc(100vh-8rem)] p-6 overflow-y-auto">
                     <Response
                       response={
                         prompts.length > 0
@@ -204,21 +214,26 @@ export const Hero = () => {
 
                 {/* Chat Messages Section (2/3) */}
                 <div className="col-span-2">
-                  <Card className="h-[calc(100vh-16rem)]">
+                  <Card className="h-[calc(100vh-8rem)]">
                     <div className="h-full flex flex-col">
                       <div className="flex-1 overflow-y-auto p-6 space-y-4">
                         {prompts.map((prompt, index) => (
-                          <div
-                            key={index}
-                            className={`flex justify-end`}
-                          >
-                            <div
-                              className="max-w-[80%] p-4 rounded-lg bg-blue-600 text-white"
-                            >
-                              <p className="text-sm">{prompt.text}</p>
-                              <span className="text-xs opacity-70 mt-2 block">
-                                {new Date().toLocaleTimeString()}
-                              </span>
+                          <div key={index} className="flex flex-col gap-4">
+                            <div className="flex justify-end">
+                              <div className="max-w-[80%] p-4 rounded-lg bg-blue-600 text-white">
+                                <p className="text-sm whitespace-pre-wrap">{prompt.text}</p>
+                                <span className="text-xs opacity-70 mt-2 block">
+                                  {new Date().toLocaleTimeString()}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex justify-start">
+                              <div className="max-w-[80%] p-4 rounded-lg bg-gray-100">
+                                <p className="text-sm whitespace-pre-wrap">{prompt.response}</p>
+                                <span className="text-xs text-gray-500 mt-2 block">
+                                  {new Date().toLocaleTimeString()}
+                                </span>
+                              </div>
                             </div>
                           </div>
                         ))}
@@ -229,6 +244,7 @@ export const Hero = () => {
                           minHeight={100}
                           maxHeight={200}
                           onSubmit={handleSubmit}
+                          isLoading={isLoading}
                         />
                       </div>
                     </div>
@@ -344,3 +360,4 @@ export const Hero = () => {
     </div>
   );
 };
+
