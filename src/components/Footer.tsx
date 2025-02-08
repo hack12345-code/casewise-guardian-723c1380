@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 
 export const Footer = () => {
   const links = {
-    company: ["Home", "Cases", "Support"],
+    company: ["Home", "Cases", "Support", "Pricing", "Blog"],
     resources: [],
     legal: []
   };
@@ -33,8 +33,7 @@ export const Footer = () => {
               Against Malpractice & Seamless Report Writing.
             </p>
           </div>
-          <div className="flex justify-between">
-            {/* Company Links */}
+          <div>
             <div>
               <h3 className="text-white font-semibold uppercase mb-4">Company</h3>
               <ul className="space-y-2">
@@ -44,7 +43,9 @@ export const Footer = () => {
                       to={
                         item === "Home" ? "/" :
                         item === "Cases" ? "#cases-section" :
-                        item === "Support" ? "/support" : "#"
+                        item === "Support" ? "/support" :
+                        item === "Pricing" ? "/pricing" :
+                        item === "Blog" ? "/blog" : "#"
                       } 
                       onClick={(e) => {
                         if (item === "Cases") {
@@ -59,29 +60,6 @@ export const Footer = () => {
                     </Link>
                   </li>
                 ))}
-              </ul>
-            </div>
-            {/* Additional Links without heading */}
-            <div>
-              <ul className="space-y-2 mt-10">
-                <li>
-                  <Link 
-                    to="/pricing" 
-                    onClick={handleNavigationClick}
-                    className="text-gray-400 hover:text-white transition-colors"
-                  >
-                    Pricing
-                  </Link>
-                </li>
-                <li>
-                  <Link 
-                    to="/blog" 
-                    onClick={handleNavigationClick}
-                    className="text-gray-400 hover:text-white transition-colors"
-                  >
-                    Blog
-                  </Link>
-                </li>
               </ul>
             </div>
           </div>

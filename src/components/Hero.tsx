@@ -1,4 +1,3 @@
-
 import { AIInput } from "./ui/ai-input";
 import { Response } from "./Response";
 import { Sectors } from "./Sectors";
@@ -298,25 +297,39 @@ Would you like me to elaborate on any of these points or provide more specific g
 
             <div className="mt-20 mb-20">
               <div className="max-w-5xl mx-auto">
-                <div className="flex justify-center gap-4 mb-8">
-                  <Button
-                    variant={demoType === 'regular' ? 'default' : 'outline'}
-                    size="lg"
-                    onClick={() => setDemoType('regular')}
-                    className="min-w-[150px]"
-                  >
-                    Regular Demo
-                  </Button>
-                  <Button
-                    variant={demoType === 'report' ? 'default' : 'outline'}
-                    size="lg"
-                    onClick={() => setDemoType('report')}
-                    className="min-w-[150px]"
-                  >
-                    Report Demo
-                  </Button>
+                <div className="flex justify-center mb-12">
+                  <div className="flex w-fit rounded-full bg-muted p-1">
+                    <button
+                      onClick={() => setDemoType('regular')}
+                      className={cn(
+                        "relative px-6 py-2 text-sm transition-colors rounded-full",
+                        demoType === 'regular'
+                          ? "text-white"
+                          : "text-muted-foreground hover:text-foreground"
+                      )}
+                    >
+                      <span className="relative z-10">Regular Demo</span>
+                      {demoType === 'regular' && (
+                        <span className="absolute inset-0 bg-gradient-to-r from-blue-600 to-blue-500 rounded-full" />
+                      )}
+                    </button>
+                    <button
+                      onClick={() => setDemoType('report')}
+                      className={cn(
+                        "relative px-6 py-2 text-sm transition-colors rounded-full",
+                        demoType === 'report'
+                          ? "text-white"
+                          : "text-muted-foreground hover:text-foreground"
+                      )}
+                    >
+                      <span className="relative z-10">Report Demo</span>
+                      {demoType === 'report' && (
+                        <span className="absolute inset-0 bg-gradient-to-r from-blue-600 to-blue-500 rounded-full" />
+                      )}
+                    </button>
+                  </div>
                 </div>
-                
+
                 <div className="aspect-video w-full bg-white rounded-xl shadow-lg overflow-hidden">
                   {demoType === 'regular' ? (
                     <iframe 
@@ -360,4 +373,3 @@ Would you like me to elaborate on any of these points or provide more specific g
     </div>
   );
 };
-
