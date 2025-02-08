@@ -1,3 +1,4 @@
+
 import { HelpCircle } from "lucide-react";
 import {
   Accordion,
@@ -13,16 +14,16 @@ export const FAQs = () => {
       answer: "Our AI system analyzes your input using advanced medical knowledge bases and provides evidence-based recommendations while maintaining compliance with medical standards."
     },
     {
-      question: "Is my medical data secure?",
-      answer: "Yes, we implement state-of-the-art encryption and comply with HIPAA regulations to ensure your medical data remains completely secure and confidential."
+      question: "Is the medical data secure?",
+      answer: "Yes, your medical data is secure. We follow HIPAA and GDPR standards."
     },
     {
-      question: "Can I integrate this with my existing systems?",
-      answer: "Yes, our platform offers API integration capabilities and can be seamlessly integrated with most major EMR/EHR systems."
+      question: "Do I need to enter my patient's identification information?",
+      answer: "No, you don't need to enter any patient identification. Our platform ensures full privacy."
     },
     {
-      question: "What kind of support do you provide?",
-      answer: "We offer 24/7 technical support, regular training sessions, and dedicated account managers for enterprise clients."
+      question: "Can the AI help me with report writing?",
+      answer: <>Sure! If you type <span className="text-blue-600 font-semibold">report:</span> followed by your case information, it will generate a full medical report or improve an existing one.</>
     }
   ];
 
