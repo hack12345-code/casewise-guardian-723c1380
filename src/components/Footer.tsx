@@ -4,7 +4,8 @@ import { Link } from "react-router-dom";
 
 export const Footer = () => {
   const links = {
-    company: ["Home", "Cases", "Support", "Pricing", "Blog"],
+    company: ["Home", "Cases", "Support"],
+    resources: ["Pricing", "Blog"],
     legal: []
   };
 
@@ -22,7 +23,10 @@ export const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
           <div>
             <Link to="/" className="text-2xl font-bold text-white mb-4 block">Saver</Link>
-            <p className="text-gray-400 mt-4">Empowering healthcare professionals with AI-driven insights and risk management.</p>
+            <p className="text-gray-400 mt-4">
+              Empowering Healthcare Professionals with AI-Driven Data<br />
+              Against Malpractice & Seamless Report Writing.
+            </p>
           </div>
           {Object.entries(links).map(([category, items]) => (
             items.length > 0 && (
