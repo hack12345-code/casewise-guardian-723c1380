@@ -21,20 +21,74 @@ const Support = () => {
         isUser: false 
       }
     ]);
+
+    // Create a new support chat in localStorage
+    const newChat = {
+      id: Date.now().toString(),
+      userId: "user-" + Date.now(), // Simple user ID generation
+      userName: "Guest User",
+      message: "Started a new chat",
+      timestamp: new Date().toISOString(),
+      status: "unread" as const,
+      messages: [{
+        id: Date.now().toString(),
+        text: "Hello! How can I help you today?",
+        sender: "admin" as const,
+        timestamp: new Date().toISOString(),
+      }]
+    };
+
+    const existingMessages = localStorage.getItem("support-messages");
+    const supportMessages = existingMessages ? JSON.parse(existingMessages) : [];
+    supportMessages.push(newChat);
+    localStorage.setItem("support-messages", JSON.stringify(supportMessages));
   };
 
   const handleSendMessage = () => {
     if (!message.trim()) return;
     
-    setMessages(prev => [...prev, { text: message, isUser: true }]);
+    // Add message to chat window
+    const newUserMessage = { text: message, isUser: true };
+    setMessages(prev => [...prev, newUserMessage]);
     setMessage("");
     
-    // Simulate customer support response
+    // Update support messages in localStorage
+    const existingMessages = localStorage.getItem("support-messages");
+    if (existingMessages) {
+      const supportMessages = JSON.parse(existingMessages);
+      const currentChat = supportMessages[supportMessages.length - 1];
+      
+      currentChat.messages.push({
+        id: Date.now().toString(),
+        text: message,
+        sender: "user" as const,
+        timestamp: new Date().toISOString(),
+      });
+
+      currentChat.message = message; // Update last message preview
+      localStorage.setItem("support-messages", JSON.stringify(supportMessages));
+    }
+
+    // Simulate admin response after a delay
     setTimeout(() => {
-      setMessages(prev => [...prev, { 
-        text: "Thank you for your message. One of our support agents will be with you shortly.", 
-        isUser: false 
-      }]);
+      const autoResponse = {
+        text: "Thank you for your message. Our support team will get back to you shortly.",
+        isUser: false
+      };
+      setMessages(prev => [...prev, autoResponse]);
+
+      // Update support messages with auto-response
+      const updatedMessages = JSON.parse(localStorage.getItem("support-messages") || "[]");
+      const currentChat = updatedMessages[updatedMessages.length - 1];
+      
+      currentChat.messages.push({
+        id: Date.now().toString(),
+        text: autoResponse.text,
+        sender: "admin" as const,
+        timestamp: new Date().toISOString(),
+      });
+
+      localStorage.setItem("support-messages", JSON.stringify(updatedMessages));
     }, 1000);
   };
 
