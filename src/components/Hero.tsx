@@ -153,20 +153,20 @@ export const Hero = () => {
   return (
     <div className="min-h-screen bg-[#f8f9ff]">
       <div className={cn(
-        "container mx-auto px-4 py-6 transition-all duration-500 ease-in-out", // Changed py-12 to py-6
+        "container mx-auto px-4 py-6 transition-all duration-500 ease-in-out",
         hasResponse ? "flex flex-col" : ""
       )}>
         <div className={cn(
-          "text-center mb-8 max-w-4xl mx-auto transition-all duration-500", // Changed mb-12 to mb-8
+          "text-center mb-8 max-w-4xl mx-auto transition-all duration-500",
           hasResponse ? "opacity-0 h-0 mb-0 overflow-hidden" : "opacity-100"
         )}>
-          <h1 className="text-6xl font-bold text-[#1a1a1a] mb-4"> {/* Changed mb-6 to mb-4 */}
+          <h1 className="text-6xl font-bold text-[#1a1a1a] mb-4">
             <span className="text-7xl">Save</span>
           </h1>
-          <h2 className="text-5xl font-bold text-[#1a1a1a] mb-4"> {/* Changed mb-6 to mb-4 */}
+          <h2 className="text-5xl font-bold text-[#1a1a1a] mb-4">
             Your Medical Practice
           </h2>
-          <p className="text-xl text-gray-600 mb-6"> {/* Changed mb-8 to mb-6 */}
+          <p className="text-xl text-gray-600 mb-6">
             Get AI-powered guidance on preventing malpractice risks. Enter your case details
             and receive professional recommendations for safer patient care.
           </p>
@@ -225,7 +225,7 @@ export const Hero = () => {
             </div>
 
             <div className="mt-12 text-center">
-              <p className="text-sm text-gray-500 mb-6">TRUSTED BY LEADING HEALTHCARE INSTITUTIONS</p>
+              <p className="text-sm text-gray-500 mb-6">Following industry-leading standards</p>
               <div className="flex justify-between items-center px-16 py-8 bg-white/50 rounded-lg backdrop-blur-sm">
                 <img 
                   src="/lovable-uploads/1510baf5-fa8b-42a8-9f74-ef904389fa4a.png" 
