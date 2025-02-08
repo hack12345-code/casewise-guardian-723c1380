@@ -4,39 +4,41 @@ import { Link } from "react-router-dom";
 
 export const Footer = () => {
   const links = {
-    product: ["Features", "Security", "Pricing", "Resources", "Blog"],
-    company: ["About", "Careers", "Partners", "Contact"],
-    legal: ["Privacy Policy", "Terms of Service", "License"]
+    product: ["Pricing", "Blog"],
+    company: [],
+    legal: []
   };
 
   return (
     <footer className="bg-gray-900 text-gray-300">
       <div className="container mx-auto px-4 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
           <div>
             <Link to="/" className="text-2xl font-bold text-white mb-4 block">Saver</Link>
             <p className="text-gray-400 mt-4">Empowering healthcare professionals with AI-driven insights and risk management.</p>
           </div>
           {Object.entries(links).map(([category, items]) => (
-            <div key={category}>
-              <h3 className="text-white font-semibold uppercase mb-4">{category}</h3>
-              <ul className="space-y-2">
-                {items.map((item) => (
-                  <li key={item}>
-                    <Link 
-                      to={
-                        item === "Privacy Policy" ? "/privacy-policy" :
-                        item === "Terms of Service" ? "/terms-of-service" :
-                        item.toLowerCase() === "blog" ? "/blog" : "#"
-                      } 
-                      className="text-gray-400 hover:text-white transition-colors"
-                    >
-                      {item}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            items.length > 0 && (
+              <div key={category}>
+                <h3 className="text-white font-semibold uppercase mb-4">{category}</h3>
+                <ul className="space-y-2">
+                  {items.map((item) => (
+                    <li key={item}>
+                      <Link 
+                        to={
+                          item === "Privacy Policy" ? "/privacy-policy" :
+                          item === "Terms of Service" ? "/terms-of-service" :
+                          item.toLowerCase() === "blog" ? "/blog" : "#"
+                        } 
+                        className="text-gray-400 hover:text-white transition-colors"
+                      >
+                        {item}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )
           ))}
         </div>
         <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
