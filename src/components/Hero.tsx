@@ -9,6 +9,7 @@ import { Cases } from "./Cases";
 import { FAQs } from "./FAQs";
 import { Footer } from "./Footer";
 import { Button } from "./ui/button";
+import { Card } from "@/components/ui/card";
 
 interface Prompt {
   text: string;
@@ -181,39 +182,59 @@ export const Hero = () => {
         </div>
         
         {hasResponse ? (
-          <div className="grid grid-cols-3 gap-8">
-            <div className="col-span-1">
-              <div className="bg-white rounded-lg shadow-sm border h-[calc(100vh-16rem)]">
-                <div className="flex-grow overflow-y-auto p-4 space-y-4">
-                  {prompts.map((prompt, index) => (
-                    <div key={index} className="p-3 bg-gray-50 rounded-lg">
-                      <div className="flex justify-between items-center mb-2">
-                        <h4 className="text-sm font-medium text-gray-900">{prompt.caseTitle}</h4>
-                      </div>
-                      <p className="text-sm text-gray-700">{prompt.text}</p>
-                    </div>
-                  ))}
+          <div className="flex min-h-[calc(100vh-4rem)] pt-16">
+            <main className="flex-1 p-8">
+              <div className="grid grid-cols-3 gap-8">
+                {/* Response Section (1/3) */}
+                <div className="col-span-1">
+                  <Card className="h-[calc(100vh-16rem)] p-6 overflow-y-auto">
+                    <Response
+                      response={
+                        prompts.length > 0
+                          ? prompts[prompts.length - 1].response
+                          : ""
+                      }
+                      prompt={prompts.length > 0 ? prompts[prompts.length - 1].text : ""}
+                      caseTitle={prompts[prompts.length - 1]?.caseTitle}
+                      onRename={handleRename}
+                    />
+                  </Card>
                 </div>
-                
-                <div className="p-4 border-t">
-                  <AIInput 
-                    placeholder="Enter your case details here..."
-                    minHeight={150}
-                    maxHeight={250}
-                    onSubmit={handleSubmit}
-                  />
+
+                {/* Chat Messages Section (2/3) */}
+                <div className="col-span-2">
+                  <Card className="h-[calc(100vh-16rem)]">
+                    <div className="h-full flex flex-col">
+                      <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                        {prompts.map((prompt, index) => (
+                          <div
+                            key={index}
+                            className={`flex justify-end`}
+                          >
+                            <div
+                              className="max-w-[80%] p-4 rounded-lg bg-blue-600 text-white"
+                            >
+                              <p className="text-sm">{prompt.text}</p>
+                              <span className="text-xs opacity-70 mt-2 block">
+                                {new Date().toLocaleTimeString()}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="p-4 border-t">
+                        <AIInput
+                          placeholder="Enter your case details here..."
+                          minHeight={100}
+                          maxHeight={200}
+                          onSubmit={handleSubmit}
+                        />
+                      </div>
+                    </div>
+                  </Card>
                 </div>
               </div>
-            </div>
-
-            <div className="col-span-2 bg-white rounded-lg shadow-sm border p-6 h-[calc(100vh-16rem)] overflow-y-auto">
-              <Response 
-                response={response}
-                prompt={currentPrompt}
-                caseTitle={prompts[prompts.length - 1]?.caseTitle}
-                onRename={(newTitle) => handleRename(prompts.length - 1, newTitle)}
-              />
-            </div>
+            </main>
           </div>
         ) : (
           <>
