@@ -1,3 +1,4 @@
+
 import { AIInput } from "./ui/ai-input";
 import { Response } from "./Response";
 import { Sectors } from "./Sectors";
@@ -196,7 +197,7 @@ export const Hero = () => {
                       }
                       prompt={prompts.length > 0 ? prompts[prompts.length - 1].text : ""}
                       caseTitle={prompts[prompts.length - 1]?.caseTitle}
-                      onRename={handleRename}
+                      onRename={(newTitle) => handleRename(prompts.length - 1, newTitle)}
                     />
                   </Card>
                 </div>
