@@ -10,7 +10,6 @@ import { DashboardSidebar } from "@/components/DashboardSidebar"
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 
 const DashboardSettings = () => {
-  const [darkMode, setDarkMode] = useState(false)
   const [email] = useState("user@example.com")
   const [notifications, setNotifications] = useState(true)
   const { toast } = useToast()
@@ -22,31 +21,26 @@ const DashboardSettings = () => {
     })
   }
 
-  const handleDarkModeToggle = () => {
-    setDarkMode(!darkMode)
-    document.documentElement.classList.toggle('dark')
-  }
-
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       <Navbar />
       <SidebarProvider>
         <div className="flex min-h-[calc(100vh-4rem)] pt-16">
           <DashboardSidebar />
           <main className="flex-1 p-8">
             <div className="max-w-4xl mx-auto">
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">
+              <h1 className="text-3xl font-bold text-gray-900 mb-8">
                 Settings
               </h1>
               
               <div className="space-y-6">
-                <Card className="p-6 border-2 border-blue-100 dark:border-blue-900">
-                  <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">
+                <Card className="p-6 border-2 border-blue-100">
+                  <h2 className="text-xl font-semibold mb-4 text-gray-800">
                     Account Settings
                   </h2>
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
                         Email Address
                       </label>
                       <Input
@@ -60,34 +54,16 @@ const DashboardSettings = () => {
                   </div>
                 </Card>
 
-                <Card className="p-6 border-2 border-blue-100 dark:border-blue-900">
-                  <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">
-                    Appearance
-                  </h2>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium text-gray-800 dark:text-white">Dark Mode</p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        Toggle dark mode on or off
-                      </p>
-                    </div>
-                    <Switch
-                      checked={darkMode}
-                      onCheckedChange={handleDarkModeToggle}
-                    />
-                  </div>
-                </Card>
-
-                <Card className="p-6 border-2 border-blue-100 dark:border-blue-900">
-                  <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">
+                <Card className="p-6 border-2 border-blue-100">
+                  <h2 className="text-xl font-semibold mb-4 text-gray-800">
                     Notifications
                   </h2>
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium text-gray-800 dark:text-white">
+                      <p className="font-medium text-gray-800">
                         Email Notifications
                       </p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                      <p className="text-sm text-gray-500">
                         Receive email updates about your account
                       </p>
                     </div>

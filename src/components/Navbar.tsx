@@ -76,7 +76,7 @@ export const Navbar = () => {
         <div className="flex items-center justify-between h-16">
           <Link 
             to="/" 
-            className="text-3xl font-bold cursor-pointer transition-colors bg-gradient-to-r from-[#33C3F0] to-[#9b87f5] bg-clip-text text-transparent"
+            className="text-3xl font-bold cursor-pointer bg-gradient-to-r from-[#1877F2] to-[#9b87f5] bg-clip-text text-transparent"
             onClick={handleHomeNavigation}
           >
             Saver
