@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster"
 import { Toaster as Sonner } from "@/components/ui/sonner"
 import { TooltipProvider } from "@/components/ui/tooltip"
@@ -21,6 +20,7 @@ import AdminDashboard from "./pages/AdminDashboard"
 import ContactSales from "./pages/ContactSales"
 import { AdminRoute } from "./components/AdminRoute"
 import Chat from "./pages/Chat"
+import BlogPost from "./pages/BlogPost"
 
 const queryClient = new QueryClient()
 
@@ -37,6 +37,7 @@ const App = () => (
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/blog" element={<Blog />} />
+          <Route path="/blog/:id" element={<BlogPost />} />
           <Route path="/support" element={<Support />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/dashboard/cases" element={<Dashboard />} />

@@ -1,5 +1,8 @@
+
 import { Book } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
+import { Link } from "react-router-dom";
 
 const Blog = () => {
   const blogPosts = [
@@ -27,9 +30,9 @@ const Blog = () => {
   ];
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen flex flex-col">
       <Navbar />
-      <div className="pt-24 pb-16">
+      <div className="flex-grow pt-24 pb-16">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-center gap-3 mb-12">
             <Book className="w-8 h-8 text-blue-600" />
@@ -38,7 +41,8 @@ const Blog = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
             {blogPosts.map((post) => (
-              <div 
+              <Link 
+                to={`/blog/${post.id}`} 
                 key={post.id}
                 className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
               >
@@ -54,11 +58,12 @@ const Blog = () => {
                     <span>{post.readTime}</span>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 };

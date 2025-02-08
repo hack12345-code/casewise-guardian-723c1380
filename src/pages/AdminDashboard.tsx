@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -95,6 +94,16 @@ const AdminDashboard = () => {
   const [selectedChat, setSelectedChat] = useState<SupportMessage | null>(null);
   const [isManageDialogOpen, setIsManageDialogOpen] = useState(false);
   const [isChatDialogOpen, setIsChatDialogOpen] = useState(false);
+  const [blogPosts, setBlogPosts] = useState([
+    {
+      id: 1,
+      title: "Understanding Medical Risk Management",
+      excerpt: "Learn about the key principles of managing medical risks in modern healthcare practices.",
+      date: "2024-03-15",
+      readTime: "5 min read"
+    },
+    // ... other blog posts
+  ]);
   const { toast } = useToast();
 
   const handleManageUser = (user: User) => {
@@ -200,6 +209,21 @@ const AdminDashboard = () => {
     });
   };
 
+  const handleAddBlogPost = () => {
+    toast({
+      title: "Blog post created",
+      description: "Your new blog post has been created successfully.",
+    });
+  };
+
+  const handleDeleteBlogPost = (postId: number) => {
+    setBlogPosts(blogPosts.filter(post => post.id !== postId));
+    toast({
+      title: "Blog post deleted",
+      description: "The blog post has been deleted successfully.",
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
@@ -257,6 +281,7 @@ const AdminDashboard = () => {
             <TabsTrigger value="users">Users</TabsTrigger>
             <TabsTrigger value="enterprise">Enterprise Leads</TabsTrigger>
             <TabsTrigger value="support">Support Messages</TabsTrigger>
+            <TabsTrigger value="blog">Blog Posts</TabsTrigger>
           </TabsList>
 
           <TabsContent value="users" className="space-y-4">
@@ -368,7 +393,7 @@ const AdminDashboard = () => {
                           {chat.messages[chat.messages.length - 1]?.text}
                         </TableCell>
                         <TableCell>
-                          {new Date(chat.messages[chat.messages.length - 1]?.timestamp).toLocaleString()}
+                          {new Date(chat.messages[chat.messages.length - 1]?.timestamp).toLocaleTimeString()}
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
@@ -399,6 +424,52 @@ const AdminDashboard = () => {
                           >
                             Open Chat
                           </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="blog" className="space-y-4">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle>Blog Posts</CardTitle>
+                <Button onClick={handleAddBlogPost}>Add New Post</Button>
+              </CardHeader>
+              <CardContent className="p-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Title</TableHead>
+                      <TableHead>Excerpt</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Read Time</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {blogPosts.map((post) => (
+                      <TableRow key={post.id}>
+                        <TableCell className="font-medium">{post.title}</TableCell>
+                        <TableCell className="max-w-xs truncate">{post.excerpt}</TableCell>
+                        <TableCell>{new Date(post.date).toLocaleDateString()}</TableCell>
+                        <TableCell>{post.readTime}</TableCell>
+                        <TableCell>
+                          <div className="flex gap-2">
+                            <Button variant="outline" size="sm">
+                              Edit
+                            </Button>
+                            <Button 
+                              variant="destructive" 
+                              size="sm"
+                              onClick={() => handleDeleteBlogPost(post.id)}
+                            >
+                              Delete
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
