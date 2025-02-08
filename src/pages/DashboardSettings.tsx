@@ -11,7 +11,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 
 const DashboardSettings = () => {
   const [darkMode, setDarkMode] = useState(false)
-  const [email, setEmail] = useState("user@example.com")
+  const [email] = useState("user@example.com")
   const [notifications, setNotifications] = useState(true)
   const { toast } = useToast()
 
@@ -24,12 +24,11 @@ const DashboardSettings = () => {
 
   const handleDarkModeToggle = () => {
     setDarkMode(!darkMode)
-    // Here you would implement the actual dark mode toggle
     document.documentElement.classList.toggle('dark')
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
       <Navbar />
       <SidebarProvider>
         <div className="flex min-h-[calc(100vh-4rem)] pt-16">
@@ -41,8 +40,8 @@ const DashboardSettings = () => {
               </h1>
               
               <div className="space-y-6">
-                <Card className="p-6">
-                  <h2 className="text-xl font-semibold mb-4 dark:text-white">
+                <Card className="p-6 border-2 border-blue-100 dark:border-blue-900">
+                  <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">
                     Account Settings
                   </h2>
                   <div className="space-y-4">
@@ -53,20 +52,21 @@ const DashboardSettings = () => {
                       <Input
                         type="email"
                         value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="max-w-md"
+                        readOnly
+                        className="max-w-md bg-gray-50 cursor-not-allowed"
                       />
+                      <p className="mt-1 text-sm text-gray-500">Contact support to change your email address</p>
                     </div>
                   </div>
                 </Card>
 
-                <Card className="p-6">
-                  <h2 className="text-xl font-semibold mb-4 dark:text-white">
+                <Card className="p-6 border-2 border-blue-100 dark:border-blue-900">
+                  <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">
                     Appearance
                   </h2>
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium dark:text-white">Dark Mode</p>
+                      <p className="font-medium text-gray-800 dark:text-white">Dark Mode</p>
                       <p className="text-sm text-gray-500 dark:text-gray-400">
                         Toggle dark mode on or off
                       </p>
@@ -78,13 +78,13 @@ const DashboardSettings = () => {
                   </div>
                 </Card>
 
-                <Card className="p-6">
-                  <h2 className="text-xl font-semibold mb-4 dark:text-white">
+                <Card className="p-6 border-2 border-blue-100 dark:border-blue-900">
+                  <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">
                     Notifications
                   </h2>
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium dark:text-white">
+                      <p className="font-medium text-gray-800 dark:text-white">
                         Email Notifications
                       </p>
                       <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -99,7 +99,10 @@ const DashboardSettings = () => {
                 </Card>
 
                 <div className="flex justify-end">
-                  <Button onClick={handleSaveSettings}>
+                  <Button 
+                    onClick={handleSaveSettings}
+                    className="px-6"
+                  >
                     Save Changes
                   </Button>
                 </div>
