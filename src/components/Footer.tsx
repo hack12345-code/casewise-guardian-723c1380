@@ -4,9 +4,16 @@ import { Link } from "react-router-dom";
 
 export const Footer = () => {
   const links = {
-    product: ["Pricing", "Blog"],
-    company: [],
+    company: ["Home", "Cases", "Support", "Pricing", "Blog"],
     legal: []
+  };
+
+  const handleCasesClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const casesSection = document.querySelector('#cases-section');
+    if (casesSection) {
+      casesSection.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
   return (
@@ -26,10 +33,13 @@ export const Footer = () => {
                     <li key={item}>
                       <Link 
                         to={
-                          item === "Privacy Policy" ? "/privacy-policy" :
-                          item === "Terms of Service" ? "/terms-of-service" :
+                          item === "Home" ? "/" :
+                          item === "Cases" ? "#cases-section" :
+                          item === "Support" ? "/support" :
+                          item === "Pricing" ? "/pricing" :
                           item.toLowerCase() === "blog" ? "/blog" : "#"
                         } 
+                        onClick={item === "Cases" ? handleCasesClick : undefined}
                         className="text-gray-400 hover:text-white transition-colors"
                       >
                         {item}
