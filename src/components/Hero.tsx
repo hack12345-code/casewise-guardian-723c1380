@@ -9,6 +9,7 @@ import DisplayCards from "./ui/display-cards";
 import { Cases } from "./Cases";
 import { FAQs } from "./FAQs";
 import { Footer } from "./Footer";
+import { Button } from "./ui/button";
 
 interface Prompt {
   text: string;
@@ -28,6 +29,7 @@ export const Hero = () => {
   const [hasResponse, setHasResponse] = useState(false);
   const [prompts, setPrompts] = useState<Prompt[]>([]);
   const [caseCounter, setCaseCounter] = useState(1);
+  const [demoType, setDemoType] = useState<'regular' | 'report'>('regular');
   const { toast } = useToast();
 
   useEffect(() => {
@@ -161,7 +163,7 @@ export const Hero = () => {
           hasResponse ? "opacity-0 h-0 mb-0 overflow-hidden" : "opacity-100"
         )}>
           <h1 className="text-6xl font-bold text-[#1a1a1a] mb-4">
-            <span className="text-7xl">Save</span>
+            <span className="text-7xl text-[#1877F2]">Save</span>
           </h1>
           <h2 className="text-5xl font-bold text-[#1a1a1a] mb-4">
             Your Medical Practice
@@ -255,6 +257,53 @@ export const Hero = () => {
               </div>
             </div>
 
+            {/* New Demo Video Section */}
+            <div className="mt-20 mb-20">
+              <div className="max-w-5xl mx-auto">
+                <div className="flex justify-center gap-4 mb-8">
+                  <Button
+                    variant={demoType === 'regular' ? 'default' : 'outline'}
+                    size="lg"
+                    onClick={() => setDemoType('regular')}
+                    className="min-w-[150px]"
+                  >
+                    Regular Demo
+                  </Button>
+                  <Button
+                    variant={demoType === 'report' ? 'default' : 'outline'}
+                    size="lg"
+                    onClick={() => setDemoType('report')}
+                    className="min-w-[150px]"
+                  >
+                    Report Demo
+                  </Button>
+                </div>
+                
+                <div className="aspect-video w-full bg-white rounded-xl shadow-lg overflow-hidden">
+                  {/* Replace the src with your actual video URLs */}
+                  {demoType === 'regular' ? (
+                    <iframe 
+                      className="w-full h-full"
+                      src="https://www.youtube.com/embed/your-regular-demo-id"
+                      title="Regular Demo"
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  ) : (
+                    <iframe 
+                      className="w-full h-full"
+                      src="https://www.youtube.com/embed/your-report-demo-id"
+                      title="Report Demo"
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  )}
+                </div>
+              </div>
+            </div>
+
             <div className="mt-12">
               <DisplayCards />
             </div>
@@ -274,3 +323,4 @@ export const Hero = () => {
     </div>
   );
 };
+
