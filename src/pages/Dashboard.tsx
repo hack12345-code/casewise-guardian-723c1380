@@ -132,7 +132,7 @@ const Dashboard = () => {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navbar />
-        <div className="flex min-h-[calc(100vh-4rem)] pt-16">
+        <div className="flex h-[calc(100vh-4rem)]">
           <DashboardSidebar />
           <main className="flex-1 p-8">
             <div className="text-center">Loading your cases...</div>
@@ -146,9 +146,9 @@ const Dashboard = () => {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       <SidebarProvider>
-        <div className="flex min-h-[calc(100vh-4rem)] pt-16 w-full">
+        <div className="flex h-[calc(100vh-4rem)]">
           <DashboardSidebar />
-          <main className="flex-1 p-8">
+          <main className="flex-1 p-8 overflow-y-auto">
             <div className="flex justify-between items-center mb-8">
               <h1 className="text-3xl font-bold text-gray-900">My Cases</h1>
               <Button
