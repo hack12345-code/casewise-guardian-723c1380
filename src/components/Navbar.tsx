@@ -62,8 +62,26 @@ export const Navbar = () => {
     }
   };
 
+  const handleHomeClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setActiveTab("Home");
+    navigate('/');
+    // Use setTimeout to ensure navigation completes before scrolling
+    setTimeout(() => {
+      const heroSection = document.querySelector('#hero-section');
+      if (heroSection) {
+        heroSection.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 100);
+  };
+
   const navItems = [
-    { name: "Home", url: "/", icon: Home },
+    { 
+      name: "Home", 
+      url: "/", 
+      icon: Home,
+      onClick: handleHomeClick 
+    },
     { 
       name: "Cases", 
       url: "#cases-section", 
@@ -87,11 +105,6 @@ export const Navbar = () => {
     active: activeTab === item.name
   }));
 
-  const handleHomeNavigation = () => {
-    setActiveTab("Home");
-    navigate('/');
-  };
-
   const handleLogout = async () => {
     await supabase.auth.signOut();
     setIsAuthenticated(false);
@@ -107,13 +120,13 @@ export const Navbar = () => {
     <nav className="fixed top-0 left-0 right-0 bg-white/50 backdrop-blur-lg border-b border-gray-100 z-50">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          <Link 
-            to="/" 
+          <a 
+            href="/"
+            onClick={handleHomeClick}
             className="text-3xl font-bold cursor-pointer bg-gradient-to-r from-[#1877F2] to-[#9b87f5] bg-clip-text text-transparent"
-            onClick={handleHomeNavigation}
           >
             Saver
-          </Link>
+          </a>
 
           <div className="absolute left-1/2 -translate-x-1/2">
             <NavBar items={navItems} className="relative !fixed:none !bottom-auto !top-auto !mb-0 !pt-0" />
