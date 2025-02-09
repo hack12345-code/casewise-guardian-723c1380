@@ -27,8 +27,9 @@ const ContactSales = () => {
           company_name: formData.companyName,
           contact_name: formData.contactName,
           email: formData.email,
-          phone: formData.phone,
+          phone: formData.phone || null, // Handle empty phone numbers
           message: formData.message,
+          status: 'new' // Explicitly set status
         }]);
 
       if (error) throw error;
