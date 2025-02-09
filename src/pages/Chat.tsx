@@ -38,24 +38,37 @@ const Chat = () => {
   useEffect(() => {
     const loadChatHistory = async () => {
       if (!chatId) return
+      console.log("Loading chat history for chatId:", chatId)
 
       // Get chat details
-      const { data: chatData } = await supabase
+      const { data: chatData, error: chatError } = await supabase
         .from('medical_chats')
         .select('case_title')
         .eq('id', chatId)
         .single()
 
+      if (chatError) {
+        console.error("Error fetching chat:", chatError)
+        return
+      }
+
+      console.log("Chat data:", chatData)
       if (chatData) {
         setCaseTitle(chatData.case_title)
 
         // Get chat messages
-        const { data: messagesData } = await supabase
+        const { data: messagesData, error: messagesError } = await supabase
           .from('medical_messages')
           .select('*')
           .eq('chat_id', chatId)
           .order('created_at', { ascending: true })
 
+        if (messagesError) {
+          console.error("Error fetching messages:", messagesError)
+          return
+        }
+
+        console.log("Messages data:", messagesData)
         if (messagesData) {
           const formattedMessages: Message[] = messagesData.map(msg => ({
             id: msg.id,
@@ -63,6 +76,7 @@ const Chat = () => {
             sender: msg.role === 'user' ? 'user' : 'ai',
             timestamp: msg.created_at
           }))
+          console.log("Formatted messages:", formattedMessages)
           setMessages(formattedMessages)
           
           // Find the latest user message for the prompt
@@ -101,7 +115,7 @@ const Chat = () => {
 
     // Save message to database
     if (chatId) {
-      await supabase
+      const { error: messageError } = await supabase
         .from('medical_messages')
         .insert({
           chat_id: chatId,
@@ -110,13 +124,22 @@ const Chat = () => {
           user_id: session.user.id
         })
 
+      if (messageError) {
+        console.error("Error saving message:", messageError)
+        return
+      }
+
       // Update chat timestamp
-      await supabase
+      const { error: updateError } = await supabase
         .from('medical_chats')
         .update({
           updated_at: new Date().toISOString()
         })
         .eq('id', chatId)
+
+      if (updateError) {
+        console.error("Error updating chat timestamp:", updateError)
+      }
     }
 
     // Simulate AI response
@@ -129,8 +152,8 @@ const Chat = () => {
       }
       setMessages(prev => [...prev, aiResponse])
 
-      if (chatId) {
-        await supabase
+      if (chatId && session) {
+        const { error } = await supabase
           .from('medical_messages')
           .insert({
             chat_id: chatId,
@@ -138,6 +161,10 @@ const Chat = () => {
             role: 'assistant',
             user_id: session.user.id
           })
+
+        if (error) {
+          console.error("Error saving AI response:", error)
+        }
       }
     }, 1000)
   }
