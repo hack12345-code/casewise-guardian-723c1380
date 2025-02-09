@@ -1,26 +1,27 @@
-import { FileText, Shield, Stethoscope, Brain } from "lucide-react";
+
+import { Shield, FileText, Scale, Brain } from "lucide-react";
 
 export const Cases = () => {
   const cases = [
     {
-      icon: <Stethoscope className="w-6 h-6" />,
-      title: "Clinical Decision Support",
-      description: "Get AI-powered guidance for complex medical cases and treatment plans."
-    },
-    {
       icon: <Shield className="w-6 h-6" />,
-      title: "Risk Management",
-      description: "Identify and mitigate potential medical risks before they become issues."
+      title: "Avoid Malpractice Lawsuits",
+      description: "Get tailored AI-driven guidance to reduce legal risks and improve documentation."
     },
     {
       icon: <FileText className="w-6 h-6" />,
-      title: "Documentation Assistant",
-      description: "Streamline medical documentation with AI-powered assistance."
+      title: "Generate Reports",
+      description: "Quickly create or refine professional medical reports."
+    },
+    {
+      icon: <Scale className="w-6 h-6" />,
+      title: "Regulatory Compliance",
+      description: "Ensure alignment with industry standards and best practices."
     },
     {
       icon: <Brain className="w-6 h-6" />,
-      title: "Learning & Development",
-      description: "Continuous learning from real cases and expert insights."
+      title: "Better Decision-Making",
+      description: "Receive evidence-based and precedent-based insights to ensure better decisions."
     }
   ];
 
