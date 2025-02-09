@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { Navbar } from "@/components/Navbar"
@@ -158,7 +157,7 @@ const Chat = () => {
     }
 
     const newMessage: Message = {
-      id: Date.now().toString(),
+      id: crypto.randomUUID(),
       text: input,
       sender: "user",
       timestamp: new Date().toISOString(),
@@ -202,7 +201,7 @@ const Chat = () => {
     // Simulate AI response
     setTimeout(async () => {
       const aiResponse: Message = {
-        id: (Date.now() + 1).toString(),
+        id: crypto.randomUUID(),
         text: "Thank you for sharing your case. I'm analyzing the details and will provide professional guidance shortly.",
         sender: "ai",
         timestamp: new Date().toISOString(),
@@ -274,7 +273,6 @@ const Chat = () => {
       <div className="flex min-h-[calc(100vh-4rem)] pt-16">
         <main className="flex-1 p-8">
           <div className="grid grid-cols-3 gap-8">
-            {/* Response Section (1/3) */}
             <div className="col-span-1">
               <Card className="h-[calc(100vh-16rem)] p-6 overflow-y-auto">
                 <Response
@@ -290,7 +288,6 @@ const Chat = () => {
               </Card>
             </div>
 
-            {/* Chat Messages Section (2/3) */}
             <div className="col-span-2">
               <Card className="h-[calc(100vh-16rem)]">
                 <div className="h-full flex flex-col">

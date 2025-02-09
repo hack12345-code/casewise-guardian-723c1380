@@ -8,59 +8,109 @@ import { useState, useEffect } from "react"
 import { useToast } from "@/components/ui/use-toast"
 import { DashboardSidebar } from "@/components/DashboardSidebar"
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
+import { supabase } from "@/integrations/supabase/client"
 
 interface Chat {
   id: string
-  title: string
-  lastMessage: string
-  date: string
+  case_title: string
+  last_message?: string
+  created_at: string
 }
 
 const Dashboard = () => {
   const navigate = useNavigate()
   const { toast } = useToast()
-  const [chats, setChats] = useState<Chat[]>(() => {
-    const savedChats = localStorage.getItem("chats")
-    return savedChats
-      ? JSON.parse(savedChats)
-      : [
-          {
-            id: "1",
-            title: "Cardiac Case Discussion",
-            lastMessage: "Patient presents with chest pain...",
-            date: "2024-02-20",
-          },
-          {
-            id: "2",
-            title: "Orthopedic Consultation",
-            lastMessage: "Post-operative care for knee replacement...",
-            date: "2024-02-19",
-          },
-        ]
-  })
+  const [chats, setChats] = useState<Chat[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    localStorage.setItem("chats", JSON.stringify(chats))
-  }, [chats])
-
-  const handleNewChat = () => {
-    const newChat: Chat = {
-      id: Date.now().toString(),
-      title: "New Case",
-      lastMessage: "Start discussing your case...",
-      date: new Date().toISOString().split("T")[0],
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        navigate('/login')
+        return
+      }
     }
-    setChats([newChat, ...chats])
-    navigate(`/chat/${newChat.id}`)
-    toast({
-      title: "Starting new case",
-      description: "Creating a new case for you...",
-    })
+    checkAuth()
+  }, [navigate])
+
+  useEffect(() => {
+    const loadChats = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return
+
+      const { data: chatsData, error } = await supabase
+        .from('medical_chats')
+        .select('*')
+        .order('created_at', { ascending: false })
+
+      if (error) {
+        console.error("Error loading chats:", error)
+        toast({
+          title: "Error loading chats",
+          description: error.message,
+          variant: "destructive",
+        })
+        return
+      }
+
+      if (chatsData) {
+        setChats(chatsData)
+      }
+      setIsLoading(false)
+    }
+
+    loadChats()
+  }, [toast])
+
+  const handleNewChat = async () => {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) {
+      navigate('/login')
+      return
+    }
+
+    const { data: newChat, error } = await supabase
+      .from('medical_chats')
+      .insert({
+        case_title: 'New Case',
+        user_id: session.user.id
+      })
+      .select()
+      .single()
+
+    if (error) {
+      console.error("Error creating new chat:", error)
+      toast({
+        title: "Error creating new chat",
+        description: error.message,
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (newChat) {
+      navigate(`/chat/${newChat.id}`)
+    }
   }
 
-  const handleDeleteChat = (chatId: string) => {
+  const handleDeleteChat = async (chatId: string) => {
+    const { error } = await supabase
+      .from('medical_chats')
+      .delete()
+      .eq('id', chatId)
+
+    if (error) {
+      console.error("Error deleting chat:", error)
+      toast({
+        title: "Error deleting chat",
+        description: error.message,
+        variant: "destructive",
+      })
+      return
+    }
+
     setChats(chats.filter((chat) => chat.id !== chatId))
-    localStorage.removeItem(`chat-${chatId}`)
     toast({
       title: "Chat deleted",
       description: "The chat has been removed from your history.",
@@ -69,10 +119,21 @@ const Dashboard = () => {
 
   const handleOpenChat = (chatId: string) => {
     navigate(`/chat/${chatId}`)
-    toast({
-      title: "Opening case",
-      description: "Loading your case...",
-    })
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        <div className="flex min-h-[calc(100vh-4rem)] pt-16">
+          <main className="flex-1 p-8">
+            <div className="flex items-center justify-center h-full">
+              Loading chats...
+            </div>
+          </main>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -104,7 +165,7 @@ const Dashboard = () => {
                     <div className="flex items-center">
                       <MessageSquare className="h-5 w-5 text-blue-600 mr-2" />
                       <h3 className="font-semibold text-lg text-gray-900">
-                        {chat.title}
+                        {chat.case_title}
                       </h3>
                     </div>
                     <Button
@@ -120,10 +181,12 @@ const Dashboard = () => {
                     </Button>
                   </div>
                   <p className="text-gray-600 text-sm mb-3 line-clamp-2">
-                    {chat.lastMessage}
+                    {chat.last_message || "No messages yet"}
                   </p>
                   <div className="flex justify-between items-center">
-                    <span className="text-xs text-gray-500">{chat.date}</span>
+                    <span className="text-xs text-gray-500">
+                      {new Date(chat.created_at).toLocaleDateString()}
+                    </span>
                     <Button
                       variant="outline"
                       size="sm"
