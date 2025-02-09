@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { Navbar } from "@/components/Navbar"
@@ -32,7 +33,34 @@ const Chat = () => {
       }
     }
     checkAuth()
-  }, [navigate])
+
+    // Subscribe to chat messages
+    const channel = supabase
+      .channel(`chat:${chatId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'medical_messages',
+          filter: `chat_id=eq.${chatId}`
+        },
+        (payload) => {
+          const newMessage = payload.new
+          setMessages(prev => [...prev, {
+            id: newMessage.id,
+            text: newMessage.content,
+            sender: newMessage.role === 'user' ? 'user' : 'ai',
+            timestamp: newMessage.created_at
+          }])
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [chatId, navigate])
 
   useEffect(() => {
     const initializeChat = async () => {
@@ -156,16 +184,6 @@ const Chat = () => {
       return
     }
 
-    const newMessage: Message = {
-      id: crypto.randomUUID(),
-      text: input,
-      sender: "user",
-      timestamp: new Date().toISOString(),
-    }
-
-    setMessages(prev => [...prev, newMessage])
-    setLatestUserPrompt(input)
-
     // Save message to database
     const { error: messageError } = await supabase
       .from('medical_messages')
@@ -198,34 +216,39 @@ const Chat = () => {
       console.error("Error updating chat timestamp:", updateError)
     }
 
-    // Simulate AI response
-    setTimeout(async () => {
-      const aiResponse: Message = {
-        id: crypto.randomUUID(),
-        text: "Thank you for sharing your case. I'm analyzing the details and will provide professional guidance shortly.",
-        sender: "ai",
-        timestamp: new Date().toISOString(),
-      }
-      setMessages(prev => [...prev, aiResponse])
+    try {
+      const { data, error } = await supabase.functions.invoke('medical-ai-chat', {
+        body: { prompt: input }
+      })
 
-      const { error } = await supabase
+      if (error) throw error
+
+      // Save AI response
+      const { error: aiError } = await supabase
         .from('medical_messages')
         .insert({
           chat_id: chatId,
-          content: aiResponse.text,
+          content: data.response,
           role: 'assistant',
           user_id: session.user.id
         })
 
-      if (error) {
-        console.error("Error saving AI response:", error)
+      if (aiError) {
+        console.error("Error saving AI response:", aiError)
         toast({
           title: "Error saving AI response",
-          description: error.message,
+          description: aiError.message,
           variant: "destructive",
         })
       }
-    }, 1000)
+    } catch (error: any) {
+      console.error("Error with AI response:", error)
+      toast({
+        title: "Error processing AI response",
+        description: error.message,
+        variant: "destructive",
+      })
+    }
   }
 
   const handleRename = async (newTitle: string) => {
