@@ -1,3 +1,5 @@
+
+import { useState, useEffect } from "react";
 import { AIInput } from "./ui/ai-input";
 import { Response } from "./Response";
 import { Sectors } from "./Sectors";
