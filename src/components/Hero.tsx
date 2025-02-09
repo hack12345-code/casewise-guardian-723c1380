@@ -1,3 +1,4 @@
+
 import { AIInput } from "./ui/ai-input";
 import { Response } from "./Response";
 import { Sectors } from "./Sectors";
@@ -60,9 +61,11 @@ export const Hero = () => {
 
       const today = new Date().toISOString().split('T')[0];
       const isNewDay = !profile.last_prompt_date || profile.last_prompt_date < today;
-      const isFreeUser = profile.subscription_status === 'free' || !profile.subscription_status;
+      
+      // Check if user has active subscription or is within free limits
+      const hasActiveSubscription = profile.subscription_status === 'active';
+      const isFreeUser = !hasActiveSubscription;
 
-      // Only check prompt limits for free users
       if (isFreeUser && !isNewDay && profile.prompt_count >= 1) {
         toast({
           title: "Daily Limit Reached",
