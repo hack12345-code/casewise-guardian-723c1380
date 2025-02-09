@@ -61,6 +61,26 @@ const Dashboard = () => {
     }
 
     loadChats()
+
+    // Set up real-time subscription for chat updates
+    const channel = supabase
+      .channel('public:medical_chats')
+      .on('postgres_changes', 
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'medical_chats' 
+        }, 
+        (payload) => {
+          console.log('Change received!', payload)
+          loadChats() // Reload chats when changes occur
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
   }, [toast])
 
   const handleNewChat = async () => {
@@ -113,12 +133,38 @@ const Dashboard = () => {
     setChats(chats.filter((chat) => chat.id !== chatId))
     toast({
       title: "Chat deleted",
-      description: "The chat has been removed from your history.",
+      description: "The case has been successfully deleted.",
     })
   }
 
   const handleOpenChat = (chatId: string) => {
     navigate(`/chat/${chatId}`)
+  }
+
+  const handleRenameChat = async (chatId: string, newTitle: string) => {
+    const { error } = await supabase
+      .from('medical_chats')
+      .update({ case_title: newTitle })
+      .eq('id', chatId)
+
+    if (error) {
+      console.error("Error renaming chat:", error)
+      toast({
+        title: "Error renaming chat",
+        description: error.message,
+        variant: "destructive",
+      })
+      return
+    }
+
+    setChats(chats.map(chat => 
+      chat.id === chatId ? { ...chat, case_title: newTitle } : chat
+    ))
+
+    toast({
+      title: "Case renamed",
+      description: "The case title has been updated successfully.",
+    })
   }
 
   if (isLoading) {
@@ -128,7 +174,7 @@ const Dashboard = () => {
         <div className="flex min-h-[calc(100vh-4rem)] pt-16">
           <main className="flex-1 p-8">
             <div className="flex items-center justify-center h-full">
-              Loading chats...
+              Loading cases...
             </div>
           </main>
         </div>
@@ -193,7 +239,7 @@ const Dashboard = () => {
                       onClick={() => handleOpenChat(chat.id)}
                       className="text-blue-600 hover:bg-blue-50"
                     >
-                      Open Chat
+                      Open Case
                     </Button>
                   </div>
                 </Card>
