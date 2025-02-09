@@ -1,7 +1,7 @@
+
 import { 
   Stethoscope, 
   Brain, 
-  Heart, 
   Baby, 
   Syringe, 
   Pill, 
@@ -12,7 +12,6 @@ export const Sectors = () => {
   const specialties = [
     { icon: <Stethoscope className="w-5 h-5" />, label: "General Practice" },
     { icon: <Brain className="w-5 h-5" />, label: "Neurology" },
-    { icon: <Heart className="w-5 h-5" />, label: "Cardiology" },
     { icon: <Baby className="w-5 h-5" />, label: "Pediatrics" },
     { icon: <Syringe className="w-5 h-5" />, label: "Surgery" },
     { icon: <Pill className="w-5 h-5" />, label: "Internal Medicine" },

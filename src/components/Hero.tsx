@@ -137,8 +137,8 @@ export const Hero = () => {
           <h1 className="text-6xl font-bold text-[#1a1a1a] mb-4">
             <span className="text-7xl text-[#1877F2]">Save</span>
           </h1>
-          <h2 className="text-5xl font-bold text-[#1a1a1a] mb-4">
-            Your Medical Practice
+          <h2 className="text-5xl font-bold text-[#000000] mb-4">
+            Prevent Lawsuits
           </h2>
           <p className="text-xl text-gray-600 mb-6">
             Get AI-powered guidance on preventing malpractice risks. Enter your case details
