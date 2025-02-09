@@ -82,6 +82,10 @@ const Login = () => {
     }
   };
 
+  const handleSupportRedirect = () => {
+    navigate("/support", { state: { reason: "password-recovery" } });
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
@@ -114,6 +118,13 @@ const Login = () => {
                 required
                 placeholder="••••••••"
               />
+              <button
+                type="button"
+                onClick={handleSupportRedirect}
+                className="text-sm text-blue-600 hover:text-blue-800 mt-2"
+              >
+                Forgot your password? Send us a message to recover it
+              </button>
             </div>
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? "Logging in..." : "Log In"}

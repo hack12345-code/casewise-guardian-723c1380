@@ -289,6 +289,27 @@ const AdminDashboard = () => {
     });
   };
 
+  const handleResetPassword = async (userId: string, userEmail: string) => {
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(userEmail, {
+        redirectTo: `${window.location.origin}/dashboard/settings`,
+      });
+
+      if (error) throw error;
+      
+      toast({
+        title: "Password reset email sent",
+        description: `A password reset email has been sent to ${userEmail}`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error resetting password",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
@@ -382,13 +403,22 @@ const AdminDashboard = () => {
                           </span>
                         </TableCell>
                         <TableCell>
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => handleManageUser(user)}
-                          >
-                            Manage
-                          </Button>
+                          <div className="flex gap-2">
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => handleManageUser(user)}
+                            >
+                              Manage
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleResetPassword(user.id, user.email)}
+                            >
+                              Reset Password
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}

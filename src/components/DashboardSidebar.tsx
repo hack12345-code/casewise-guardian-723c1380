@@ -7,6 +7,8 @@ import {
   FileText,
   LayoutDashboard,
 } from "lucide-react"
+import { useEffect, useState } from "react"
+import { supabase } from "@/integrations/supabase/client"
 
 import {
   Sidebar,
@@ -51,7 +53,16 @@ const settingsItems = [
 ]
 
 export function DashboardSidebar() {
-  const isAdmin = localStorage.getItem("userEmail") === "savesuppo@gmail.com";
+  const [isAdmin, setIsAdmin] = useState(false);
+  
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsAdmin(session?.user?.email === "savesuppo@gmail.com");
+    };
+    
+    checkAdminStatus();
+  }, []);
   
   const adminItems = [
     {
