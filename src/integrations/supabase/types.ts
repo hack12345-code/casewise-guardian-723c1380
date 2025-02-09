@@ -92,6 +92,36 @@ export type Database = {
           },
         ]
       }
+      profiles: {
+        Row: {
+          country: string | null
+          created_at: string
+          email: string
+          full_name: string | null
+          id: string
+          medical_sector: string | null
+          updated_at: string
+        }
+        Insert: {
+          country?: string | null
+          created_at?: string
+          email: string
+          full_name?: string | null
+          id: string
+          medical_sector?: string | null
+          updated_at?: string
+        }
+        Update: {
+          country?: string | null
+          created_at?: string
+          email?: string
+          full_name?: string | null
+          id?: string
+          medical_sector?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

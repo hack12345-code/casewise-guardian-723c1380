@@ -6,39 +6,66 @@ import { Button } from "@/components/ui/button";
 import { useNavigate, Link } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { Footer } from "@/components/Footer";
+import { supabase } from "@/integrations/supabase/client";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // For now, just simulate successful login
-    localStorage.setItem("isAuthenticated", "true");
-    localStorage.setItem("userName", email.split("@")[0]);
-    localStorage.setItem("userEmail", email);
-    
-    toast({
-      title: "Logged in successfully!",
-      description: "Welcome back!",
-    });
+    setIsLoading(true);
 
-    // Redirect to admin dashboard if admin user
-    if (email === "savesuppo@gmail.com") {
-      navigate("/admin");
-    } else {
-      navigate("/dashboard");
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Logged in successfully!",
+        description: "Welcome back!",
+      });
+
+      // Redirect to admin dashboard if admin user
+      if (email === "savesuppo@gmail.com") {
+        navigate("/admin");
+      } else {
+        navigate("/dashboard");
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error logging in",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleGoogleLogin = () => {
-    // This is a placeholder for Google OAuth implementation
-    toast({
-      title: "Google Login",
-      description: "Google login functionality will be implemented soon.",
-    });
+  const handleGoogleLogin = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/dashboard`,
+        },
+      });
+
+      if (error) throw error;
+    } catch (error: any) {
+      toast({
+        title: "Error with Google login",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -74,8 +101,8 @@ const Login = () => {
                 placeholder="••••••••"
               />
             </div>
-            <Button type="submit" className="w-full">
-              Log In
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? "Logging in..." : "Log In"}
             </Button>
           </form>
           

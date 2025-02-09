@@ -6,6 +6,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Footer } from "@/components/Footer";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Select,
   SelectContent,
@@ -21,6 +22,7 @@ const SignUp = () => {
   const [country, setCountry] = useState("");
   const [sector, setSector] = useState("");
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -48,7 +50,7 @@ const SignUp = () => {
     "Other"
   ];
 
-  const handleSignUp = (e: React.FormEvent) => {
+  const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!acceptedTerms) {
@@ -69,21 +71,65 @@ const SignUp = () => {
       return;
     }
 
-    // For now, just simulate successful signup
-    localStorage.setItem("isAuthenticated", "true");
-    localStorage.setItem("userName", name);
-    toast({
-      title: "Account created successfully!",
-      description: "Welcome to Save!",
-    });
-    navigate("/dashboard");
+    setIsLoading(true);
+
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            name,
+            country,
+            sector,
+          },
+        },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Account created successfully!",
+        description: "Welcome to Save! Please check your email to verify your account.",
+      });
+      
+      // Automatically sign in the user
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (signInError) throw signInError;
+
+      navigate("/dashboard");
+    } catch (error: any) {
+      toast({
+        title: "Error creating account",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleGoogleSignUp = () => {
-    toast({
-      title: "Google Sign Up",
-      description: "Google sign up functionality will be implemented soon.",
-    });
+  const handleGoogleSignUp = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/dashboard`,
+        },
+      });
+
+      if (error) throw error;
+    } catch (error: any) {
+      toast({
+        title: "Error with Google sign up",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -213,8 +259,8 @@ const SignUp = () => {
                 </Link>
               </label>
             </div>
-            <Button type="submit" className="w-full">
-              Sign Up
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? "Creating Account..." : "Sign Up"}
             </Button>
           </form>
 
