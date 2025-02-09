@@ -39,25 +39,31 @@ const Dashboard = () => {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) return
 
-      const { data: chatsData, error } = await supabase
-        .from('medical_chats')
-        .select('*')
-        .order('created_at', { ascending: false })
+      try {
+        const { data: chatsData, error } = await supabase
+          .from('medical_chats')
+          .select('*')
+          .eq('user_id', session.user.id)
+          .order('created_at', { ascending: false })
 
-      if (error) {
-        console.error("Error loading chats:", error)
-        toast({
-          title: "Error loading chats",
-          description: error.message,
-          variant: "destructive",
-        })
-        return
-      }
+        if (error) {
+          console.error("Error loading chats:", error)
+          toast({
+            title: "Error loading chats",
+            description: error.message,
+            variant: "destructive",
+          })
+          return
+        }
 
-      if (chatsData) {
-        setChats(chatsData)
+        if (chatsData) {
+          setChats(chatsData)
+        }
+      } catch (error) {
+        console.error("Error in loadChats:", error)
+      } finally {
+        setIsLoading(false)
       }
-      setIsLoading(false)
     }
 
     loadChats()
@@ -115,26 +121,40 @@ const Dashboard = () => {
   }
 
   const handleDeleteChat = async (chatId: string) => {
-    const { error } = await supabase
-      .from('medical_chats')
-      .delete()
-      .eq('id', chatId)
+    try {
+      // First delete all messages associated with this chat
+      const { error: messagesError } = await supabase
+        .from('medical_messages')
+        .delete()
+        .eq('chat_id', chatId)
 
-    if (error) {
+      if (messagesError) {
+        throw messagesError
+      }
+
+      // Then delete the chat itself
+      const { error: chatError } = await supabase
+        .from('medical_chats')
+        .delete()
+        .eq('id', chatId)
+
+      if (chatError) {
+        throw chatError
+      }
+
+      setChats(chats.filter((chat) => chat.id !== chatId))
+      toast({
+        title: "Chat deleted",
+        description: "The chat and all its messages have been removed.",
+      })
+    } catch (error) {
       console.error("Error deleting chat:", error)
       toast({
         title: "Error deleting chat",
-        description: error.message,
+        description: error instanceof Error ? error.message : "Failed to delete chat",
         variant: "destructive",
       })
-      return
     }
-
-    setChats(chats.filter((chat) => chat.id !== chatId))
-    toast({
-      title: "Chat deleted",
-      description: "The chat has been removed from your history.",
-    })
   }
 
   const handleOpenChat = (chatId: string) => {
