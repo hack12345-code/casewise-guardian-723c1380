@@ -27,15 +27,8 @@ const SignUp = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleBackToHero = (e: React.MouseEvent) => {
-    e.preventDefault();
-    navigate('/');
-    setTimeout(() => {
-      const heroSection = document.querySelector('#hero-section');
-      if (heroSection) {
-        heroSection.scrollIntoView({ behavior: 'smooth' });
-      }
-    }, 100);
+  const handleBackToHero = () => {
+    navigate('/', { replace: true });
   };
 
   const countries = [
