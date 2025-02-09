@@ -1,11 +1,12 @@
 
 import { useState, useEffect } from "react"
-import { useParams } from "react-router-dom"
+import { useParams, useNavigate } from "react-router-dom"
 import { Navbar } from "@/components/Navbar"
 import { Card } from "@/components/ui/card"
 import { useToast } from "@/components/ui/use-toast"
 import { AIInput } from "@/components/ui/ai-input"
 import { Response } from "@/components/Response"
+import { supabase } from "@/integrations/supabase/client"
 
 interface Message {
   id: string
@@ -16,28 +17,68 @@ interface Message {
 
 const Chat = () => {
   const { chatId } = useParams()
+  const navigate = useNavigate()
   const { toast } = useToast()
-  const [messages, setMessages] = useState<Message[]>(() => {
-    if (chatId) {
-      const savedMessages = localStorage.getItem(`chat-${chatId}`)
-      return savedMessages ? JSON.parse(savedMessages) : []
-    }
-    return []
-  })
-  const [caseTitle, setCaseTitle] = useState(() => {
-    if (chatId) {
-      const savedChats = localStorage.getItem("chats")
-      if (savedChats) {
-        const chats = JSON.parse(savedChats)
-        const currentChat = chats.find((chat: any) => chat.id === chatId)
-        return currentChat?.title || "New Case"
+  const [messages, setMessages] = useState<Message[]>([])
+  const [caseTitle, setCaseTitle] = useState("")
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        navigate('/login')
+        return
       }
     }
-    return "New Case"
-  })
+    checkAuth()
+  }, [navigate])
 
-  const handleSendMessage = (input: string) => {
+  useEffect(() => {
+    const loadChatHistory = async () => {
+      if (!chatId) return
+
+      // Get chat details
+      const { data: chatData } = await supabase
+        .from('medical_chats')
+        .select('case_title')
+        .eq('id', chatId)
+        .single()
+
+      if (chatData) {
+        setCaseTitle(chatData.case_title)
+
+        // Get chat messages
+        const { data: messagesData } = await supabase
+          .from('medical_messages')
+          .select('*')
+          .eq('chat_id', chatId)
+          .order('created_at', { ascending: true })
+
+        if (messagesData) {
+          const formattedMessages = messagesData.map(msg => ({
+            id: msg.id,
+            text: msg.content,
+            sender: msg.role === 'user' ? 'user' : 'ai',
+            timestamp: msg.created_at
+          }))
+          setMessages(formattedMessages)
+        }
+      }
+      setIsLoading(false)
+    }
+
+    loadChatHistory()
+  }, [chatId])
+
+  const handleSendMessage = async (input: string) => {
     if (!input.trim()) return
+
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) {
+      navigate('/login')
+      return
+    }
 
     const newMessage: Message = {
       id: Date.now().toString(),
@@ -46,61 +87,88 @@ const Chat = () => {
       timestamp: new Date().toISOString(),
     }
 
-    const updatedMessages = [...messages, newMessage]
-    setMessages(updatedMessages)
+    setMessages(prev => [...prev, newMessage])
 
-    // Save messages to localStorage
+    // Save message to database
     if (chatId) {
-      localStorage.setItem(`chat-${chatId}`, JSON.stringify(updatedMessages))
-    }
+      await supabase
+        .from('medical_messages')
+        .insert({
+          chat_id: chatId,
+          content: input,
+          role: 'user',
+          user_id: session.user.id
+        })
 
-    // Update last message in chats list
-    const savedChats = localStorage.getItem("chats")
-    if (savedChats && chatId) {
-      const chats = JSON.parse(savedChats)
-      const updatedChats = chats.map((chat: any) => {
-        if (chat.id === chatId) {
-          return {
-            ...chat,
-            lastMessage: input.slice(0, 100) + (input.length > 100 ? "..." : ""),
-          }
-        }
-        return chat
-      })
-      localStorage.setItem("chats", JSON.stringify(updatedChats))
+      // Update last message in chat
+      await supabase
+        .from('medical_chats')
+        .update({
+          last_message: input.slice(0, 100) + (input.length > 100 ? "..." : "")
+        })
+        .eq('id', chatId)
     }
 
     // Simulate AI response
-    setTimeout(() => {
+    setTimeout(async () => {
       const aiResponse: Message = {
         id: (Date.now() + 1).toString(),
         text: "Thank you for sharing your case. I'm analyzing the details and will provide professional guidance shortly.",
         sender: "ai",
         timestamp: new Date().toISOString(),
       }
-      const withAiResponse = [...updatedMessages, aiResponse]
-      setMessages(withAiResponse)
+      setMessages(prev => [...prev, aiResponse])
+
       if (chatId) {
-        localStorage.setItem(`chat-${chatId}`, JSON.stringify(withAiResponse))
+        await supabase
+          .from('medical_messages')
+          .insert({
+            chat_id: chatId,
+            content: aiResponse.text,
+            role: 'assistant',
+            user_id: session.user.id
+          })
       }
     }, 1000)
   }
 
-  const handleRename = (newTitle: string) => {
-    setCaseTitle(newTitle)
-    if (chatId) {
-      const savedChats = localStorage.getItem("chats")
-      if (savedChats) {
-        const chats = JSON.parse(savedChats)
-        const updatedChats = chats.map((chat: any) => {
-          if (chat.id === chatId) {
-            return { ...chat, title: newTitle }
-          }
-          return chat
-        })
-        localStorage.setItem("chats", JSON.stringify(updatedChats))
-      }
+  const handleRename = async (newTitle: string) => {
+    if (!chatId) return
+
+    const { error } = await supabase
+      .from('medical_chats')
+      .update({ case_title: newTitle })
+      .eq('id', chatId)
+
+    if (error) {
+      toast({
+        title: "Error renaming case",
+        description: error.message,
+        variant: "destructive",
+      })
+      return
     }
+
+    setCaseTitle(newTitle)
+    toast({
+      title: "Case renamed successfully",
+      description: "The case title has been updated.",
+    })
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        <div className="flex min-h-[calc(100vh-4rem)] pt-16">
+          <main className="flex-1 p-8">
+            <div className="flex items-center justify-center h-full">
+              Loading chat history...
+            </div>
+          </main>
+        </div>
+      </div>
+    )
   }
 
   return (

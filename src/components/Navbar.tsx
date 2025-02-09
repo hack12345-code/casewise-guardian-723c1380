@@ -4,6 +4,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { NavBar } from "@/components/ui/tubelight-navbar";
 import { useEffect, useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,12 +24,28 @@ export const Navbar = () => {
   const [activeTab, setActiveTab] = useState("Home");
 
   useEffect(() => {
-    const authStatus = localStorage.getItem("isAuthenticated");
-    const storedUserName = localStorage.getItem("userName");
-    setIsAuthenticated(authStatus === "true");
-    setUserName(storedUserName || "");
+    // Check initial auth state
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsAuthenticated(!!session);
+      if (session?.user) {
+        setUserName(session.user.email || "");
+      }
+    });
 
-    // Set active tab based on current path
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      setIsAuthenticated(!!session);
+      if (session?.user) {
+        setUserName(session.user.email || "");
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
     const path = location.pathname;
     if (path === "/") setActiveTab("Home");
     else if (path === "/pricing") setActiveTab("Pricing");
@@ -75,9 +92,8 @@ export const Navbar = () => {
     navigate('/');
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("isAuthenticated");
-    localStorage.removeItem("userName");
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     setIsAuthenticated(false);
     setUserName("");
     toast({
