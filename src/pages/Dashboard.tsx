@@ -50,14 +50,29 @@ const Dashboard = () => {
 
   const handleNewChat = async () => {
     try {
+      // Get the current user
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
+      
+      if (userError) throw userError
+      
+      if (!user) {
+        toast({
+          title: "Authentication required",
+          description: "Please sign in to create a new case.",
+          variant: "destructive",
+        })
+        return
+      }
+
       const newChat = {
         title: "New Case",
         last_message: "Start discussing your case...",
+        user_id: user.id, // Add the user_id here
       }
 
       const { data, error } = await supabase
         .from('cases')
-        .insert([newChat])
+        .insert(newChat)
         .select()
         .single()
 
