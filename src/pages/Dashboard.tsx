@@ -61,6 +61,26 @@ const Dashboard = () => {
     }
 
     loadChats()
+
+    // Set up real-time subscription for chat updates
+    const subscription = supabase
+      .channel('medical_chats_changes')
+      .on('postgres_changes', 
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'medical_chats' 
+        }, 
+        (payload) => {
+          console.log('Change received!', payload)
+          loadChats() // Reload chats when changes occur
+        }
+      )
+      .subscribe()
+
+    return () => {
+      subscription.unsubscribe()
+    }
   }, [toast])
 
   const handleNewChat = async () => {
