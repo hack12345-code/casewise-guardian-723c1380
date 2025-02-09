@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { Navbar } from "@/components/Navbar"
@@ -65,45 +64,19 @@ const Chat = () => {
   useEffect(() => {
     const initializeChat = async () => {
       const { data: { session } } = await supabase.auth.getSession()
-      if (!session) return
-
-      setIsLoading(true)
-      console.log("Initializing chat with ID:", chatId)
-
-      if (chatId === 'new') {
-        // Initialize new chat
-        const { data: newChat, error: createError } = await supabase
-          .from('medical_chats')
-          .insert({
-            case_title: 'New Case',
-            user_id: session.user.id
-          })
-          .select()
-          .single()
-
-        if (createError) {
-          console.error("Error creating new chat:", createError)
-          toast({
-            title: "Error creating new chat",
-            description: createError.message,
-            variant: "destructive",
-          })
-          setIsLoading(false)
-          return
-        }
-
-        if (newChat) {
-          navigate(`/chat/${newChat.id}`)
-        }
-        setIsLoading(false)
+      if (!session) {
+        navigate('/login')
         return
       }
+
+      setIsLoading(true)
 
       // Load existing chat
       const { data: chatData, error: chatError } = await supabase
         .from('medical_chats')
         .select('case_title')
         .eq('id', chatId)
+        .eq('user_id', session.user.id)  // Make sure user owns this chat
         .maybeSingle()
 
       if (chatError) {
@@ -118,7 +91,6 @@ const Chat = () => {
       }
 
       if (!chatData) {
-        console.log("No chat found with ID:", chatId)
         toast({
           title: "Chat not found",
           description: "The requested chat could not be found.",
@@ -128,7 +100,6 @@ const Chat = () => {
         return
       }
 
-      console.log("Chat data:", chatData)
       setCaseTitle(chatData.case_title)
 
       // Get chat messages
@@ -149,7 +120,6 @@ const Chat = () => {
         return
       }
 
-      console.log("Messages data:", messagesData)
       if (messagesData) {
         const formattedMessages: Message[] = messagesData.map(msg => ({
           id: msg.id,
@@ -157,7 +127,6 @@ const Chat = () => {
           sender: msg.role === 'user' ? 'user' : 'ai',
           timestamp: msg.created_at
         }))
-        console.log("Formatted messages:", formattedMessages)
         setMessages(formattedMessages)
         
         // Find the latest user message for the prompt
@@ -172,7 +141,9 @@ const Chat = () => {
       setIsLoading(false)
     }
 
-    initializeChat()
+    if (chatId) {
+      initializeChat()
+    }
   }, [chatId, navigate, toast])
 
   const handleSendMessage = async (input: string) => {
@@ -184,39 +155,32 @@ const Chat = () => {
       return
     }
 
-    // Save message to database
-    const { error: messageError } = await supabase
-      .from('medical_messages')
-      .insert({
-        chat_id: chatId,
-        content: input,
-        role: 'user',
-        user_id: session.user.id
-      })
-
-    if (messageError) {
-      console.error("Error saving message:", messageError)
-      toast({
-        title: "Error saving message",
-        description: messageError.message,
-        variant: "destructive",
-      })
-      return
-    }
-
-    // Update chat timestamp
-    const { error: updateError } = await supabase
-      .from('medical_chats')
-      .update({
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', chatId)
-
-    if (updateError) {
-      console.error("Error updating chat timestamp:", updateError)
-    }
-
+    setIsLoading(true)
     try {
+      // Save user message
+      const { error: messageError } = await supabase
+        .from('medical_messages')
+        .insert({
+          chat_id: chatId,
+          content: input,
+          role: 'user',
+          user_id: session.user.id
+        })
+
+      if (messageError) throw messageError
+
+      // Update chat timestamp
+      const { error: updateError } = await supabase
+        .from('medical_chats')
+        .update({
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', chatId)
+        .eq('user_id', session.user.id)
+
+      if (updateError) throw updateError
+
+      // Get AI response
       const { data, error } = await supabase.functions.invoke('medical-ai-chat', {
         body: { prompt: input }
       })
@@ -233,21 +197,17 @@ const Chat = () => {
           user_id: session.user.id
         })
 
-      if (aiError) {
-        console.error("Error saving AI response:", aiError)
-        toast({
-          title: "Error saving AI response",
-          description: aiError.message,
-          variant: "destructive",
-        })
-      }
+      if (aiError) throw aiError
+
     } catch (error: any) {
-      console.error("Error with AI response:", error)
+      console.error("Error:", error)
       toast({
-        title: "Error processing AI response",
+        title: "Error",
         description: error.message,
         variant: "destructive",
       })
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -345,6 +305,7 @@ const Chat = () => {
                       minHeight={100}
                       maxHeight={200}
                       onSubmit={handleSendMessage}
+                      isLoading={isLoading}
                     />
                   </div>
                 </div>

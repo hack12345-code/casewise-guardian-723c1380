@@ -1,8 +1,6 @@
-
 import { AIInput } from "./ui/ai-input";
 import { Response } from "./Response";
 import { Sectors } from "./Sectors";
-import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/components/ui/use-toast";
 import DisplayCards from "./ui/display-cards";
@@ -40,6 +38,8 @@ export const Hero = () => {
   }, []);
 
   const handleSubmit = async (caseDetails: string) => {
+    if (!caseDetails.trim()) return;
+
     const { data: { session } } = await supabase.auth.getSession();
     
     if (!session) {
@@ -88,19 +88,6 @@ export const Hero = () => {
 
       if (chatError) throw chatError;
 
-      // Update prompt count only for free users
-      if (isFreeUser) {
-        const { error: updateError } = await supabase
-          .from('profiles')
-          .update({
-            prompt_count: isNewDay ? 1 : (profile.prompt_count + 1),
-            last_prompt_date: today
-          })
-          .eq('id', session.user.id);
-
-        if (updateError) throw updateError;
-      }
-
       // Add user message
       const { error: messageError } = await supabase
         .from('medical_messages')
@@ -113,28 +100,7 @@ export const Hero = () => {
 
       if (messageError) throw messageError;
 
-      const aiResponse = `Thank you for sharing your case. I'm analyzing the details and will provide professional guidance shortly.
-
-Based on the information provided, here are my initial recommendations:
-
-1. Document everything thoroughly
-2. Maintain clear communication with the patient
-3. Follow standard protocols
-4. Consult with colleagues if needed
-5. Keep detailed records of all decisions
-
-Would you like me to elaborate on any of these points or provide more specific guidance?`;
-
-      // Add AI response
-      await supabase
-        .from('medical_messages')
-        .insert({
-          chat_id: newChat.id,
-          content: aiResponse,
-          role: 'assistant',
-          user_id: session.user.id
-        });
-
+      // Redirect to chat page
       navigate(`/chat/${newChat.id}`);
     } catch (error: any) {
       console.error("Error:", error);
@@ -184,7 +150,18 @@ Would you like me to elaborate on any of these points or provide more specific g
         )}>
           <Sectors />
         </div>
-        
+
+        <div className="mt-8">
+          <AIInput 
+            placeholder="Enter your case details here... Be specific about the patient's condition, your planned approach, and any concerns."
+            minHeight={250}
+            maxHeight={450}
+            onSubmit={handleSubmit}
+            isLoading={isLoading}
+            className="max-w-3xl mx-auto"
+          />
+        </div>
+
         {hasResponse ? (
           <div className="flex min-h-[calc(100vh-4rem)] pt-8">
             <main className="flex-1">
@@ -246,16 +223,6 @@ Would you like me to elaborate on any of these points or provide more specific g
           </div>
         ) : (
           <>
-            <div className="mt-8">
-              <AIInput 
-                placeholder="Enter your case details here... Be specific about the patient's condition, your planned approach, and any concerns."
-                minHeight={250}
-                maxHeight={450}
-                onSubmit={handleSubmit}
-                className="max-w-3xl mx-auto"
-              />
-            </div>
-
             <div className="mt-12 text-center">
               <p className="text-sm text-gray-500 mb-6">Following industry-leading standards</p>
               <div className="flex justify-between items-center px-16 py-8 bg-white/50 rounded-lg backdrop-blur-sm">
