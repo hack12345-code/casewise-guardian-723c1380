@@ -7,6 +7,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Footer } from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
+import { ArrowLeft } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -25,6 +26,17 @@ const SignUp = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const handleBackToHero = (e: React.MouseEvent) => {
+    e.preventDefault();
+    navigate('/');
+    setTimeout(() => {
+      const heroSection = document.querySelector('#hero-section');
+      if (heroSection) {
+        heroSection.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 100);
+  };
 
   const countries = [
     "United States", "Canada", "United Kingdom", "Australia", "Germany", "France", "Japan", 
@@ -137,7 +149,18 @@ const SignUp = () => {
       <Navbar />
       <div className="pt-24 px-4">
         <div className="max-w-md mx-auto bg-white rounded-2xl shadow-lg p-8">
-          <h1 className="text-3xl font-bold text-center mb-8">Create Account</h1>
+          <div className="flex items-center mb-6">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleBackToHero}
+              className="mr-4 hover:bg-gray-100"
+              aria-label="Back to hero section"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <h1 className="text-3xl font-bold">Create Account</h1>
+          </div>
           
           <Button
             type="button"
