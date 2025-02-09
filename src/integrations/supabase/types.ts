@@ -38,6 +38,7 @@ export type Database = {
           case_title: string
           created_at: string | null
           id: string
+          last_message: string | null
           updated_at: string | null
           user_id: string | null
         }
@@ -45,6 +46,7 @@ export type Database = {
           case_title: string
           created_at?: string | null
           id?: string
+          last_message?: string | null
           updated_at?: string | null
           user_id?: string | null
         }
@@ -52,6 +54,7 @@ export type Database = {
           case_title?: string
           created_at?: string | null
           id?: string
+          last_message?: string | null
           updated_at?: string | null
           user_id?: string | null
         }
