@@ -1,4 +1,3 @@
-
 import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -221,7 +220,7 @@ const Dashboard = () => {
                     </Button>
                   </div>
                   <p className="text-gray-600 text-sm mb-3 line-clamp-2">
-                    {chat.last_message || "No messages yet"}
+                    {chat.last_message || "Start a new conversation..."}
                   </p>
                   <div className="flex justify-between items-center">
                     <span className="text-xs text-gray-500">
