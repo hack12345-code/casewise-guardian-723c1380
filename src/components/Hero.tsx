@@ -1,3 +1,4 @@
+
 import { AIInput } from "./ui/ai-input";
 import { Response } from "./Response";
 import { Sectors } from "./Sectors";
@@ -17,11 +18,6 @@ interface Prompt {
   text: string;
   response: string;
   caseTitle: string;
-}
-
-interface PromptUsage {
-  lastPromptDate: string;
-  promptCount: number;
 }
 
 export const Hero = () => {
@@ -54,6 +50,30 @@ export const Hero = () => {
 
     setIsLoading(true);
     try {
+      // Get user profile to check subscription status and prompt count
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('subscription_status, prompt_count, last_prompt_date')
+        .eq('id', session.user.id)
+        .single();
+
+      if (profileError) throw profileError;
+
+      const today = new Date().toISOString().split('T')[0];
+      const isNewDay = !profile.last_prompt_date || profile.last_prompt_date < today;
+      const isFreeUser = profile.subscription_status === 'free' || !profile.subscription_status;
+
+      if (isFreeUser && !isNewDay && profile.prompt_count >= 1) {
+        toast({
+          title: "Daily Limit Reached",
+          description: "Your 1 prompt a day limit has been reached. Please try again tomorrow.",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      // Create new chat
       const { data: newChat, error: chatError } = await supabase
         .from('medical_chats')
         .insert({
@@ -63,18 +83,22 @@ export const Hero = () => {
         .select()
         .single();
 
-      if (chatError) {
-        if (chatError.code === 'PGRST116') {
-          toast({
-            title: "Free Plan Limit Reached",
-            description: "You've reached the maximum number of cases allowed on the free plan. Please upgrade to continue.",
-            variant: "destructive",
-          });
-          return;
-        }
-        throw chatError;
+      if (chatError) throw chatError;
+
+      // Update prompt count for free users
+      if (isFreeUser) {
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({
+            prompt_count: isNewDay ? 1 : (profile.prompt_count + 1),
+            last_prompt_date: today
+          })
+          .eq('id', session.user.id);
+
+        if (updateError) throw updateError;
       }
 
+      // Add user message
       const { error: messageError } = await supabase
         .from('medical_messages')
         .insert({
@@ -84,17 +108,7 @@ export const Hero = () => {
           user_id: session.user.id
         });
 
-      if (messageError) {
-        if (messageError.code === 'PGRST116') {
-          toast({
-            title: "Daily Limit Reached",
-            description: "You've reached your daily prompt limit. Please upgrade to a paid plan for unlimited prompts.",
-            variant: "destructive",
-          });
-          return;
-        }
-        throw messageError;
-      }
+      if (messageError) throw messageError;
 
       const aiResponse = `Thank you for sharing your case. I'm analyzing the details and will provide professional guidance shortly.
 
@@ -108,6 +122,7 @@ Based on the information provided, here are my initial recommendations:
 
 Would you like me to elaborate on any of these points or provide more specific guidance?`;
 
+      // Add AI response
       await supabase
         .from('medical_messages')
         .insert({

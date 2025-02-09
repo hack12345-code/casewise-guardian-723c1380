@@ -103,7 +103,9 @@ export type Database = {
           full_name: string | null
           id: string
           is_blocked: boolean | null
+          last_prompt_date: string | null
           medical_sector: string | null
+          prompt_count: number | null
           subscription_status: string | null
           updated_at: string
         }
@@ -114,7 +116,9 @@ export type Database = {
           full_name?: string | null
           id: string
           is_blocked?: boolean | null
+          last_prompt_date?: string | null
           medical_sector?: string | null
+          prompt_count?: number | null
           subscription_status?: string | null
           updated_at?: string
         }
@@ -125,7 +129,9 @@ export type Database = {
           full_name?: string | null
           id?: string
           is_blocked?: boolean | null
+          last_prompt_date?: string | null
           medical_sector?: string | null
+          prompt_count?: number | null
           subscription_status?: string | null
           updated_at?: string
         }
