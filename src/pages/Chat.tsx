@@ -307,6 +307,9 @@ const Chat = () => {
                       onSubmit={handleSendMessage}
                       isLoading={isLoading}
                     />
+                    <p className="text-xs text-gray-500 mt-2 italic">
+                      * To generate a full report or fix an existing report, type "report:" followed by your appointment summary or existing report
+                    </p>
                   </div>
                 </div>
               </Card>
