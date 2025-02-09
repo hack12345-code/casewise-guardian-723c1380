@@ -3,12 +3,13 @@ import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Navbar } from "@/components/Navbar"
-import { MessageSquare, Plus, Trash2 } from "lucide-react"
+import { MessageSquare, Plus, Trash2, PencilIcon } from "lucide-react"
 import { useState, useEffect } from "react"
 import { useToast } from "@/components/ui/use-toast"
 import { DashboardSidebar } from "@/components/DashboardSidebar"
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { supabase } from "@/integrations/supabase/client"
+import { Input } from "@/components/ui/input"
 
 interface Chat {
   id: string
@@ -22,6 +23,8 @@ const Dashboard = () => {
   const { toast } = useToast()
   const [chats, setChats] = useState<Chat[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [editingChatId, setEditingChatId] = useState<string | null>(null)
+  const [newTitle, setNewTitle] = useState("")
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -115,56 +118,64 @@ const Dashboard = () => {
   }
 
   const handleDeleteChat = async (chatId: string) => {
-    const { error } = await supabase
-      .from('medical_chats')
-      .delete()
-      .eq('id', chatId)
+    try {
+      const { error } = await supabase
+        .from('medical_chats')
+        .delete()
+        .eq('id', chatId)
 
-    if (error) {
+      if (error) throw error
+
+      setChats(chats.filter((chat) => chat.id !== chatId))
+      toast({
+        title: "Case deleted",
+        description: "The case has been successfully deleted.",
+      })
+    } catch (error) {
       console.error("Error deleting chat:", error)
       toast({
         title: "Error deleting chat",
-        description: error.message,
+        description: "Failed to delete the case. Please try again.",
         variant: "destructive",
       })
-      return
     }
-
-    setChats(chats.filter((chat) => chat.id !== chatId))
-    toast({
-      title: "Chat deleted",
-      description: "The case has been successfully deleted.",
-    })
   }
 
   const handleOpenChat = (chatId: string) => {
     navigate(`/chat/${chatId}`)
   }
 
-  const handleRenameChat = async (chatId: string, newTitle: string) => {
-    const { error } = await supabase
-      .from('medical_chats')
-      .update({ case_title: newTitle })
-      .eq('id', chatId)
+  const startEditing = (chat: Chat) => {
+    setEditingChatId(chat.id)
+    setNewTitle(chat.case_title)
+  }
 
-    if (error) {
+  const handleRenameChat = async (chatId: string) => {
+    try {
+      const { error } = await supabase
+        .from('medical_chats')
+        .update({ case_title: newTitle })
+        .eq('id', chatId)
+
+      if (error) throw error
+
+      setChats(chats.map(chat => 
+        chat.id === chatId ? { ...chat, case_title: newTitle } : chat
+      ))
+
+      setEditingChatId(null)
+      toast({
+        title: "Case renamed",
+        description: "The case title has been updated successfully.",
+      })
+    } catch (error) {
       console.error("Error renaming chat:", error)
       toast({
         title: "Error renaming chat",
-        description: error.message,
+        description: "Failed to rename the case. Please try again.",
         variant: "destructive",
       })
-      return
     }
-
-    setChats(chats.map(chat => 
-      chat.id === chatId ? { ...chat, case_title: newTitle } : chat
-    ))
-
-    toast({
-      title: "Case renamed",
-      description: "The case title has been updated successfully.",
-    })
   }
 
   if (isLoading) {
@@ -208,11 +219,56 @@ const Dashboard = () => {
                   className="p-6 hover:shadow-lg transition-shadow cursor-pointer"
                 >
                   <div className="flex justify-between items-start mb-4">
-                    <div className="flex items-center">
-                      <MessageSquare className="h-5 w-5 text-blue-600 mr-2" />
-                      <h3 className="font-semibold text-lg text-gray-900">
-                        {chat.case_title}
-                      </h3>
+                    <div className="flex items-center flex-1">
+                      <MessageSquare className="h-5 w-5 text-blue-600 mr-2 flex-shrink-0" />
+                      {editingChatId === chat.id ? (
+                        <div className="flex gap-2 items-center w-full">
+                          <Input
+                            value={newTitle}
+                            onChange={(e) => setNewTitle(e.target.value)}
+                            className="flex-1"
+                            autoFocus
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                handleRenameChat(chat.id)
+                              } else if (e.key === 'Escape') {
+                                setEditingChatId(null)
+                              }
+                            }}
+                          />
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleRenameChat(chat.id)}
+                          >
+                            Save
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => setEditingChatId(null)}
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-semibold text-lg text-gray-900">
+                            {chat.case_title}
+                          </h3>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              startEditing(chat)
+                            }}
+                            className="ml-2 h-8 w-8"
+                          >
+                            <PencilIcon className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )}
                     </div>
                     <Button
                       variant="ghost"
@@ -221,7 +277,7 @@ const Dashboard = () => {
                         e.stopPropagation()
                         handleDeleteChat(chat.id)
                       }}
-                      className="text-gray-500 hover:text-red-600"
+                      className="text-gray-500 hover:text-red-600 ml-2"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
