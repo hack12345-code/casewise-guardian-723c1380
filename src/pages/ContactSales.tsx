@@ -4,41 +4,49 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const ContactSales = () => {
   const [formData, setFormData] = useState({
     companyName: "",
     contactName: "",
     email: "",
+    phone: "",
+    message: "Enterprise plan inquiry",
   });
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // In a real implementation, this would be connected to your backend
-    // For now, we'll simulate adding it to the enterprise leads
-    const newLead = {
-      id: Date.now().toString(),
-      companyName: formData.companyName,
-      contactName: formData.contactName,
-      email: formData.email,
-      phone: "",
-      message: "Enterprise plan inquiry",
-      date: new Date().toISOString().split('T')[0],
-    };
+    try {
+      const { error } = await supabase
+        .from('enterprise_leads')
+        .insert([{
+          company_name: formData.companyName,
+          contact_name: formData.contactName,
+          email: formData.email,
+          phone: formData.phone,
+          message: formData.message,
+        }]);
 
-    // Store the lead in localStorage for demo purposes
-    const existingLeads = JSON.parse(localStorage.getItem('enterpriseLeads') || '[]');
-    localStorage.setItem('enterpriseLeads', JSON.stringify([...existingLeads, newLead]));
+      if (error) throw error;
 
-    toast({
-      title: "Request Submitted",
-      description: "Our sales team will contact you soon.",
-    });
+      toast({
+        title: "Request Submitted",
+        description: "Our sales team will contact you soon.",
+      });
 
-    navigate('/');
+      navigate('/');
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: "There was an error submitting your request. Please try again.",
+        variant: "destructive",
+      });
+      console.error('Error:', error);
+    }
   };
 
   return (
@@ -91,6 +99,19 @@ const ContactSales = () => {
                 />
               </div>
 
+              <div>
+                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+                  Phone Number (Optional)
+                </label>
+                <input
+                  type="tel"
+                  id="phone"
+                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                />
+              </div>
+
               <button
                 type="submit"
                 className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors"
@@ -107,4 +128,3 @@ const ContactSales = () => {
 };
 
 export default ContactSales;
-

@@ -37,12 +37,13 @@ interface User {
 
 interface EnterpriseLead {
   id: string;
-  companyName: string;
-  contactName: string;
+  company_name: string;
+  contact_name: string;
   email: string;
   phone: string;
   message: string;
-  date: string;
+  created_at: string;
+  status: string;
 }
 
 interface SupportMessage {
@@ -62,18 +63,7 @@ interface SupportMessage {
 
 const AdminDashboard = () => {
   const [users, setUsers] = useState<User[]>([]);
-  const [enterpriseLeads] = useState<EnterpriseLead[]>([
-    {
-      id: "1",
-      companyName: "Medical Center Inc",
-      contactName: "Jane Doe",
-      email: "jane@medcenter.com",
-      phone: "+1234567890",
-      message: "Interested in enterprise plan for 50 doctors",
-      date: "2024-02-19",
-    },
-  ]);
-
+  const [enterpriseLeads, setEnterpriseLeads] = useState<EnterpriseLead[]>([]);
   const [supportMessages, setSupportMessages] = useState<SupportMessage[]>(() => {
     const savedMessages = localStorage.getItem("support-messages");
     return savedMessages ? JSON.parse(savedMessages) : [];
@@ -126,7 +116,28 @@ const AdminDashboard = () => {
       }
     };
 
+    const fetchEnterpriseLeads = async () => {
+      const { data, error } = await supabase
+        .from('enterprise_leads')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        toast({
+          title: "Error fetching enterprise leads",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (data) {
+        setEnterpriseLeads(data);
+      }
+    };
+
     fetchUsers();
+    fetchEnterpriseLeads();
   }, [toast]);
 
   const handleManageUser = (user: User) => {
@@ -440,24 +451,30 @@ const AdminDashboard = () => {
                       <TableHead>Phone</TableHead>
                       <TableHead>Message</TableHead>
                       <TableHead>Date</TableHead>
-                      <TableHead>Actions</TableHead>
+                      <TableHead>Status</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {enterpriseLeads.map((lead) => (
                       <TableRow key={lead.id}>
-                        <TableCell>{lead.companyName}</TableCell>
-                        <TableCell>{lead.contactName}</TableCell>
+                        <TableCell>{lead.company_name}</TableCell>
+                        <TableCell>{lead.contact_name}</TableCell>
                         <TableCell>{lead.email}</TableCell>
-                        <TableCell>{lead.phone}</TableCell>
+                        <TableCell>{lead.phone || 'N/A'}</TableCell>
                         <TableCell className="max-w-xs truncate">
                           {lead.message}
                         </TableCell>
-                        <TableCell>{lead.date}</TableCell>
+                        <TableCell>{new Date(lead.created_at).toLocaleDateString()}</TableCell>
                         <TableCell>
-                          <Button variant="outline" size="sm">
-                            View
-                          </Button>
+                          <span className={`px-2 py-1 rounded-full text-xs ${
+                            lead.status === 'new' 
+                              ? 'bg-blue-100 text-blue-800'
+                              : lead.status === 'contacted'
+                              ? 'bg-yellow-100 text-yellow-800'
+                              : 'bg-green-100 text-green-800'
+                          }`}>
+                            {lead.status.charAt(0).toUpperCase() + lead.status.slice(1)}
+                          </span>
                         </TableCell>
                       </TableRow>
                     ))}
