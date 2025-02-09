@@ -29,6 +29,12 @@ const SignUp = () => {
 
   const handleBackToHero = () => {
     navigate('/', { replace: true });
+    requestAnimationFrame(() => {
+      const heroSection = document.querySelector('#hero-section');
+      if (heroSection) {
+        heroSection.scrollIntoView({ behavior: 'smooth' });
+      }
+    });
   };
 
   const countries = [
