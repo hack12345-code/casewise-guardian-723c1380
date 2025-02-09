@@ -1,3 +1,4 @@
+
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 
@@ -10,51 +11,40 @@ const PrivacyPolicy = () => {
           <h1 className="text-3xl font-bold mb-8">Privacy Policy</h1>
           
           <div className="prose prose-gray max-w-none">
-            <h2 className="text-xl font-semibold mt-6 mb-4">1. Information Collection</h2>
-            <p>We collect information that you provide directly to us, including:</p>
-            <ul className="list-disc pl-6 mb-4">
-              <li>Account information (name, email, professional credentials)</li>
-              <li>Case information and medical scenarios you input</li>
-              <li>Usage data and interaction with our platform</li>
-            </ul>
-            
-            <h2 className="text-xl font-semibold mt-6 mb-4">2. Use of Information</h2>
-            <p>We use collected information for:</p>
-            <ul className="list-disc pl-6 mb-4">
-              <li>Providing and improving our services</li>
-              <li>Analyzing usage patterns and platform performance</li>
-              <li>Communicating with users about our services</li>
-              <li>Ensuring compliance with legal obligations</li>
-            </ul>
-            
-            <h2 className="text-xl font-semibold mt-6 mb-4">3. Data Storage and Security</h2>
-            <p>We implement appropriate security measures to protect your information. However, no method of transmission over the internet is 100% secure.</p>
-            
+            <h2 className="text-xl font-semibold mt-6 mb-4">1. Introduction</h2>
+            <p>Saver respects your privacy. This Privacy Policy explains how we collect, use, and protect user data when you use our Services.</p>
+
+            <h2 className="text-xl font-semibold mt-6 mb-4">2. Data We Collect</h2>
+            <p>Personal Data: We collect email addresses and payment information for account management and billing purposes.</p>
+            <p>Usage Data: We collect anonymized analytics data to improve our platform.</p>
+            <p>AI Interactions: We process AI-generated responses but do not store user-inputted patient details.</p>
+
+            <h2 className="text-xl font-semibold mt-6 mb-4">3. How We Use Your Data</h2>
+            <p>To provide and improve our Services.</p>
+            <p>To comply with legal obligations and ensure platform security.</p>
+            <p>To communicate with users regarding account-related information.</p>
+
             <h2 className="text-xl font-semibold mt-6 mb-4">4. Third-Party Services</h2>
-            <p>We use third-party services including:</p>
-            <ul className="list-disc pl-6 mb-4">
-              <li>OpenAI for AI-powered responses</li>
-              <li>Google Analytics for usage analysis</li>
-              <li>Cloud service providers for data storage</li>
-            </ul>
-            
-            <h2 className="text-xl font-semibold mt-6 mb-4">5. Data Retention</h2>
-            <p>We retain your information for as long as necessary to provide our services and comply with legal obligations.</p>
-            
-            <h2 className="text-xl font-semibold mt-6 mb-4">6. Your Rights</h2>
-            <p>You have the right to:</p>
-            <ul className="list-disc pl-6 mb-4">
-              <li>Access your personal information</li>
-              <li>Request correction of inaccurate data</li>
-              <li>Request deletion of your data</li>
-              <li>Opt-out of certain data collection</li>
-            </ul>
-            
-            <h2 className="text-xl font-semibold mt-6 mb-4">7. Updates to Privacy Policy</h2>
-            <p>We may update this privacy policy periodically. Continued use of our services constitutes acceptance of any changes.</p>
-            
-            <h2 className="text-xl font-semibold mt-6 mb-4">8. Contact Us</h2>
-            <p>For questions about this privacy policy, please contact us at privacy@save.com</p>
+            <p>We use OpenAI API for AI processing and Google Analytics for tracking anonymized user behavior.</p>
+            <p>We are not affiliated with OpenAI, Google, or any regulatory body mentioned on our site.</p>
+
+            <h2 className="text-xl font-semibold mt-6 mb-4">5. Data Security</h2>
+            <p>We employ security measures to protect user data.</p>
+            <p>Users should not input patient-identifiable data, as our platform is not designed for storing protected health information (PHI).</p>
+
+            <h2 className="text-xl font-semibold mt-6 mb-4">6. Data Retention</h2>
+            <p>We retain non-identifiable user data for analytics.</p>
+            <p>Users may request account deletion by contacting savesuppo@gmail.com.</p>
+
+            <h2 className="text-xl font-semibold mt-6 mb-4">7. Your Rights</h2>
+            <p>Users can request access, modification, or deletion of their personal data.</p>
+            <p>We comply with data protection laws applicable to our operations.</p>
+
+            <h2 className="text-xl font-semibold mt-6 mb-4">8. Policy Changes</h2>
+            <p>We may update this policy periodically. Users will be notified of significant changes.</p>
+
+            <h2 className="text-xl font-semibold mt-6 mb-4">9. Contact Us</h2>
+            <p>For privacy-related concerns, email us at: savesuppo@gmail.com.</p>
           </div>
         </div>
       </div>
