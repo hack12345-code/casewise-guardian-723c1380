@@ -1,4 +1,3 @@
-
 import { AIInput } from "./ui/ai-input";
 import { Response } from "./Response";
 import { Sectors } from "./Sectors";
@@ -63,10 +62,11 @@ export const Hero = () => {
       const isNewDay = !profile.last_prompt_date || profile.last_prompt_date < today;
       const isFreeUser = profile.subscription_status === 'free' || !profile.subscription_status;
 
+      // Only check prompt limits for free users
       if (isFreeUser && !isNewDay && profile.prompt_count >= 1) {
         toast({
           title: "Daily Limit Reached",
-          description: "Your 1 prompt a day limit has been reached. Please try again tomorrow.",
+          description: "Upgrade to our premium plan for unlimited prompts!",
           variant: "destructive",
         });
         setIsLoading(false);
@@ -85,7 +85,7 @@ export const Hero = () => {
 
       if (chatError) throw chatError;
 
-      // Update prompt count for free users
+      // Update prompt count only for free users
       if (isFreeUser) {
         const { error: updateError } = await supabase
           .from('profiles')
