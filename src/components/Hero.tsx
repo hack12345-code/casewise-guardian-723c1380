@@ -10,6 +10,8 @@ import { FAQs } from "./FAQs";
 import { Footer } from "./Footer";
 import { Button } from "./ui/button";
 import { Card } from "@/components/ui/card";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Prompt {
   text: string;
@@ -31,97 +33,70 @@ export const Hero = () => {
   const [caseCounter, setCaseCounter] = useState(1);
   const [demoType, setDemoType] = useState<'regular' | 'report'>('regular');
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const today = new Date().toISOString().split('T')[0];
-    const storedUsage = localStorage.getItem('promptUsage');
-    let usage: PromptUsage;
-
-    if (storedUsage) {
-      usage = JSON.parse(storedUsage);
-      if (usage.lastPromptDate !== today) {
-        usage = {
-          lastPromptDate: today,
-          promptCount: 0
-        };
-        localStorage.setItem('promptUsage', JSON.stringify(usage));
-      }
-    } else {
-      usage = {
-        lastPromptDate: today,
-        promptCount: 0
-      };
-      localStorage.setItem('promptUsage', JSON.stringify(usage));
+    const savedPrompt = localStorage.getItem('pendingPrompt');
+    if (savedPrompt) {
+      handleSubmit(savedPrompt);
+      localStorage.removeItem('pendingPrompt');
     }
   }, []);
 
-  const checkPromptLimit = (): boolean => {
-    const userEmail = localStorage.getItem('userEmail');
-    if (userEmail === 'savesuppo@gmail.com') {
-      return true;
-    }
-
-    const today = new Date().toISOString().split('T')[0];
-    const storedUsage = localStorage.getItem('promptUsage');
-    
-    if (storedUsage) {
-      const usage: PromptUsage = JSON.parse(storedUsage);
-      
-      if (usage.lastPromptDate !== today) {
-        localStorage.setItem('promptUsage', JSON.stringify({
-          lastPromptDate: today,
-          promptCount: 0
-        }));
-        return true;
-      }
-      
-      if (usage.promptCount >= 1) {
-        toast({
-          title: "Daily limit reached",
-          description: "You've reached your daily prompt limit. Please upgrade to a paid plan for unlimited prompts.",
-          variant: "destructive",
-        });
-        return false;
-      }
-    }
-    return true;
-  };
-
-  const updatePromptUsage = () => {
-    if (localStorage.getItem('userEmail') === 'savesuppo@gmail.com') {
-      return;
-    }
-
-    const today = new Date().toISOString().split('T')[0];
-    const storedUsage = localStorage.getItem('promptUsage');
-    let usage: PromptUsage;
-
-    if (storedUsage) {
-      usage = JSON.parse(storedUsage);
-      usage.lastPromptDate = today;
-      usage.promptCount += 1;
-    } else {
-      usage = {
-        lastPromptDate: today,
-        promptCount: 1
-      };
-    }
-
-    localStorage.setItem('promptUsage', JSON.stringify(usage));
-  };
-
   const handleSubmit = async (caseDetails: string) => {
-    if (!checkPromptLimit()) {
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session) {
+      localStorage.setItem('pendingPrompt', caseDetails);
+      navigate('/signup');
       return;
     }
 
     setIsLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const newPrompt: Prompt = {
-        text: caseDetails,
-        response: `Thank you for sharing your case. I'm analyzing the details and will provide professional guidance shortly.
+      const { data: newChat, error: chatError } = await supabase
+        .from('medical_chats')
+        .insert({
+          case_title: 'New Case',
+          user_id: session.user.id
+        })
+        .select()
+        .single();
+
+      if (chatError) {
+        if (chatError.code === 'PGRST116') {
+          toast({
+            title: "Free Plan Limit Reached",
+            description: "You've reached the maximum number of cases allowed on the free plan. Please upgrade to continue.",
+            variant: "destructive",
+          });
+          return;
+        }
+        throw chatError;
+      }
+
+      const { error: messageError } = await supabase
+        .from('medical_messages')
+        .insert({
+          chat_id: newChat.id,
+          content: caseDetails,
+          role: 'user',
+          user_id: session.user.id
+        });
+
+      if (messageError) {
+        if (messageError.code === 'PGRST116') {
+          toast({
+            title: "Daily Limit Reached",
+            description: "You've reached your daily prompt limit. Please upgrade to a paid plan for unlimited prompts.",
+            variant: "destructive",
+          });
+          return;
+        }
+        throw messageError;
+      }
+
+      const aiResponse = `Thank you for sharing your case. I'm analyzing the details and will provide professional guidance shortly.
 
 Based on the information provided, here are my initial recommendations:
 
@@ -131,22 +106,23 @@ Based on the information provided, here are my initial recommendations:
 4. Consult with colleagues if needed
 5. Keep detailed records of all decisions
 
-Would you like me to elaborate on any of these points or provide more specific guidance?`,
-        caseTitle: `Case ${caseCounter}`
-      };
-      
-      setPrompts(prev => [...prev, newPrompt]);
-      setCurrentPrompt(caseDetails);
-      setResponse("");
-      setHasResponse(true);
-      setCaseCounter(prev => prev + 1);
-      
-      updatePromptUsage();
-    } catch (error) {
+Would you like me to elaborate on any of these points or provide more specific guidance?`;
+
+      await supabase
+        .from('medical_messages')
+        .insert({
+          chat_id: newChat.id,
+          content: aiResponse,
+          role: 'assistant',
+          user_id: session.user.id
+        });
+
+      navigate(`/chat/${newChat.id}`);
+    } catch (error: any) {
       console.error("Error:", error);
       toast({
         title: "Error",
-        description: "Something went wrong",
+        description: error.message,
         variant: "destructive",
       });
     } finally {
@@ -195,7 +171,6 @@ Would you like me to elaborate on any of these points or provide more specific g
           <div className="flex min-h-[calc(100vh-4rem)] pt-8">
             <main className="flex-1">
               <div className="grid grid-cols-3 gap-8">
-                {/* Response Section (1/3) */}
                 <div className="col-span-1">
                   <Card className="h-[calc(100vh-8rem)] p-6 overflow-y-auto">
                     <Response
@@ -211,7 +186,6 @@ Would you like me to elaborate on any of these points or provide more specific g
                   </Card>
                 </div>
 
-                {/* Chat Messages Section (2/3) */}
                 <div className="col-span-2">
                   <Card className="h-[calc(100vh-8rem)]">
                     <div className="h-full flex flex-col">
