@@ -56,7 +56,7 @@ const Chat = () => {
           .order('created_at', { ascending: true })
 
         if (messagesData) {
-          const formattedMessages = messagesData.map(msg => ({
+          const formattedMessages: Message[] = messagesData.map(msg => ({
             id: msg.id,
             text: msg.content,
             sender: msg.role === 'user' ? 'user' : 'ai',
@@ -100,11 +100,11 @@ const Chat = () => {
           user_id: session.user.id
         })
 
-      // Update last message in chat
+      // Update chat timestamp
       await supabase
         .from('medical_chats')
         .update({
-          last_message: input.slice(0, 100) + (input.length > 100 ? "..." : "")
+          updated_at: new Date().toISOString()
         })
         .eq('id', chatId)
     }
