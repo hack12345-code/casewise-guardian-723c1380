@@ -22,6 +22,7 @@ const Chat = () => {
   const [messages, setMessages] = useState<Message[]>([])
   const [caseTitle, setCaseTitle] = useState("")
   const [isLoading, setIsLoading] = useState(true)
+  const [latestUserPrompt, setLatestUserPrompt] = useState("")
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -63,6 +64,14 @@ const Chat = () => {
             timestamp: msg.created_at
           }))
           setMessages(formattedMessages)
+          
+          // Find the latest user message for the prompt
+          const latestUserMessage = [...messagesData]
+            .reverse()
+            .find(msg => msg.role === 'user')
+          if (latestUserMessage) {
+            setLatestUserPrompt(latestUserMessage.content)
+          }
         }
       }
       setIsLoading(false)
@@ -88,6 +97,7 @@ const Chat = () => {
     }
 
     setMessages(prev => [...prev, newMessage])
+    setLatestUserPrompt(input) // Update the latest user prompt
 
     // Save message to database
     if (chatId) {
@@ -186,7 +196,7 @@ const Chat = () => {
                       ? messages[messages.length - 1].text
                       : ""
                   }
-                  prompt={messages.length > 0 ? messages[0].text : ""}
+                  prompt={latestUserPrompt}
                   caseTitle={caseTitle}
                   onRename={handleRename}
                 />
