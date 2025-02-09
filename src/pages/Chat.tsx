@@ -1,12 +1,11 @@
 
 import { useState, useEffect } from "react"
-import { useParams, useNavigate } from "react-router-dom"
+import { useParams } from "react-router-dom"
 import { Navbar } from "@/components/Navbar"
 import { Card } from "@/components/ui/card"
 import { useToast } from "@/components/ui/use-toast"
 import { AIInput } from "@/components/ui/ai-input"
 import { Response } from "@/components/Response"
-import { supabase } from "@/integrations/supabase/client"
 
 interface Message {
   id: string
@@ -17,7 +16,6 @@ interface Message {
 
 const Chat = () => {
   const { chatId } = useParams()
-  const navigate = useNavigate()
   const { toast } = useToast()
   const [messages, setMessages] = useState<Message[]>(() => {
     if (chatId) {
@@ -26,39 +24,20 @@ const Chat = () => {
     }
     return []
   })
-  const [caseTitle, setCaseTitle] = useState("New Case")
-
-  useEffect(() => {
+  const [caseTitle, setCaseTitle] = useState(() => {
     if (chatId) {
-      fetchCase()
-    }
-  }, [chatId])
-
-  const fetchCase = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('cases')
-        .select('*')
-        .eq('id', chatId)
-        .single()
-
-      if (error) throw error
-      if (data) {
-        setCaseTitle(data.title)
+      const savedChats = localStorage.getItem("chats")
+      if (savedChats) {
+        const chats = JSON.parse(savedChats)
+        const currentChat = chats.find((chat: any) => chat.id === chatId)
+        return currentChat?.title || "New Case"
       }
-    } catch (error) {
-      console.error('Error fetching case:', error)
-      toast({
-        title: "Error loading case",
-        description: "There was a problem loading your case. Please try again.",
-        variant: "destructive",
-      })
-      navigate('/dashboard')
     }
-  }
+    return "New Case"
+  })
 
-  const handleSendMessage = async (input: string) => {
-    if (!input.trim() || !chatId) return
+  const handleSendMessage = (input: string) => {
+    if (!input.trim()) return
 
     const newMessage: Message = {
       id: Date.now().toString(),
@@ -71,18 +50,24 @@ const Chat = () => {
     setMessages(updatedMessages)
 
     // Save messages to localStorage
-    localStorage.setItem(`chat-${chatId}`, JSON.stringify(updatedMessages))
+    if (chatId) {
+      localStorage.setItem(`chat-${chatId}`, JSON.stringify(updatedMessages))
+    }
 
-    // Update last message in Supabase
-    try {
-      const { error } = await supabase
-        .from('cases')
-        .update({ last_message: input.slice(0, 100) + (input.length > 100 ? "..." : "") })
-        .eq('id', chatId)
-
-      if (error) throw error
-    } catch (error) {
-      console.error('Error updating case:', error)
+    // Update last message in chats list
+    const savedChats = localStorage.getItem("chats")
+    if (savedChats && chatId) {
+      const chats = JSON.parse(savedChats)
+      const updatedChats = chats.map((chat: any) => {
+        if (chat.id === chatId) {
+          return {
+            ...chat,
+            lastMessage: input.slice(0, 100) + (input.length > 100 ? "..." : ""),
+          }
+        }
+        return chat
+      })
+      localStorage.setItem("chats", JSON.stringify(updatedChats))
     }
 
     // Simulate AI response
@@ -95,33 +80,26 @@ const Chat = () => {
       }
       const withAiResponse = [...updatedMessages, aiResponse]
       setMessages(withAiResponse)
-      localStorage.setItem(`chat-${chatId}`, JSON.stringify(withAiResponse))
+      if (chatId) {
+        localStorage.setItem(`chat-${chatId}`, JSON.stringify(withAiResponse))
+      }
     }, 1000)
   }
 
-  const handleRename = async (newTitle: string) => {
-    if (!chatId) return
-
-    try {
-      const { error } = await supabase
-        .from('cases')
-        .update({ title: newTitle })
-        .eq('id', chatId)
-
-      if (error) throw error
-      
-      setCaseTitle(newTitle)
-      toast({
-        title: "Case renamed",
-        description: "Your case has been renamed successfully.",
-      })
-    } catch (error) {
-      console.error('Error renaming case:', error)
-      toast({
-        title: "Error renaming case",
-        description: "There was a problem renaming your case. Please try again.",
-        variant: "destructive",
-      })
+  const handleRename = (newTitle: string) => {
+    setCaseTitle(newTitle)
+    if (chatId) {
+      const savedChats = localStorage.getItem("chats")
+      if (savedChats) {
+        const chats = JSON.parse(savedChats)
+        const updatedChats = chats.map((chat: any) => {
+          if (chat.id === chatId) {
+            return { ...chat, title: newTitle }
+          }
+          return chat
+        })
+        localStorage.setItem("chats", JSON.stringify(updatedChats))
+      }
     }
   }
 
@@ -131,6 +109,7 @@ const Chat = () => {
       <div className="flex min-h-[calc(100vh-4rem)] pt-16">
         <main className="flex-1 p-8">
           <div className="grid grid-cols-3 gap-8">
+            {/* Response Section (1/3) */}
             <div className="col-span-1">
               <Card className="h-[calc(100vh-16rem)] p-6 overflow-y-auto">
                 <Response
@@ -146,6 +125,7 @@ const Chat = () => {
               </Card>
             </div>
 
+            {/* Chat Messages Section (2/3) */}
             <div className="col-span-2">
               <Card className="h-[calc(100vh-16rem)]">
                 <div className="h-full flex flex-col">

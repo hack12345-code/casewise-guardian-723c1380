@@ -8,101 +8,63 @@ import { useState, useEffect } from "react"
 import { useToast } from "@/components/ui/use-toast"
 import { DashboardSidebar } from "@/components/DashboardSidebar"
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
-import { supabase } from "@/integrations/supabase/client"
 
 interface Chat {
   id: string
   title: string
-  last_message: string | null
-  created_at: string
+  lastMessage: string
+  date: string
 }
 
 const Dashboard = () => {
   const navigate = useNavigate()
   const { toast } = useToast()
-  const [chats, setChats] = useState<Chat[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const [chats, setChats] = useState<Chat[]>(() => {
+    const savedChats = localStorage.getItem("chats")
+    return savedChats
+      ? JSON.parse(savedChats)
+      : [
+          {
+            id: "1",
+            title: "Cardiac Case Discussion",
+            lastMessage: "Patient presents with chest pain...",
+            date: "2024-02-20",
+          },
+          {
+            id: "2",
+            title: "Orthopedic Consultation",
+            lastMessage: "Post-operative care for knee replacement...",
+            date: "2024-02-19",
+          },
+        ]
+  })
 
   useEffect(() => {
-    fetchChats()
-  }, [])
+    localStorage.setItem("chats", JSON.stringify(chats))
+  }, [chats])
 
-  const fetchChats = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('cases')
-        .select('*')
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
-      setChats(data || [])
-    } catch (error) {
-      console.error('Error fetching chats:', error)
-      toast({
-        title: "Error loading cases",
-        description: "There was a problem loading your cases. Please try again.",
-        variant: "destructive",
-      })
-    } finally {
-      setIsLoading(false)
+  const handleNewChat = () => {
+    const newChat: Chat = {
+      id: Date.now().toString(),
+      title: "New Case",
+      lastMessage: "Start discussing your case...",
+      date: new Date().toISOString().split("T")[0],
     }
+    setChats([newChat, ...chats])
+    navigate(`/chat/${newChat.id}`)
+    toast({
+      title: "Starting new case",
+      description: "Creating a new case for you...",
+    })
   }
 
-  const handleNewChat = async () => {
-    try {
-      const newChat = {
-        title: "New Case",
-        last_message: "Start discussing your case...",
-      }
-
-      const { data, error } = await supabase
-        .from('cases')
-        .insert([newChat])
-        .select()
-        .single()
-
-      if (error) throw error
-
-      if (data) {
-        setChats([data, ...chats])
-        navigate(`/chat/${data.id}`)
-        toast({
-          title: "Starting new case",
-          description: "Creating a new case for you...",
-        })
-      }
-    } catch (error) {
-      console.error('Error creating new chat:', error)
-      toast({
-        title: "Error creating case",
-        description: "There was a problem creating your case. Please try again.",
-        variant: "destructive",
-      })
-    }
-  }
-
-  const handleDeleteChat = async (chatId: string) => {
-    try {
-      const { error } = await supabase
-        .from('cases')
-        .delete()
-        .eq('id', chatId)
-
-      if (error) throw error
-
-      setChats(chats.filter((chat) => chat.id !== chatId))
-      toast({
-        title: "Chat deleted",
-        description: "The chat has been removed from your history.",
-      })
-    } catch (error) {
-      console.error('Error deleting chat:', error)
-      toast({
-        title: "Error deleting case",
-        description: "There was a problem deleting your case. Please try again.",
-        variant: "destructive",
-      })
-    }
+  const handleDeleteChat = (chatId: string) => {
+    setChats(chats.filter((chat) => chat.id !== chatId))
+    localStorage.removeItem(`chat-${chatId}`)
+    toast({
+      title: "Chat deleted",
+      description: "The chat has been removed from your history.",
+    })
   }
 
   const handleOpenChat = (chatId: string) => {
@@ -111,20 +73,6 @@ const Dashboard = () => {
       title: "Opening case",
       description: "Loading your case...",
     })
-  }
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <Navbar />
-        <div className="flex min-h-[calc(100vh-4rem)] pt-16">
-          <DashboardSidebar />
-          <main className="flex-1 p-8">
-            <div className="text-center">Loading your cases...</div>
-          </main>
-        </div>
-      </div>
-    )
   }
 
   return (
@@ -172,12 +120,10 @@ const Dashboard = () => {
                     </Button>
                   </div>
                   <p className="text-gray-600 text-sm mb-3 line-clamp-2">
-                    {chat.last_message}
+                    {chat.lastMessage}
                   </p>
                   <div className="flex justify-between items-center">
-                    <span className="text-xs text-gray-500">
-                      {new Date(chat.created_at).toLocaleDateString()}
-                    </span>
+                    <span className="text-xs text-gray-500">{chat.date}</span>
                     <Button
                       variant="outline"
                       size="sm"
