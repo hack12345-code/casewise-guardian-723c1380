@@ -1,4 +1,3 @@
-
 "use client";
 import React from "react";
 import {
@@ -137,4 +136,4 @@ export const MovingBorder = ({
       </motion.div>
     </>
   );
-}
+};
