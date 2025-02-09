@@ -20,12 +20,26 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { data: { session }, error: authError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (error) throw error;
+      if (authError) throw authError;
+
+      // Check if user is blocked
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('is_blocked')
+        .eq('id', session?.user?.id)
+        .single();
+
+      if (profileError) throw profileError;
+
+      if (profile?.is_blocked) {
+        await supabase.auth.signOut();
+        throw new Error("Your account has been blocked. Please contact support.");
+      }
 
       toast({
         title: "Logged in successfully!",

@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
 import { AIInput } from "@/components/ui/ai-input";
+import { supabase } from "@/lib/supabase";
 
 interface User {
   id: string;
@@ -60,19 +61,7 @@ interface SupportMessage {
 }
 
 const AdminDashboard = () => {
-  const [users, setUsers] = useState<User[]>([
-    {
-      id: "1",
-      name: "Dr. John Smith",
-      email: "john@example.com",
-      subscription: "Pro",
-      country: "United States",
-      sector: "Cardiology",
-      lastActive: "2024-02-20",
-      isBlocked: false,
-    },
-  ]);
-
+  const [users, setUsers] = useState<User[]>([]);
   const [enterpriseLeads] = useState<EnterpriseLead[]>([
     {
       id: "1",
@@ -106,9 +95,127 @@ const AdminDashboard = () => {
   ]);
   const { toast } = useToast();
 
+  useEffect(() => {
+    const fetchUsers = async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        toast({
+          title: "Error fetching users",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (data) {
+        const formattedUsers = data.map(user => ({
+          id: user.id,
+          name: user.full_name || 'N/A',
+          email: user.email,
+          subscription: user.subscription_status || 'Free',
+          country: user.country || 'N/A',
+          sector: user.medical_sector || 'N/A',
+          lastActive: new Date(user.updated_at).toLocaleDateString(),
+          isBlocked: user.is_blocked,
+        }));
+        setUsers(formattedUsers);
+      }
+    };
+
+    fetchUsers();
+  }, [toast]);
+
   const handleManageUser = (user: User) => {
     setSelectedUser(user);
     setIsManageDialogOpen(true);
+  };
+
+  const handleCancelSubscription = async () => {
+    if (!selectedUser) return;
+    
+    const { error } = await supabase
+      .from('profiles')
+      .update({ subscription_status: 'cancelled' })
+      .eq('id', selectedUser.id);
+
+    if (error) {
+      toast({
+        title: "Error cancelling subscription",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setUsers(users.map(user => 
+      user.id === selectedUser.id 
+        ? { ...user, subscription: 'Cancelled' }
+        : user
+    ));
+    
+    toast({
+      title: "Subscription cancelled",
+      description: `Subscription cancelled for ${selectedUser.email}`,
+    });
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!selectedUser) return;
+    
+    // Note: This will cascade delete the profile due to our foreign key constraint
+    const { error } = await supabase.auth.admin.deleteUser(selectedUser.id);
+
+    if (error) {
+      toast({
+        title: "Error deleting account",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setUsers(users.filter(user => user.id !== selectedUser.id));
+    setIsManageDialogOpen(false);
+    
+    toast({
+      title: "Account deleted",
+      description: `Account deleted for ${selectedUser.email}`,
+    });
+  };
+
+  const handleBlockUser = async () => {
+    if (!selectedUser) return;
+    
+    const newBlockedStatus = !selectedUser.isBlocked;
+    
+    const { error } = await supabase
+      .from('profiles')
+      .update({ is_blocked: newBlockedStatus })
+      .eq('id', selectedUser.id);
+
+    if (error) {
+      toast({
+        title: "Error updating user status",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setUsers(users.map(user => 
+      user.id === selectedUser.id 
+        ? { ...user, isBlocked: newBlockedStatus }
+        : user
+    ));
+    
+    toast({
+      title: newBlockedStatus ? "User blocked" : "User unblocked",
+      description: `${selectedUser.email} has been ${newBlockedStatus ? 'blocked' : 'unblocked'}`,
+    });
   };
 
   const handleOpenChat = (chat: SupportMessage) => {
@@ -164,48 +271,6 @@ const AdminDashboard = () => {
     toast({
       title: "Chat resolved",
       description: "The support conversation has been marked as resolved.",
-    });
-  };
-
-  const handleCancelSubscription = () => {
-    if (!selectedUser) return;
-    
-    setUsers(users.map(user => 
-      user.id === selectedUser.id 
-        ? { ...user, subscription: "Cancelled" }
-        : user
-    ));
-    
-    toast({
-      title: "Subscription cancelled",
-      description: `Subscription cancelled for ${selectedUser.email}`,
-    });
-  };
-
-  const handleDeleteAccount = () => {
-    if (!selectedUser) return;
-    
-    setUsers(users.filter(user => user.id !== selectedUser.id));
-    setIsManageDialogOpen(false);
-    
-    toast({
-      title: "Account deleted",
-      description: `Account deleted for ${selectedUser.email}`,
-    });
-  };
-
-  const handleBlockUser = () => {
-    if (!selectedUser) return;
-    
-    setUsers(users.map(user => 
-      user.id === selectedUser.id 
-        ? { ...user, isBlocked: !user.isBlocked }
-        : user
-    ));
-    
-    toast({
-      title: selectedUser.isBlocked ? "User unblocked" : "User blocked",
-      description: `${selectedUser.email} has been ${selectedUser.isBlocked ? 'unblocked' : 'blocked'}`,
     });
   };
 
