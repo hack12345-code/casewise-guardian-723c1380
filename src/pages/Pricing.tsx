@@ -52,16 +52,17 @@ const Pricing = () => {
       return;
     }
     
-    if (!isAuthenticated) {
+    if (isAuthenticated) {
+      // If user is already logged in, redirect directly to payment
+      navigate('/payment', { state: { plan } });
+    } else {
+      // If not logged in, show toast and redirect to signup
       toast({
         title: "Authentication required",
         description: "Please sign up to continue with the Pro plan",
       });
       navigate('/signup');
-      return;
     }
-
-    navigate('/payment', { state: { plan } });
   };
 
   const FREQUENCIES = ["monthly", "yearly"];
