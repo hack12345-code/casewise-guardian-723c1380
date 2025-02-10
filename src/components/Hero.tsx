@@ -51,7 +51,6 @@ export const Hero = () => {
 
     setIsLoading(true);
     try {
-      // Get user profile to check subscription status and prompt count
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('subscription_status, prompt_count, last_prompt_date')
@@ -63,7 +62,6 @@ export const Hero = () => {
       const today = new Date().toISOString().split('T')[0];
       const isNewDay = !profile.last_prompt_date || profile.last_prompt_date < today;
       
-      // Check if user has active subscription or is within free limits
       const hasActiveSubscription = profile.subscription_status === 'active';
       const isFreeUser = !hasActiveSubscription;
 
@@ -77,7 +75,6 @@ export const Hero = () => {
         return;
       }
 
-      // Create new chat
       const { data: newChat, error: chatError } = await supabase
         .from('medical_chats')
         .insert({
@@ -89,7 +86,6 @@ export const Hero = () => {
 
       if (chatError) throw chatError;
 
-      // Add user message
       const { error: messageError } = await supabase
         .from('medical_messages')
         .insert({
@@ -101,7 +97,6 @@ export const Hero = () => {
 
       if (messageError) throw messageError;
 
-      // Redirect to chat page
       navigate(`/chat/${newChat.id}`);
     } catch (error: any) {
       console.error("Error:", error);
@@ -140,8 +135,7 @@ export const Hero = () => {
             <span className="bg-gradient-to-r from-[#1877F2] to-[#9b87f5] bg-clip-text text-transparent">Prevent Lawsuits</span>
           </h2>
           <p className="text-xl text-gray-600 mb-6">
-            Get AI-powered guidance on preventing malpractice risks. Enter your case details
-            and receive professional recommendations for safer patient care.
+            Enter your patient's case/condition, and our tailored AI will generate actionable guidance to prevent malpractice. Also, generate full reports or fixes for existing reports instantly.
           </p>
         </div>
         
