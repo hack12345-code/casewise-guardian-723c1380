@@ -1,3 +1,4 @@
+
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Check } from "lucide-react";
@@ -13,8 +14,18 @@ const Pricing = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    const authStatus = localStorage.getItem("isAuthenticated");
-    setIsAuthenticated(authStatus === "true");
+    const checkAuth = () => {
+      const authStatus = localStorage.getItem("isAuthenticated");
+      setIsAuthenticated(authStatus === "true");
+    };
+    
+    checkAuth();
+    // Add event listener for auth changes
+    window.addEventListener('storage', checkAuth);
+    
+    return () => {
+      window.removeEventListener('storage', checkAuth);
+    };
   }, []);
 
   const getPrice = (basePrice: string | number, billingCycle: string) => {
@@ -38,7 +49,10 @@ const Pricing = () => {
   const handleGetStarted = (plan: typeof plans[0]) => {
     if (plan.name === "Enterprise") {
       navigate('/contact-sales');
-    } else if (isAuthenticated) {
+      return;
+    }
+    
+    if (isAuthenticated) {
       navigate('/payment', { state: { plan } });
     } else {
       toast({

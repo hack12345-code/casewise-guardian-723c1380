@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 
 export const Footer = () => {
   const links = {
-    company: ["Home", "Support", "Cases", "Pricing", "Blog"],
+    company: ["Home", "Cases", "Support", "Pricing", "Blog"],
     resources: [],
     legal: []
   };
@@ -77,18 +77,18 @@ export const Footer = () => {
               Privacy Policy
             </Link>
             <Link 
-              to="/pricing" 
-              onClick={handleNavigationClick}
-              className="hover:text-white transition-colors"
-            >
-              Pricing
-            </Link>
-            <Link 
               to="/support" 
               onClick={handleNavigationClick}
               className="hover:text-white transition-colors"
             >
               Support
+            </Link>
+            <Link 
+              to="/pricing" 
+              onClick={handleNavigationClick}
+              className="hover:text-white transition-colors"
+            >
+              Pricing
             </Link>
             <Link 
               to="/terms-of-service" 
