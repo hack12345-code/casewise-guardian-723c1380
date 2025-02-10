@@ -139,6 +139,38 @@ const AdminDashboard = () => {
     fetchEnterpriseLeads();
   }, [toast]);
 
+  const handleBlockUser = async () => {
+    if (!selectedUser) return;
+    
+    const newBlockedStatus = !selectedUser.isBlocked;
+    
+    const { error } = await supabase
+      .from('profiles')
+      .update({ is_blocked: newBlockedStatus })
+      .eq('id', selectedUser.id);
+
+    if (error) {
+      toast({
+        title: "Error updating user status",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setUsers(users.map(user => 
+      user.id === selectedUser.id 
+        ? { ...user, isBlocked: newBlockedStatus }
+        : user
+    ));
+    
+    toast({
+      title: newBlockedStatus ? "User blocked" : "User unblocked",
+      description: `${selectedUser.email} has been ${newBlockedStatus ? 'blocked from sending prompts' : 'unblocked'}`,
+    });
+    setIsManageDialogOpen(false);
+  };
+
   const handleManageUser = (user: User) => {
     setSelectedUser(user);
     setIsManageDialogOpen(true);
@@ -194,37 +226,6 @@ const AdminDashboard = () => {
     toast({
       title: "Account deleted",
       description: `Account deleted for ${selectedUser.email}`,
-    });
-  };
-
-  const handleBlockUser = async () => {
-    if (!selectedUser) return;
-    
-    const newBlockedStatus = !selectedUser.isBlocked;
-    
-    const { error } = await supabase
-      .from('profiles')
-      .update({ is_blocked: newBlockedStatus })
-      .eq('id', selectedUser.id);
-
-    if (error) {
-      toast({
-        title: "Error updating user status",
-        description: error.message,
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    setUsers(users.map(user => 
-      user.id === selectedUser.id 
-        ? { ...user, isBlocked: newBlockedStatus }
-        : user
-    ));
-    
-    toast({
-      title: newBlockedStatus ? "User blocked" : "User unblocked",
-      description: `${selectedUser.email} has been ${newBlockedStatus ? 'blocked' : 'unblocked'}`,
     });
   };
 
@@ -615,7 +616,7 @@ const AdminDashboard = () => {
               onClick={handleBlockUser}
               className="w-full"
             >
-              {selectedUser?.isBlocked ? 'Unblock User' : 'Block User'}
+              {selectedUser?.isBlocked ? 'Unblock User' : 'Block User from Prompting'}
             </Button>
             
             <Button
