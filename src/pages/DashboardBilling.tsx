@@ -11,20 +11,20 @@ import { useToast } from "@/components/ui/use-toast"
 import { Icons } from "@/components/ui/icons"
 
 const DashboardBilling = () => {
-  const navigate = useNavigate()
-  const [isEditingPayment, setIsEditingPayment] = useState(false)
-  const [hasExistingPayment, setHasExistingPayment] = useState(false)
-  const [paymentMethod, setPaymentMethod] = useState<'card' | 'paypal'>('card')
-  const { toast } = useToast()
+  const navigate = useNavigate();
+  const [isEditingPayment, setIsEditingPayment] = useState(false);
+  const [hasExistingPayment, setHasExistingPayment] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<'card' | 'paypal'>('card');
+  const { toast } = useToast();
 
   const handleUpdatePayment = () => {
     toast({
       title: "Payment method updated",
       description: "Your payment method has been successfully updated.",
-    })
-    setIsEditingPayment(false)
-    setHasExistingPayment(true)
-  }
+    });
+    setIsEditingPayment(false);
+    setHasExistingPayment(true);
+  };
 
   const handleUpgradeToPro = () => {
     navigate('/payment', { 
@@ -34,8 +34,8 @@ const DashboardBilling = () => {
           price: "29.99"
         }
       }
-    })
-  }
+    });
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
@@ -48,22 +48,48 @@ const DashboardBilling = () => {
               <h1 className="text-3xl font-bold text-gray-900 mb-8">Billing</h1>
               
               <div className="space-y-6">
-                <Card className="p-6 border-2 border-blue-100">
-                  <div className="flex justify-between items-center mb-4">
+                <Card className="p-6 border-2 border-blue-100 hover:border-blue-200 transition-all duration-300">
+                  <div className="flex justify-between items-center mb-6">
                     <h2 className="text-xl font-semibold text-gray-800">Current Plan</h2>
-                    <span className="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm font-medium">Free Plan</span>
+                    <span className="px-4 py-1.5 bg-blue-50 text-blue-600 rounded-full text-sm font-medium">
+                      Free Plan
+                    </span>
                   </div>
-                  <div className="space-y-2">
-                    <p className="text-lg font-medium text-gray-700">Free Plan</p>
-                    <p className="text-sm text-gray-500">Limited features</p>
-                    <div className="flex items-center gap-2 mt-4">
-                      <Button 
-                        variant="default"
-                        onClick={handleUpgradeToPro}
-                      >
-                        Upgrade to Pro
-                      </Button>
-                      <p className="text-sm text-gray-500">starting at $29.99/month</p>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-lg font-medium text-gray-700">Free Plan</p>
+                        <p className="text-sm text-gray-500 mt-1">Limited features and functionality</p>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <Button 
+                          variant="default"
+                          onClick={handleUpgradeToPro}
+                          className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2 rounded-lg transition-colors"
+                        >
+                          Upgrade to Pro
+                        </Button>
+                        <p className="text-sm text-gray-500">
+                          <span className="font-medium text-blue-600">$29.99</span>/month
+                        </p>
+                      </div>
+                    </div>
+                    <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                      <p className="text-sm text-gray-600 font-medium mb-2">Free plan includes:</p>
+                      <ul className="space-y-2">
+                        <li className="flex items-center text-sm text-gray-600">
+                          <Icons.check className="mr-2 h-4 w-4 text-blue-500" />
+                          Basic features
+                        </li>
+                        <li className="flex items-center text-sm text-gray-600">
+                          <Icons.check className="mr-2 h-4 w-4 text-blue-500" />
+                          Limited storage
+                        </li>
+                        <li className="flex items-center text-sm text-gray-600">
+                          <Icons.check className="mr-2 h-4 w-4 text-blue-500" />
+                          Community support
+                        </li>
+                      </ul>
                     </div>
                   </div>
                 </Card>
@@ -177,7 +203,7 @@ const DashboardBilling = () => {
         </div>
       </SidebarProvider>
     </div>
-  )
-}
+  );
+};
 
-export default DashboardBilling
+export default DashboardBilling;
