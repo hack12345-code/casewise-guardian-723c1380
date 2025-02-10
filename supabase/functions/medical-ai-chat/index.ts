@@ -47,7 +47,7 @@ Keep all responses under 600 words.`
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4o-mini', // Fixed model name
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: prompt }
@@ -81,3 +81,4 @@ Keep all responses under 600 words.`
     )
   }
 })
+
