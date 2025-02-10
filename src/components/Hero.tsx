@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { AIInput } from "./ui/ai-input";
 import { Response } from "./Response";
@@ -157,7 +158,7 @@ export const Hero = () => {
 
         <div className="mt-8">
           <AIInput 
-            placeholder="Enter your case details here... Be specific about the patient's condition, your planned approach, and any concerns."
+            placeholder="Enter your case details here... Be specific about the patient's condition and any concerns."
             minHeight={250}
             maxHeight={450}
             onSubmit={handleSubmit}
