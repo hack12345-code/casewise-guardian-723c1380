@@ -89,16 +89,16 @@ export const Navbar = () => {
       onClick: handleCasesClick 
     },
     { 
-      name: "Support", 
-      url: "/support", 
-      icon: MessageSquare,
-      onClick: () => setActiveTab("Support")
-    },
-    { 
       name: "Pricing", 
       url: "/pricing", 
       icon: DollarSign,
       onClick: () => setActiveTab("Pricing")
+    },
+    { 
+      name: "Support", 
+      url: "/support", 
+      icon: MessageSquare,
+      onClick: () => setActiveTab("Support")
     },
   ].map(item => ({
     ...item,
