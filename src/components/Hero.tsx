@@ -53,7 +53,7 @@ export const Hero = () => {
     try {
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('subscription_status, prompt_count, last_prompt_date')
+        .select('subscription_status, prompt_count, last_prompt_date, case_count')
         .eq('id', session.user.id)
         .single();
 
@@ -61,14 +61,23 @@ export const Hero = () => {
 
       const today = new Date().toISOString().split('T')[0];
       const isNewDay = !profile.last_prompt_date || profile.last_prompt_date < today;
-      
       const hasActiveSubscription = profile.subscription_status === 'active';
       const isFreeUser = !hasActiveSubscription;
+
+      if (isFreeUser && profile.case_count >= 1) {
+        toast({
+          title: "Case Limit Reached",
+          description: "Free users can only have one case. Please upgrade to create more cases!",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
 
       if (isFreeUser && !isNewDay && profile.prompt_count >= 1) {
         toast({
           title: "Daily Limit Reached",
-          description: "Upgrade to our premium plan for unlimited prompts!",
+          description: "Free users can only send one prompt per day. Upgrade for unlimited access!",
           variant: "destructive",
         });
         setIsLoading(false);

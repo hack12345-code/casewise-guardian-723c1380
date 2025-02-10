@@ -1,3 +1,4 @@
+
 import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -32,6 +33,7 @@ const Dashboard = () => {
   const [chats, setChats] = useState<Chat[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [chatToDelete, setChatToDelete] = useState<string | null>(null)
+  const [userProfile, setUserProfile] = useState<{ subscription_status: string; case_count: number } | null>(null)
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -40,6 +42,20 @@ const Dashboard = () => {
         navigate('/login')
         return
       }
+
+      // Fetch user profile
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('subscription_status, case_count')
+        .eq('id', session.user.id)
+        .single()
+
+      if (profileError) {
+        console.error("Error fetching profile:", profileError)
+        return
+      }
+
+      setUserProfile(profile)
     }
     checkAuth()
   }, [navigate])
@@ -106,27 +122,54 @@ const Dashboard = () => {
       return
     }
 
-    const { data: newChat, error } = await supabase
-      .from('medical_chats')
-      .insert({
-        case_title: 'New Case',
-        user_id: session.user.id
-      })
-      .select()
-      .single()
-
-    if (error) {
-      console.error("Error creating new chat:", error)
+    // Check if user is on free plan and already has a case
+    if (userProfile?.subscription_status !== 'active' && userProfile?.case_count >= 1) {
       toast({
-        title: "Error creating new chat",
-        description: error.message,
+        title: "Case limit reached",
+        description: "Free users can only have one case. Please upgrade to create more cases.",
         variant: "destructive",
       })
       return
     }
 
-    if (newChat) {
-      navigate(`/chat/${newChat.id}`)
+    try {
+      const { data: newChat, error } = await supabase
+        .from('medical_chats')
+        .insert({
+          case_title: 'New Case',
+          user_id: session.user.id
+        })
+        .select()
+        .single()
+
+      if (error) {
+        console.error("Error creating new chat:", error)
+        if (error.message.includes('can only have one case')) {
+          toast({
+            title: "Case limit reached",
+            description: "Free users can only have one case. Please upgrade to create more cases.",
+            variant: "destructive",
+          })
+        } else {
+          toast({
+            title: "Error creating new chat",
+            description: error.message,
+            variant: "destructive",
+          })
+        }
+        return
+      }
+
+      if (newChat) {
+        navigate(`/chat/${newChat.id}`)
+      }
+    } catch (error: any) {
+      console.error("Error in handleNewChat:", error)
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      })
     }
   }
 
@@ -152,7 +195,29 @@ const Dashboard = () => {
         throw chatError
       }
 
+      // Update local state
       setChats(chats.filter((chat) => chat.id !== chatId))
+      
+      // Update case count in profile
+      if (userProfile && userProfile.case_count > 0) {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session) {
+          const { error: updateError } = await supabase
+            .from('profiles')
+            .update({ case_count: userProfile.case_count - 1 })
+            .eq('id', session.user.id)
+
+          if (updateError) {
+            console.error("Error updating case count:", updateError)
+          } else {
+            setUserProfile({
+              ...userProfile,
+              case_count: userProfile.case_count - 1
+            })
+          }
+        }
+      }
+
       toast({
         title: "Chat deleted",
         description: "The chat and all its messages have been removed.",
@@ -171,33 +236,6 @@ const Dashboard = () => {
 
   const handleOpenChat = (chatId: string) => {
     navigate(`/chat/${chatId}`)
-  }
-
-  const handleUpdateTitle = async (chatId: string, newTitle: string) => {
-    try {
-      const { error } = await supabase
-        .from('medical_chats')
-        .update({ case_title: newTitle })
-        .eq('id', chatId)
-
-      if (error) throw error
-
-      setChats(chats.map(chat => 
-        chat.id === chatId ? { ...chat, case_title: newTitle } : chat
-      ))
-
-      toast({
-        title: "Chat renamed",
-        description: "The chat title has been updated successfully.",
-      })
-    } catch (error) {
-      console.error("Error updating chat title:", error)
-      toast({
-        title: "Error updating title",
-        description: error instanceof Error ? error.message : "Failed to update chat title",
-        variant: "destructive",
-      })
-    }
   }
 
   if (isLoading) {
@@ -224,14 +262,25 @@ const Dashboard = () => {
           <main className="flex-1 p-8">
             <div className="flex justify-between items-center mb-8">
               <h1 className="text-3xl font-bold text-gray-900">My Cases</h1>
-              <Button
-                onClick={handleNewChat}
-                size="lg"
-                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6"
-              >
-                <Plus className="mr-2 h-5 w-5" />
-                New Case
-              </Button>
+              <div className="flex items-center gap-4">
+                {userProfile?.subscription_status !== 'active' && (
+                  <div className="text-sm text-gray-600">
+                    {userProfile?.case_count === 0 ? (
+                      "Free plan: You can create one case"
+                    ) : (
+                      "Free plan: Case limit reached"
+                    )}
+                  </div>
+                )}
+                <Button
+                  onClick={handleNewChat}
+                  size="lg"
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6"
+                >
+                  <Plus className="mr-2 h-5 w-5" />
+                  New Case
+                </Button>
+              </div>
             </div>
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -282,7 +331,6 @@ const Dashboard = () => {
           <SidebarTrigger className="fixed bottom-4 right-4 md:hidden" />
         </div>
 
-        {/* Delete Confirmation Dialog */}
         <AlertDialog open={!!chatToDelete} onOpenChange={() => setChatToDelete(null)}>
           <AlertDialogContent>
             <AlertDialogHeader>

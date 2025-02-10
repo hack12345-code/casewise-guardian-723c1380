@@ -133,6 +133,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          case_count: number | null
           country: string | null
           created_at: string
           email: string
@@ -146,6 +147,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          case_count?: number | null
           country?: string | null
           created_at?: string
           email: string
@@ -159,6 +161,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          case_count?: number | null
           country?: string | null
           created_at?: string
           email?: string
