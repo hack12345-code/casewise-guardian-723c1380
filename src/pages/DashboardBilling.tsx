@@ -1,5 +1,6 @@
 
 import { useState } from "react"
+import { useNavigate } from "react-router-dom"
 import { Navbar } from "@/components/Navbar"
 import { Card } from "@/components/ui/card"
 import { DashboardSidebar } from "@/components/DashboardSidebar"
@@ -10,6 +11,7 @@ import { useToast } from "@/components/ui/use-toast"
 import { Icons } from "@/components/ui/icons"
 
 const DashboardBilling = () => {
+  const navigate = useNavigate()
   const [isEditingPayment, setIsEditingPayment] = useState(false)
   const [hasExistingPayment, setHasExistingPayment] = useState(false)
   const [paymentMethod, setPaymentMethod] = useState<'card' | 'paypal'>('card')
@@ -22,6 +24,17 @@ const DashboardBilling = () => {
     })
     setIsEditingPayment(false)
     setHasExistingPayment(true)
+  }
+
+  const handleUpgradeToPro = () => {
+    navigate('/payment', { 
+      state: { 
+        plan: {
+          name: "Pro",
+          price: "29.99"
+        }
+      }
+    })
   }
 
   return (
@@ -44,7 +57,10 @@ const DashboardBilling = () => {
                     <p className="text-lg font-medium text-gray-700">Free Plan</p>
                     <p className="text-sm text-gray-500">Limited features</p>
                     <div className="flex items-center gap-2 mt-4">
-                      <Button variant="default">
+                      <Button 
+                        variant="default"
+                        onClick={handleUpgradeToPro}
+                      >
                         Upgrade to Pro
                       </Button>
                       <p className="text-sm text-gray-500">starting at $29.99/month</p>
