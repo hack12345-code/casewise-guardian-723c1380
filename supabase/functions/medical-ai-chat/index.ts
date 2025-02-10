@@ -50,7 +50,7 @@ Keep all responses under 600 words.`
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: prompt }
@@ -66,13 +66,7 @@ Keep all responses under 600 words.`
     if (!response.ok) {
       const errorData = await response.json()
       console.error('OpenAI API error:', errorData)
-      return new Response(
-        JSON.stringify({ error: 'Failed to get response from OpenAI', details: errorData }),
-        { 
-          status: 500,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      )
+      throw new Error(`OpenAI API error: ${JSON.stringify(errorData)}`)
     }
 
     const data = await response.json()
@@ -94,9 +88,11 @@ Keep all responses under 600 words.`
     )
   } catch (error) {
     console.error('Error in medical-ai-chat function:', error)
+    
+    // Return a properly formatted error response
     return new Response(
       JSON.stringify({ 
-        error: error.message,
+        error: error.message || 'An unexpected error occurred',
         timestamp: new Date().toISOString(),
       }),
       { 
