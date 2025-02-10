@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { Navbar } from "@/components/Navbar"
@@ -6,6 +7,7 @@ import { useToast } from "@/components/ui/use-toast"
 import { AIInput } from "@/components/ui/ai-input"
 import { Response } from "@/components/Response"
 import { supabase } from "@/integrations/supabase/client"
+import { Loader2 } from "lucide-react"
 
 interface Message {
   id: string
@@ -257,7 +259,14 @@ const Chat = () => {
         <div className="flex min-h-[calc(100vh-4rem)] pt-16">
           <main className="flex-1 p-8">
             <div className="flex items-center justify-center h-full">
-              Loading chat history...
+              <div className="flex flex-col items-center space-y-4">
+                <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+                <div className="bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full">
+                  <p className="text-sm text-blue-600 animate-pulse">
+                    Thinking...
+                  </p>
+                </div>
+              </div>
             </div>
           </main>
         </div>
