@@ -81,7 +81,6 @@ const AdminDashboard = () => {
       date: "2024-03-15",
       readTime: "5 min read"
     },
-    // ... other blog posts
   ]);
   const { toast } = useToast();
 
