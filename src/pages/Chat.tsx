@@ -16,6 +16,10 @@ interface Message {
   timestamp: string
 }
 
+interface UserProfile {
+  is_blocked: boolean;
+}
+
 const Chat = () => {
   const { chatId } = useParams()
   const navigate = useNavigate()
@@ -24,6 +28,7 @@ const Chat = () => {
   const [caseTitle, setCaseTitle] = useState("")
   const [isLoading, setIsLoading] = useState(true)
   const [latestUserPrompt, setLatestUserPrompt] = useState("")
+  const [isBlocked, setIsBlocked] = useState(false)
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -31,6 +36,22 @@ const Chat = () => {
       if (!session) {
         navigate('/login')
         return
+      }
+
+      // Check if user is blocked
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('is_blocked')
+        .eq('id', session.user.id)
+        .single()
+
+      if (profileError) {
+        console.error("Error fetching profile:", profileError)
+        return
+      }
+
+      if (profile) {
+        setIsBlocked(profile.is_blocked || false)
       }
     }
     checkAuth()
@@ -157,16 +178,22 @@ const Chat = () => {
       return
     }
 
+    if (isBlocked) {
+      toast({
+        title: "Account Blocked",
+        description: "Your account has been blocked from sending prompts. Please contact support for assistance.",
+        variant: "destructive",
+      })
+      return
+    }
+
     setIsLoading(true)
-    // Update latest prompt immediately when sending
     setLatestUserPrompt(input)
     
     try {
-      // Create a temporary message ID for optimistic update
       const tempId = Math.random().toString()
       const timestamp = new Date().toISOString()
       
-      // Add user message to UI immediately
       setMessages(prev => [...prev, {
         id: tempId,
         text: input,
@@ -174,7 +201,6 @@ const Chat = () => {
         timestamp
       }])
       
-      // Save user message
       const { error: messageError } = await supabase
         .from('medical_messages')
         .insert({
@@ -186,7 +212,6 @@ const Chat = () => {
 
       if (messageError) throw messageError
 
-      // Update chat timestamp
       const { error: updateError } = await supabase
         .from('medical_chats')
         .update({
@@ -197,14 +222,12 @@ const Chat = () => {
 
       if (updateError) throw updateError
 
-      // Get AI response
       const { data, error } = await supabase.functions.invoke('medical-ai-chat', {
         body: { prompt: input }
       })
 
       if (error) throw error
 
-      // Save AI response
       const { error: aiError } = await supabase
         .from('medical_messages')
         .insert({
@@ -325,15 +348,22 @@ const Chat = () => {
                   </div>
                   <div className="p-4 border-t">
                     <AIInput
-                      placeholder="Enter your case details here..."
+                      placeholder={isBlocked ? "Your account has been blocked from sending prompts" : "Enter your case details here..."}
                       minHeight={100}
                       maxHeight={200}
                       onSubmit={handleSendMessage}
                       isLoading={isLoading}
+                      disabled={isBlocked}
                     />
-                    <p className="text-xs text-gray-500 mt-2 italic">
-                      * To generate a full report or fix an existing report, type "report:" followed by your appointment summary or existing report
-                    </p>
+                    {isBlocked ? (
+                      <p className="text-xs text-red-500 mt-2">
+                        Your account has been blocked from sending prompts. Please contact support for assistance.
+                      </p>
+                    ) : (
+                      <p className="text-xs text-gray-500 mt-2 italic">
+                        * To generate a full report or fix an existing report, type "report:" followed by your appointment summary or existing report
+                      </p>
+                    )}
                   </div>
                 </div>
               </Card>
