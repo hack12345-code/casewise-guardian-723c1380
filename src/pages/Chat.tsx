@@ -261,9 +261,9 @@ const Chat = () => {
             <div className="flex items-center justify-center h-full">
               <div className="flex flex-col items-center space-y-4">
                 <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-                <div className="bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full">
-                  <p className="text-sm text-blue-600 animate-pulse">
-                    Thinking...
+                <div className="bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full max-w-md">
+                  <p className="text-sm text-blue-600 animate-pulse text-center">
+                    {latestUserPrompt || "Starting chat..."}
                   </p>
                 </div>
               </div>
