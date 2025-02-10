@@ -1,4 +1,3 @@
-
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Check } from "lucide-react";
@@ -40,7 +39,6 @@ const Pricing = () => {
     if (plan.name === "Enterprise") {
       navigate('/contact-sales');
     } else if (isAuthenticated) {
-      // If user is already authenticated, send them directly to payment
       navigate('/payment', { state: { plan } });
     } else {
       toast({

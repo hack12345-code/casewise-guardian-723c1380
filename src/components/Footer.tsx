@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 
 export const Footer = () => {
   const links = {
-    company: ["Home", "Cases", "Pricing", "Support", "Blog"],
+    company: ["Home", "Support", "Cases", "Pricing", "Blog"],
     resources: [],
     legal: []
   };
@@ -17,7 +17,6 @@ export const Footer = () => {
     }
   };
 
-  // Function to scroll to top after navigation
   const handleNavigationClick = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -76,6 +75,20 @@ export const Footer = () => {
               className="hover:text-white transition-colors"
             >
               Privacy Policy
+            </Link>
+            <Link 
+              to="/pricing" 
+              onClick={handleNavigationClick}
+              className="hover:text-white transition-colors"
+            >
+              Pricing
+            </Link>
+            <Link 
+              to="/support" 
+              onClick={handleNavigationClick}
+              className="hover:text-white transition-colors"
+            >
+              Support
             </Link>
             <Link 
               to="/terms-of-service" 
