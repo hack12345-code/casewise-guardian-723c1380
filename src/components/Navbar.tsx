@@ -59,7 +59,7 @@ export const Navbar = () => {
         if (casesSection) {
           casesSection.scrollIntoView({ behavior: 'smooth' });
         }
-      }, 100);
+      }, 500); // Increased timeout to ensure DOM is ready
     }
   }, [location.pathname, location.state]);
 
@@ -69,10 +69,13 @@ export const Navbar = () => {
     if (location.pathname !== '/') {
       navigate('/', { state: { scrollTo: 'cases-section' } });
     } else {
-      const casesSection = document.querySelector('#cases-section');
-      if (casesSection) {
-        casesSection.scrollIntoView({ behavior: 'smooth' });
-      }
+      // Force a small delay even on the same page
+      setTimeout(() => {
+        const casesSection = document.querySelector('#cases-section');
+        if (casesSection) {
+          casesSection.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
     }
   };
 

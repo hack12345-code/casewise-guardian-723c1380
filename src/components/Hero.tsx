@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { AIInput } from "./ui/ai-input";
 import { Response } from "./Response";
@@ -129,7 +128,7 @@ export const Hero = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8f9ff]">
+    <div id="hero-section" className="min-h-screen bg-[#f8f9ff]">
       <div className={cn(
         "container mx-auto px-4 py-6 transition-all duration-500 ease-in-out",
         hasResponse ? "flex flex-col" : ""
