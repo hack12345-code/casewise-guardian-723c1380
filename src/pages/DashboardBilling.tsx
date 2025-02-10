@@ -11,7 +11,7 @@ import { Icons } from "@/components/ui/icons"
 
 const DashboardBilling = () => {
   const [isEditingPayment, setIsEditingPayment] = useState(false)
-  const [hasExistingPayment, setHasExistingPayment] = useState(true)
+  const [hasExistingPayment, setHasExistingPayment] = useState(false)
   const [paymentMethod, setPaymentMethod] = useState<'card' | 'paypal'>('card')
   const { toast } = useToast()
 
@@ -38,12 +38,17 @@ const DashboardBilling = () => {
                 <Card className="p-6 border-2 border-blue-100">
                   <div className="flex justify-between items-center mb-4">
                     <h2 className="text-xl font-semibold text-gray-800">Current Plan</h2>
-                    <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">Active</span>
+                    <span className="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm font-medium">Free Plan</span>
                   </div>
                   <div className="space-y-2">
-                    <p className="text-lg font-medium text-gray-700">Pro Plan</p>
-                    <p className="text-sm text-gray-500">Next billing date: March 1, 2024</p>
-                    <p className="text-xl font-bold text-blue-600 mt-2">$29.99/month</p>
+                    <p className="text-lg font-medium text-gray-700">Free Plan</p>
+                    <p className="text-sm text-gray-500">Limited features</p>
+                    <div className="flex items-center gap-2 mt-4">
+                      <Button variant="default">
+                        Upgrade to Pro
+                      </Button>
+                      <p className="text-sm text-gray-500">starting at $29.99/month</p>
+                    </div>
                   </div>
                 </Card>
 
@@ -55,7 +60,7 @@ const DashboardBilling = () => {
                         variant="outline" 
                         onClick={() => setIsEditingPayment(true)}
                       >
-                        Update Payment
+                        {hasExistingPayment ? 'Update Payment' : 'Add Payment Method'}
                       </Button>
                     )}
                   </div>
@@ -111,33 +116,43 @@ const DashboardBilling = () => {
                     </div>
                   ) : (
                     <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <Icons.creditCard className="h-5 w-5 text-gray-600" />
-                        <p className="text-gray-700">•••• •••• •••• 4242</p>
-                      </div>
-                      <p className="text-sm text-gray-500">Expires 12/25</p>
+                      {hasExistingPayment ? (
+                        <>
+                          <div className="flex items-center gap-2">
+                            <Icons.creditCard className="h-5 w-5 text-gray-600" />
+                            <p className="text-gray-700">•••• •••• •••• 4242</p>
+                          </div>
+                          <p className="text-sm text-gray-500">Expires 12/25</p>
+                        </>
+                      ) : (
+                        <p className="text-gray-600">No payment method added</p>
+                      )}
                     </div>
                   )}
                 </Card>
 
                 <Card className="p-6 border-2 border-blue-100">
                   <h2 className="text-xl font-semibold text-gray-800 mb-4">Billing History</h2>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                      <div>
-                        <p className="font-medium text-gray-700">Feb 1, 2024</p>
-                        <p className="text-sm text-gray-500">Pro Plan - Monthly</p>
+                  {hasExistingPayment ? (
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                        <div>
+                          <p className="font-medium text-gray-700">Feb 1, 2024</p>
+                          <p className="text-sm text-gray-500">Pro Plan - Monthly</p>
+                        </div>
+                        <p className="font-medium text-gray-700">$29.99</p>
                       </div>
-                      <p className="font-medium text-gray-700">$29.99</p>
-                    </div>
-                    <div className="flex justify-between items-center p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                      <div>
-                        <p className="font-medium text-gray-700">Jan 1, 2024</p>
-                        <p className="text-sm text-gray-500">Pro Plan - Monthly</p>
+                      <div className="flex justify-between items-center p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                        <div>
+                          <p className="font-medium text-gray-700">Jan 1, 2024</p>
+                          <p className="text-sm text-gray-500">Pro Plan - Monthly</p>
+                        </div>
+                        <p className="font-medium text-gray-700">$29.99</p>
                       </div>
-                      <p className="font-medium text-gray-700">$29.99</p>
                     </div>
-                  </div>
+                  ) : (
+                    <p className="text-gray-600">No billing history available</p>
+                  )}
                 </Card>
               </div>
             </div>
