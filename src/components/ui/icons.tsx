@@ -1,5 +1,7 @@
+
 import {
   CreditCard,
+  Check,
   type LucideIcon,
 } from "lucide-react";
 
@@ -7,6 +9,7 @@ export type Icon = LucideIcon
 
 export const Icons = {
   creditCard: CreditCard,
+  check: Check,
   paypal: ({ ...props }) => (
     <svg
       xmlns="http://www.w3.org/2000/svg"
