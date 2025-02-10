@@ -87,7 +87,7 @@ const DashboardBilling = () => {
                         </li>
                         <li className="flex items-center text-sm text-gray-600">
                           <Icons.check className="mr-2 h-4 w-4 text-blue-500" />
-                          Community support
+                          1 prompt a day
                         </li>
                       </ul>
                     </div>
