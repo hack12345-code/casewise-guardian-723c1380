@@ -47,6 +47,7 @@ const Pricing = () => {
         });
         navigate('/signup');
       } else {
+        // If user is already authenticated, send them directly to payment
         navigate('/payment', { state: { plan } });
       }
     }
