@@ -57,6 +57,12 @@ Keep all responses under 600 words.`
       }),
     })
 
+    if (!response.ok) {
+      const error = await response.json()
+      console.error('OpenAI API error:', error)
+      throw new Error('Failed to get response from OpenAI')
+    }
+
     const data = await response.json()
     const aiResponse = data.choices[0].message.content
 
@@ -65,6 +71,7 @@ Keep all responses under 600 words.`
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     )
   } catch (error) {
+    console.error('Error in medical-ai-chat function:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
