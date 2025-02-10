@@ -8,6 +8,16 @@ import { useToast } from "@/components/ui/use-toast"
 import { DashboardSidebar } from "@/components/DashboardSidebar"
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { supabase } from "@/integrations/supabase/client"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 interface Chat {
   id: string
@@ -21,6 +31,7 @@ const Dashboard = () => {
   const { toast } = useToast()
   const [chats, setChats] = useState<Chat[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [chatToDelete, setChatToDelete] = useState<string | null>(null)
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -153,11 +164,40 @@ const Dashboard = () => {
         description: error instanceof Error ? error.message : "Failed to delete chat",
         variant: "destructive",
       })
+    } finally {
+      setChatToDelete(null)
     }
   }
 
   const handleOpenChat = (chatId: string) => {
     navigate(`/chat/${chatId}`)
+  }
+
+  const handleUpdateTitle = async (chatId: string, newTitle: string) => {
+    try {
+      const { error } = await supabase
+        .from('medical_chats')
+        .update({ case_title: newTitle })
+        .eq('id', chatId)
+
+      if (error) throw error
+
+      setChats(chats.map(chat => 
+        chat.id === chatId ? { ...chat, case_title: newTitle } : chat
+      ))
+
+      toast({
+        title: "Chat renamed",
+        description: "The chat title has been updated successfully.",
+      })
+    } catch (error) {
+      console.error("Error updating chat title:", error)
+      toast({
+        title: "Error updating title",
+        description: error instanceof Error ? error.message : "Failed to update chat title",
+        variant: "destructive",
+      })
+    }
   }
 
   if (isLoading) {
@@ -212,7 +252,7 @@ const Dashboard = () => {
                       size="icon"
                       onClick={(e) => {
                         e.stopPropagation()
-                        handleDeleteChat(chat.id)
+                        setChatToDelete(chat.id)
                       }}
                       className="text-gray-500 hover:text-red-600"
                     >
@@ -241,6 +281,27 @@ const Dashboard = () => {
           </main>
           <SidebarTrigger className="fixed bottom-4 right-4 md:hidden" />
         </div>
+
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog open={!!chatToDelete} onOpenChange={() => setChatToDelete(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete the chat and all its messages.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                className="bg-red-600 hover:bg-red-700"
+                onClick={() => chatToDelete && handleDeleteChat(chatToDelete)}
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </SidebarProvider>
     </div>
   )
