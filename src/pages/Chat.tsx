@@ -158,6 +158,9 @@ const Chat = () => {
     }
 
     setIsLoading(true)
+    // Update latest prompt immediately when sending
+    setLatestUserPrompt(input)
+    
     try {
       // Create a temporary message ID for optimistic update
       const tempId = Math.random().toString()
@@ -212,9 +215,6 @@ const Chat = () => {
         })
 
       if (aiError) throw aiError
-
-      // The real messages will be added via the subscription
-      setLatestUserPrompt(input)
 
     } catch (error: any) {
       console.error("Error:", error)
