@@ -39,17 +39,15 @@ const Pricing = () => {
   const handleGetStarted = (plan: typeof plans[0]) => {
     if (plan.name === "Enterprise") {
       navigate('/contact-sales');
+    } else if (!isAuthenticated) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign up to continue with the Pro plan",
+      });
+      navigate('/signup');
     } else {
-      if (!isAuthenticated) {
-        toast({
-          title: "Authentication required",
-          description: "Please sign up to continue with the Pro plan",
-        });
-        navigate('/signup');
-      } else {
-        // If user is already authenticated, send them directly to payment
-        navigate('/payment', { state: { plan } });
-      }
+      // If user is already authenticated, send them directly to payment
+      navigate('/payment', { state: { plan } });
     }
   };
 
