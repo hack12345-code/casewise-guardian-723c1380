@@ -1,4 +1,3 @@
-
 import { User, LogIn, Home, FileText, DollarSign, LogOut, MessageSquare, Settings, Grid } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { NavBar } from "@/components/ui/tubelight-navbar";
@@ -54,28 +53,24 @@ export const Navbar = () => {
 
     // Handle scrolling when navigating back to home with state
     if (path === "/" && location.state?.scrollTo === "cases-section") {
-      setTimeout(() => {
-        const casesSection = document.querySelector('#cases-section');
-        if (casesSection) {
-          casesSection.scrollIntoView({ behavior: 'smooth' });
-        }
-      }, 500); // Increased timeout to ensure DOM is ready
+      const casesSection = document.querySelector('#cases-section');
+      if (casesSection) {
+        casesSection.scrollIntoView({ behavior: 'smooth' });
+      }
     }
   }, [location.pathname, location.state]);
 
   const handleCasesClick = (e: React.MouseEvent) => {
     e.preventDefault();
     setActiveTab("Cases");
+    
     if (location.pathname !== '/') {
       navigate('/', { state: { scrollTo: 'cases-section' } });
     } else {
-      // Force a small delay even on the same page
-      setTimeout(() => {
-        const casesSection = document.querySelector('#cases-section');
-        if (casesSection) {
-          casesSection.scrollIntoView({ behavior: 'smooth' });
-        }
-      }, 100);
+      const casesSection = document.querySelector('#cases-section');
+      if (casesSection) {
+        casesSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     }
   };
 
@@ -83,13 +78,10 @@ export const Navbar = () => {
     e.preventDefault();
     setActiveTab("Home");
     navigate('/');
-    // Use setTimeout to ensure navigation completes before scrolling
-    setTimeout(() => {
-      const heroSection = document.querySelector('#hero-section');
-      if (heroSection) {
-        heroSection.scrollIntoView({ behavior: 'smooth' });
-      }
-    }, 100);
+    const heroSection = document.querySelector('#hero-section');
+    if (heroSection) {
+      heroSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   };
 
   const navItems = [
