@@ -285,13 +285,23 @@ const Dashboard = () => {
             <div className="flex justify-between items-center mb-8">
               <h1 className="text-3xl font-bold text-gray-900">My Cases</h1>
               <div className="flex items-center gap-4">
-                {userProfile?.subscription_status !== 'active' && (
+                {userProfile?.subscription_status !== 'active' ? (
                   <div className="text-sm text-gray-600">
-                    {userProfile?.case_count === 0 ? (
-                      "Free plan: You can create one case"
+                    Free plan: {userProfile?.case_count === 0 ? (
+                      "You can create one case - "
                     ) : (
-                      "Free plan: Case limit reached"
+                      "Case limit reached - "
                     )}
+                    <a 
+                      href="/dashboard/billing" 
+                      className="text-blue-600 hover:text-blue-700 underline"
+                    >
+                      Upgrade to Pro
+                    </a>
+                  </div>
+                ) : (
+                  <div className="text-sm text-gray-600">
+                    Pro plan: Unlimited cases
                   </div>
                 )}
                 <Button
@@ -374,7 +384,7 @@ const Dashboard = () => {
         </AlertDialog>
       </SidebarProvider>
     </div>
-  )
-}
+  );
+};
 
-export default Dashboard
+export default Dashboard;
