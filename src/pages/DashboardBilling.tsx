@@ -1,5 +1,5 @@
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { Navbar } from "@/components/Navbar"
 import { Card } from "@/components/ui/card"
@@ -9,13 +9,34 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useToast } from "@/components/ui/use-toast"
 import { Icons } from "@/components/ui/icons"
+import { supabase } from "@/integrations/supabase/client"
 
 const DashboardBilling = () => {
   const navigate = useNavigate();
   const [isEditingPayment, setIsEditingPayment] = useState(false);
   const [hasExistingPayment, setHasExistingPayment] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'card' | 'paypal'>('card');
+  const [subscriptionStatus, setSubscriptionStatus] = useState<'free' | 'active'>('free');
   const { toast } = useToast();
+
+  useEffect(() => {
+    const fetchSubscriptionStatus = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user?.id) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('subscription_status')
+          .eq('id', session.user.id)
+          .single();
+        
+        if (profile?.subscription_status === 'active') {
+          setSubscriptionStatus('active');
+        }
+      }
+    };
+
+    fetchSubscriptionStatus();
+  }, []);
 
   const handleUpdatePayment = () => {
     toast({
@@ -52,30 +73,36 @@ const DashboardBilling = () => {
                   <div className="flex justify-between items-center mb-6">
                     <h2 className="text-xl font-semibold text-gray-800">Current Plan</h2>
                     <span className="px-4 py-1.5 bg-blue-50 text-blue-600 rounded-full text-sm font-medium">
-                      Free Plan
+                      {subscriptionStatus === 'active' ? 'Pro Plan' : 'Free Plan'}
                     </span>
                   </div>
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-lg font-medium text-gray-700">Free Plan</p>
-                        <p className="text-sm text-gray-500 mt-1">Limited features and functionality</p>
+                        <p className="text-lg font-medium text-gray-700">{subscriptionStatus === 'active' ? 'Pro Plan' : 'Free Plan'}</p>
+                        <p className="text-sm text-gray-500 mt-1">
+                          {subscriptionStatus === 'active' ? 'Full access to all features' : 'Limited features and functionality'}
+                        </p>
                       </div>
                       <div className="flex items-center gap-4">
-                        <Button 
-                          variant="default"
-                          onClick={handleUpgradeToPro}
-                          className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2 rounded-lg transition-colors"
-                        >
-                          Upgrade to Pro
-                        </Button>
+                        {subscriptionStatus !== 'active' && (
+                          <Button 
+                            variant="default"
+                            onClick={handleUpgradeToPro}
+                            className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2 rounded-lg transition-colors"
+                          >
+                            Upgrade to Pro
+                          </Button>
+                        )}
                         <p className="text-sm text-gray-500">
                           <span className="font-medium text-blue-600">$29.99</span>/month
                         </p>
                       </div>
                     </div>
                     <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                      <p className="text-sm text-gray-600 font-medium mb-2">Free plan includes:</p>
+                      <p className="text-sm text-gray-600 font-medium mb-2">
+                        {subscriptionStatus === 'active' ? 'Pro plan includes:' : 'Free plan includes:'}
+                      </p>
                       <ul className="space-y-2">
                         <li className="flex items-center text-sm text-gray-600">
                           <Icons.check className="mr-2 h-4 w-4 text-blue-500" />
