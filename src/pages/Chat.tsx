@@ -158,6 +158,18 @@ const Chat = () => {
 
     setIsLoading(true)
     try {
+      // Create a temporary message ID for optimistic update
+      const tempId = Math.random().toString()
+      const timestamp = new Date().toISOString()
+      
+      // Add user message to UI immediately
+      setMessages(prev => [...prev, {
+        id: tempId,
+        text: input,
+        sender: 'user',
+        timestamp
+      }])
+      
       // Save user message
       const { error: messageError } = await supabase
         .from('medical_messages')
@@ -199,6 +211,9 @@ const Chat = () => {
         })
 
       if (aiError) throw aiError
+
+      // The real messages will be added via the subscription
+      setLatestUserPrompt(input)
 
     } catch (error: any) {
       console.error("Error:", error)
