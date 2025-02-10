@@ -1,3 +1,4 @@
+
 import { User, LogIn, Home, FileText, DollarSign, LogOut, MessageSquare, Settings, Grid } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { NavBar } from "@/components/ui/tubelight-navbar";
@@ -50,16 +51,28 @@ export const Navbar = () => {
     else if (path === "/pricing") setActiveTab("Pricing");
     else if (path === "/support") setActiveTab("Support");
     else if (path.includes("cases")) setActiveTab("Cases");
-  }, [location.pathname]);
+
+    // Handle scrolling when navigating back to home with state
+    if (path === "/" && location.state?.scrollTo === "cases-section") {
+      setTimeout(() => {
+        const casesSection = document.querySelector('#cases-section');
+        if (casesSection) {
+          casesSection.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
+    }
+  }, [location.pathname, location.state]);
 
   const handleCasesClick = (e: React.MouseEvent) => {
     e.preventDefault();
     setActiveTab("Cases");
-    const casesSection = document.querySelector('#cases-section');
     if (location.pathname !== '/') {
       navigate('/', { state: { scrollTo: 'cases-section' } });
-    } else if (casesSection) {
-      casesSection.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      const casesSection = document.querySelector('#cases-section');
+      if (casesSection) {
+        casesSection.scrollIntoView({ behavior: 'smooth' });
+      }
     }
   };
 
