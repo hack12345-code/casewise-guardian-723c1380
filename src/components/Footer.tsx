@@ -1,9 +1,10 @@
+
 import { Copyright } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export const Footer = () => {
   const links = {
-    company: ["Home", "Cases", "Pricing", "Support", "Blog"],
+    company: ["Home", "Cases", "Blog"],
     resources: [],
     legal: []
   };
@@ -41,8 +42,6 @@ export const Footer = () => {
                       to={
                         item === "Home" ? "/" :
                         item === "Cases" ? "#cases-section" :
-                        item === "Support" ? "/support" :
-                        item === "Pricing" ? "/pricing" :
                         item === "Blog" ? "/blog" : "#"
                       } 
                       onClick={(e) => {
@@ -74,20 +73,6 @@ export const Footer = () => {
               className="hover:text-white transition-colors"
             >
               Privacy Policy
-            </Link>
-            <Link 
-              to="/pricing" 
-              onClick={handleNavigationClick}
-              className="hover:text-white transition-colors"
-            >
-              Pricing
-            </Link>
-            <Link 
-              to="/support" 
-              onClick={handleNavigationClick}
-              className="hover:text-white transition-colors"
-            >
-              Support
             </Link>
             <Link 
               to="/terms-of-service" 
