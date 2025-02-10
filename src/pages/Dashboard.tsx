@@ -83,7 +83,29 @@ const Dashboard = () => {
         }
 
         if (chatsData) {
-          setChats(chatsData)
+          // For each chat, fetch the last message from medical_messages
+          const chatsWithLastMessage = await Promise.all(
+            chatsData.map(async (chat) => {
+              const { data: messages, error: messagesError } = await supabase
+                .from('medical_messages')
+                .select('content')
+                .eq('chat_id', chat.id)
+                .eq('role', 'user')  // Only get user messages since these are prompts
+                .order('created_at', { ascending: false })
+                .limit(1)
+
+              if (messagesError) {
+                console.error("Error fetching last message:", messagesError)
+                return chat
+              }
+
+              return {
+                ...chat,
+                last_message: messages && messages[0] ? messages[0].content : "No messages yet"
+              }
+            })
+          )
+          setChats(chatsWithLastMessage)
         }
       } catch (error) {
         console.error("Error in loadChats:", error)
@@ -309,7 +331,7 @@ const Dashboard = () => {
                     </Button>
                   </div>
                   <p className="text-gray-600 text-sm mb-3 line-clamp-2">
-                    {chat.last_message || "Start a new conversation..."}
+                    {chat.last_message || "No messages yet"}
                   </p>
                   <div className="flex justify-between items-center">
                     <span className="text-xs text-gray-500">
