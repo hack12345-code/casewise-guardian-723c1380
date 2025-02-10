@@ -93,41 +93,6 @@ export type Database = {
         }
         Relationships: []
       }
-      medical_messages: {
-        Row: {
-          chat_id: string | null
-          content: string
-          created_at: string | null
-          id: string
-          role: string
-          user_id: string | null
-        }
-        Insert: {
-          chat_id?: string | null
-          content: string
-          created_at?: string | null
-          id?: string
-          role: string
-          user_id?: string | null
-        }
-        Update: {
-          chat_id?: string | null
-          content?: string
-          created_at?: string | null
-          id?: string
-          role?: string
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "medical_messages_chat_id_fkey"
-            columns: ["chat_id"]
-            isOneToOne: false
-            referencedRelation: "medical_chats"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       profiles: {
         Row: {
           country: string | null
