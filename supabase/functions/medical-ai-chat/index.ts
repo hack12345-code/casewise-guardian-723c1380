@@ -40,6 +40,9 @@ Other: if asked, Only answer relevant medical/legal queries, also when told to f
 
 Keep all responses under 600 words.`
 
+    // Add logging for debugging
+    console.log('Sending request to OpenAI with prompt:', prompt)
+
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -47,7 +50,7 @@ Keep all responses under 600 words.`
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini', // Fixed model name
+        model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: prompt }
@@ -57,23 +60,45 @@ Keep all responses under 600 words.`
       }),
     })
 
+    // Add logging for the OpenAI response
+    console.log('OpenAI response status:', response.status)
+
     if (!response.ok) {
-      const error = await response.json()
-      console.error('OpenAI API error:', error)
-      throw new Error('Failed to get response from OpenAI')
+      const errorData = await response.json()
+      console.error('OpenAI API error:', errorData)
+      return new Response(
+        JSON.stringify({ error: 'Failed to get response from OpenAI', details: errorData }),
+        { 
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
     }
 
     const data = await response.json()
+    console.log('OpenAI response data:', data)
+
+    // Ensure we have a valid response before sending it back
+    if (!data.choices?.[0]?.message?.content) {
+      throw new Error('Invalid response format from OpenAI')
+    }
+
     const aiResponse = data.choices[0].message.content
 
     return new Response(
       JSON.stringify({ response: aiResponse }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      { 
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      },
     )
   } catch (error) {
     console.error('Error in medical-ai-chat function:', error)
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        timestamp: new Date().toISOString(),
+      }),
       { 
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -81,4 +106,3 @@ Keep all responses under 600 words.`
     )
   }
 })
-
