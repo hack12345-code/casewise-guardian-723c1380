@@ -13,6 +13,7 @@ interface AIInputProps {
   onSubmit?: (value: string) => void
   className?: string
   isLoading?: boolean
+  disabled?: boolean // Added this prop
 }
 
 export function AIInput({
@@ -22,7 +23,8 @@ export function AIInput({
   maxHeight = 200,
   onSubmit,
   className,
-  isLoading = false
+  isLoading = false,
+  disabled = false // Added default value
 }: AIInputProps) {
   const { textareaRef, adjustHeight } = useAutoResizeTextarea({
     minHeight,
@@ -54,7 +56,8 @@ export function AIInput({
             "leading-[1.2] py-[16px]",
             `min-h-[${minHeight}px]`,
             `max-h-[${maxHeight}px]`,
-            "[&::-webkit-resizer]:hidden"
+            "[&::-webkit-resizer]:hidden",
+            disabled ? "opacity-50 cursor-not-allowed" : ""
           )}
           ref={textareaRef}
           value={inputValue}
@@ -68,7 +71,7 @@ export function AIInput({
               handleReset();
             }
           }}
-          disabled={isLoading}
+          disabled={disabled || isLoading}
         />
 
         {isLoading ? (
@@ -88,13 +91,15 @@ export function AIInput({
             <button
               onClick={handleReset}
               type="button"
+              disabled={disabled || isLoading}
               className={cn(
                 "absolute top-1/2 -translate-y-1/2 right-3",
                 "rounded-xl bg-black/5 dark:bg-white/5 py-1 px-1",
                 "transition-all duration-200",
                 inputValue 
                   ? "opacity-100 scale-100" 
-                  : "opacity-0 scale-95 pointer-events-none"
+                  : "opacity-0 scale-95 pointer-events-none",
+                disabled ? "opacity-50 cursor-not-allowed" : ""
               )}
             >
               <CornerRightUp className="w-4 h-4 text-black/70 dark:text-white/70" />
