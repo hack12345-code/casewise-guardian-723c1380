@@ -176,9 +176,7 @@ export type Database = {
           id: string
           is_admin: boolean | null
           is_blocked: boolean | null
-          last_prompt_date: string | null
           medical_sector: string | null
-          prompt_count: number | null
           subscription_status: string | null
           updated_at: string
         }
@@ -191,9 +189,7 @@ export type Database = {
           id: string
           is_admin?: boolean | null
           is_blocked?: boolean | null
-          last_prompt_date?: string | null
           medical_sector?: string | null
-          prompt_count?: number | null
           subscription_status?: string | null
           updated_at?: string
         }
@@ -206,9 +202,7 @@ export type Database = {
           id?: string
           is_admin?: boolean | null
           is_blocked?: boolean | null
-          last_prompt_date?: string | null
           medical_sector?: string | null
-          prompt_count?: number | null
           subscription_status?: string | null
           updated_at?: string
         }
