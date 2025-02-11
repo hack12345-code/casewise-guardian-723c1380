@@ -281,9 +281,11 @@ const Dashboard = () => {
         <div className="flex min-h-[calc(100vh-4rem)] pt-16">
           <DashboardSidebar />
           <main className="flex-1 p-8">
-            <div className="flex justify-between items-center mb-8">
-              <h1 className="text-3xl font-bold text-gray-900">My Cases</h1>
-              <div className="flex items-center gap-4">
+            <div className="flex justify-between items-center mb-8 gap-8">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">My Cases</h1>
+              </div>
+              <div className="flex items-center gap-4 ml-auto">
                 {userProfile?.subscription_status !== 'active' && (
                   <div className="text-sm text-gray-600">
                     Free plan: {userProfile?.case_count === 0 ? (
