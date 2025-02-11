@@ -1,6 +1,6 @@
 
 import { CornerRightUp, Mic, Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
 import { useAutoResizeTextarea } from "@/hooks/use-auto-resize-textarea";
@@ -13,24 +13,67 @@ interface AIInputProps {
   onSubmit?: (value: string) => void
   className?: string
   isLoading?: boolean
-  disabled?: boolean // Added this prop
+  disabled?: boolean
 }
+
+const placeholders = [
+  "A 60-year-old male patient presents with chest discomfort that worsens after meals, with occasional nausea and a burning sensation...",
+  "A 7-year-old boy has been experiencing lower right abdominal pain for the past 12 hours...",
+  "A 19-year-old college student presents with excessive worry, difficulty concentrating, and frequent panic attacks...",
+  "A 2-month-old infant presents with persistent crying, difficulty sleeping, and drawing up of the legs...",
+  "A 47-year-old woman reports the appearance of dark, irregular spots on her cheeks and forehead over the past six months..."
+];
 
 export function AIInput({
   id = "ai-input",
-  placeholder = "Type your message...",
+  placeholder = "",
   minHeight = 52,
   maxHeight = 200,
   onSubmit,
   className,
   isLoading = false,
-  disabled = false // Added default value
+  disabled = false
 }: AIInputProps) {
   const { textareaRef, adjustHeight } = useAutoResizeTextarea({
     minHeight,
     maxHeight,
   });
   const [inputValue, setInputValue] = useState("");
+  const [currentPlaceholder, setCurrentPlaceholder] = useState("");
+  const [placeholderIndex, setPlaceholderIndex] = useState(0);
+  const [isTyping, setIsTyping] = useState(true);
+  const [currentTextIndex, setCurrentTextIndex] = useState(0);
+
+  useEffect(() => {
+    let typingTimer: NodeJS.Timeout;
+    
+    if (isTyping) {
+      if (currentTextIndex < placeholders[placeholderIndex].length) {
+        typingTimer = setTimeout(() => {
+          setCurrentPlaceholder(prev => prev + placeholders[placeholderIndex][currentTextIndex]);
+          setCurrentTextIndex(prev => prev + 1);
+        }, 50); // Typing speed
+      } else {
+        setTimeout(() => {
+          setIsTyping(false);
+        }, 2000); // Pause before starting to delete
+      }
+    } else {
+      if (currentPlaceholder.length > 0) {
+        typingTimer = setTimeout(() => {
+          setCurrentPlaceholder(prev => prev.slice(0, -1));
+        }, 30); // Deleting speed
+      } else {
+        setTimeout(() => {
+          setPlaceholderIndex((prev) => (prev + 1) % placeholders.length);
+          setCurrentTextIndex(0);
+          setIsTyping(true);
+        }, 500); // Pause before starting next sentence
+      }
+    }
+
+    return () => clearTimeout(typingTimer);
+  }, [currentTextIndex, isTyping, currentPlaceholder, placeholderIndex]);
 
   const handleReset = () => {
     if (!inputValue.trim()) return;
@@ -44,7 +87,7 @@ export function AIInput({
       <div className="relative max-w-xl w-full mx-auto">
         <Textarea
           id={id}
-          placeholder={placeholder}
+          placeholder={currentPlaceholder}
           className={cn(
             "max-w-xl bg-black/5 dark:bg-white/5 rounded-3xl pl-6 pr-16",
             "placeholder:text-black/50 dark:placeholder:text-white/50",
@@ -110,3 +153,4 @@ export function AIInput({
     </div>
   );
 }
+
