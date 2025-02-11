@@ -31,7 +31,7 @@ const Pricing = () => {
 
   const getPrice = (basePrice: string | number, billingCycle: string) => {
     if (typeof basePrice === "string") return basePrice;
-    return billingCycle === "yearly" ? `$${basePrice - 4}` : `$${basePrice}`;
+    return billingCycle === "yearly" ? `$25` : `$${basePrice}`;
   };
 
   const plans = [
@@ -39,9 +39,11 @@ const Pricing = () => {
       name: "Pro",
       price: 29,
       features: [
+        "Everything in Free",
         "Unlimited cases",
         "Unlimited chat prompts",
-        "Priority support"
+        "Priority support",
+        "1 monthly class to master the platform"
       ],
     },
     {
@@ -65,7 +67,7 @@ const Pricing = () => {
     
     if (isAuthenticated) {
       // If user is already logged in, redirect directly to payment
-      navigate('/payment', { state: { plan } });
+      navigate('/payment', { state: { plan, billingCycle: selected } });
     } else {
       // If not logged in, show toast and redirect to signup
       toast({

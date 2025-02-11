@@ -16,6 +16,7 @@ const Payment = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const plan = location.state?.plan;
+  const billingCycle = location.state?.billingCycle;
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -33,6 +34,10 @@ const Payment = () => {
 
   const initializePayPalButton = () => {
     if (window.paypal) {
+      const planId = billingCycle === 'yearly' 
+        ? 'P-8EW82746KH3443422M6VVLQY'  // Yearly plan ID
+        : 'P-4M915387D65813437M6VU7FY';  // Monthly plan ID
+
       window.paypal.Buttons({
         style: {
           shape: 'pill',
@@ -42,7 +47,7 @@ const Payment = () => {
         },
         createSubscription: function(data: any, actions: any) {
           return actions.subscription.create({
-            plan_id: 'P-4M915387D65813437M6VU7FY'
+            plan_id: planId
           });
         },
         onApprove: async function(data: any) {
@@ -109,7 +114,8 @@ const Payment = () => {
               <h1 className="text-3xl font-bold text-gray-900">Complete Your Purchase</h1>
               {plan && (
                 <p className="text-xl text-blue-600 mt-2">
-                  {plan.name} Plan - {plan.price}/month
+                  {plan.name} Plan - {billingCycle === 'yearly' ? '$25' : plan.price}/month
+                  {billingCycle === 'yearly' && ' (billed yearly)'}
                 </p>
               )}
             </div>
