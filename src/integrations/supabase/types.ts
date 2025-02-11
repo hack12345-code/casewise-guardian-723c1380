@@ -139,7 +139,6 @@ export type Database = {
           email: string
           full_name: string | null
           id: string
-          is_admin: boolean | null
           is_blocked: boolean | null
           last_prompt_date: string | null
           medical_sector: string | null
@@ -154,7 +153,6 @@ export type Database = {
           email: string
           full_name?: string | null
           id: string
-          is_admin?: boolean | null
           is_blocked?: boolean | null
           last_prompt_date?: string | null
           medical_sector?: string | null
@@ -169,7 +167,6 @@ export type Database = {
           email?: string
           full_name?: string | null
           id?: string
-          is_admin?: boolean | null
           is_blocked?: boolean | null
           last_prompt_date?: string | null
           medical_sector?: string | null
