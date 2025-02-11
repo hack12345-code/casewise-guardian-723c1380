@@ -23,7 +23,6 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { AIInput } from "@/components/ui/ai-input";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
 
 interface User {
   id: string;
@@ -84,7 +83,6 @@ const AdminDashboard = () => {
     },
   ]);
   const { toast } = useToast();
-  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -141,53 +139,10 @@ const AdminDashboard = () => {
     fetchEnterpriseLeads();
   }, [toast]);
 
-  useEffect(() => {
-    const checkAdminAccess = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        navigate('/login');
-        return;
-      }
-
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('is_admin')
-        .eq('id', session.user.id)
-        .single();
-
-      if (!profile?.is_admin) {
-        navigate('/dashboard');
-        toast({
-          title: "Access Denied",
-          description: "You don't have permission to access the admin dashboard.",
-          variant: "destructive",
-        });
-        return;
-      }
-    };
-
-    checkAdminAccess();
-  }, [navigate, toast]);
-
   const handleBlockUser = async () => {
     if (!selectedUser) return;
     
     const newBlockedStatus = !selectedUser.isBlocked;
-    
-    const { data: adminCheck } = await supabase
-      .from('profiles')
-      .select('is_admin')
-      .eq('email', 'savesuppo@gmail.com')
-      .single();
-
-    if (!adminCheck?.is_admin) {
-      toast({
-        title: "Permission Denied",
-        description: "Only the admin can perform this action.",
-        variant: "destructive",
-      });
-      return;
-    }
     
     const { error } = await supabase
       .from('profiles')
@@ -214,6 +169,30 @@ const AdminDashboard = () => {
       description: `${selectedUser.email} has been ${newBlockedStatus ? 'blocked from sending prompts' : 'unblocked'}`,
     });
     setIsManageDialogOpen(false);
+  };
+
+  const handleDeleteUser = async () => {
+    if (!selectedUser) return;
+    
+    // Delete user from auth.users (this will cascade delete the profile due to our foreign key constraint)
+    const { error } = await supabase.auth.admin.deleteUser(selectedUser.id);
+
+    if (error) {
+      toast({
+        title: "Error deleting account",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setUsers(users.filter(user => user.id !== selectedUser.id));
+    setIsManageDialogOpen(false);
+    
+    toast({
+      title: "Account deleted",
+      description: `Account deleted for ${selectedUser.email}`,
+    });
   };
 
   const handleManageUser = (user: User) => {
@@ -250,48 +229,11 @@ const AdminDashboard = () => {
     });
   };
 
-  const handleDeleteAccount = async () => {
-    if (!selectedUser) return;
-    
-    const { data: adminCheck } = await supabase
-      .from('profiles')
-      .select('is_admin')
-      .eq('email', 'savesuppo@gmail.com')
-      .single();
-
-    if (!adminCheck?.is_admin) {
-      toast({
-        title: "Permission Denied",
-        description: "Only the admin can perform this action.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const { error } = await supabase.auth.admin.deleteUser(selectedUser.id);
-
-    if (error) {
-      toast({
-        title: "Error deleting account",
-        description: error.message,
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    setUsers(users.filter(user => user.id !== selectedUser.id));
-    setIsManageDialogOpen(false);
-    
-    toast({
-      title: "Account deleted",
-      description: `Account deleted for ${selectedUser.email}`,
-    });
-  };
-
   const handleOpenChat = (chat: SupportMessage) => {
     setSelectedChat(chat);
     setIsChatDialogOpen(true);
     
+    // Mark as ongoing if unread
     if (chat.status === "unread") {
       const updatedMessages = supportMessages.map((msg) =>
         msg.id === chat.id ? { ...msg, status: "ongoing" as const } : msg
@@ -472,22 +414,13 @@ const AdminDashboard = () => {
                           </span>
                         </TableCell>
                         <TableCell>
-                          <div className="flex gap-2">
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              onClick={() => handleManageUser(user)}
-                            >
-                              Manage
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleResetPassword(user.id, user.email)}
-                            >
-                              Reset Password
-                            </Button>
-                          </div>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleManageUser(user)}
+                          >
+                            Manage
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -662,14 +595,6 @@ const AdminDashboard = () => {
           
           <div className="grid gap-4 py-4">
             <Button
-              variant="destructive"
-              onClick={handleCancelSubscription}
-              className="w-full"
-            >
-              Cancel Subscription
-            </Button>
-            
-            <Button
               variant={selectedUser?.isBlocked ? "outline" : "destructive"}
               onClick={handleBlockUser}
               className="w-full"
@@ -679,7 +604,7 @@ const AdminDashboard = () => {
             
             <Button
               variant="destructive"
-              onClick={handleDeleteAccount}
+              onClick={handleDeleteUser}
               className="w-full"
             >
               Delete Account
