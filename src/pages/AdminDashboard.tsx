@@ -171,6 +171,30 @@ const AdminDashboard = () => {
     setIsManageDialogOpen(false);
   };
 
+  const handleDeleteUser = async () => {
+    if (!selectedUser) return;
+    
+    // Delete user from auth.users (this will cascade delete the profile due to our foreign key constraint)
+    const { error } = await supabase.auth.admin.deleteUser(selectedUser.id);
+
+    if (error) {
+      toast({
+        title: "Error deleting account",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setUsers(users.filter(user => user.id !== selectedUser.id));
+    setIsManageDialogOpen(false);
+    
+    toast({
+      title: "Account deleted",
+      description: `Account deleted for ${selectedUser.email}`,
+    });
+  };
+
   const handleManageUser = (user: User) => {
     setSelectedUser(user);
     setIsManageDialogOpen(true);
@@ -202,30 +226,6 @@ const AdminDashboard = () => {
     toast({
       title: "Subscription cancelled",
       description: `Subscription cancelled for ${selectedUser.email}`,
-    });
-  };
-
-  const handleDeleteAccount = async () => {
-    if (!selectedUser) return;
-    
-    // Note: This will cascade delete the profile due to our foreign key constraint
-    const { error } = await supabase.auth.admin.deleteUser(selectedUser.id);
-
-    if (error) {
-      toast({
-        title: "Error deleting account",
-        description: error.message,
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    setUsers(users.filter(user => user.id !== selectedUser.id));
-    setIsManageDialogOpen(false);
-    
-    toast({
-      title: "Account deleted",
-      description: `Account deleted for ${selectedUser.email}`,
     });
   };
 
@@ -414,22 +414,13 @@ const AdminDashboard = () => {
                           </span>
                         </TableCell>
                         <TableCell>
-                          <div className="flex gap-2">
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              onClick={() => handleManageUser(user)}
-                            >
-                              Manage
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleResetPassword(user.id, user.email)}
-                            >
-                              Reset Password
-                            </Button>
-                          </div>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleManageUser(user)}
+                          >
+                            Manage
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -604,14 +595,6 @@ const AdminDashboard = () => {
           
           <div className="grid gap-4 py-4">
             <Button
-              variant="destructive"
-              onClick={handleCancelSubscription}
-              className="w-full"
-            >
-              Cancel Subscription
-            </Button>
-            
-            <Button
               variant={selectedUser?.isBlocked ? "outline" : "destructive"}
               onClick={handleBlockUser}
               className="w-full"
@@ -621,7 +604,7 @@ const AdminDashboard = () => {
             
             <Button
               variant="destructive"
-              onClick={handleDeleteAccount}
+              onClick={handleDeleteUser}
               className="w-full"
             >
               Delete Account
