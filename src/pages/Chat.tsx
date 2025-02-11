@@ -17,7 +17,6 @@ interface Message {
 
 interface UserProfile {
   is_blocked: boolean;
-  is_admin: boolean;
 }
 
 const Chat = () => {
@@ -41,7 +40,7 @@ const Chat = () => {
       // Check if user is blocked
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('is_blocked, is_admin')
+        .select('is_blocked')
         .eq('id', session.user.id)
         .single()
 
@@ -178,14 +177,7 @@ const Chat = () => {
       return
     }
 
-    // Check if user is blocked (unless they're admin)
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('is_blocked, is_admin')
-      .eq('id', session.user.id)
-      .single()
-
-    if (profile?.is_blocked && !profile?.is_admin) {
+    if (isBlocked) {
       toast({
         title: "Account Blocked",
         description: "Your account has been blocked from sending prompts. Please contact support for assistance.",
