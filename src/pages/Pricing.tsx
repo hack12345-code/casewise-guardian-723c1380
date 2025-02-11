@@ -38,12 +38,22 @@ const Pricing = () => {
     {
       name: "Pro",
       price: 29,
-      features: ["Unlimited cases", "Advanced analytics", "Priority support", "Custom templates"],
+      features: [
+        "Unlimited cases",
+        "Unlimited chat prompts",
+        "Priority support"
+      ],
     },
     {
       name: "Enterprise",
       price: "Custom",
-      features: ["Everything in Pro", "Custom integration", "Dedicated account manager", "SLA guarantee"],
+      features: [
+        "Everything in Pro",
+        "Custom integration",
+        "Dedicated account manager",
+        "Dashboard to manage all enterprise users",
+        "Monthly reports"
+      ],
     },
   ];
 
