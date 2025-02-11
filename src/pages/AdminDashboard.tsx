@@ -23,6 +23,7 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { AIInput } from "@/components/ui/ai-input";
 import { supabase } from "@/integrations/supabase/client";
+import { navigate } from "@reach/router";
 
 interface User {
   id: string;
@@ -139,10 +140,53 @@ const AdminDashboard = () => {
     fetchEnterpriseLeads();
   }, [toast]);
 
+  useEffect(() => {
+    const checkAdminAccess = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        navigate('/login');
+        return;
+      }
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', session.user.id)
+        .single();
+
+      if (!profile?.is_admin) {
+        navigate('/dashboard');
+        toast({
+          title: "Access Denied",
+          description: "You don't have permission to access the admin dashboard.",
+          variant: "destructive",
+        });
+        return;
+      }
+    };
+
+    checkAdminAccess();
+  }, [navigate, toast]);
+
   const handleBlockUser = async () => {
     if (!selectedUser) return;
     
     const newBlockedStatus = !selectedUser.isBlocked;
+    
+    const { data: adminCheck } = await supabase
+      .from('profiles')
+      .select('is_admin')
+      .eq('email', 'savesuppo@gmail.com')
+      .single();
+
+    if (!adminCheck?.is_admin) {
+      toast({
+        title: "Permission Denied",
+        description: "Only the admin can perform this action.",
+        variant: "destructive",
+      });
+      return;
+    }
     
     const { error } = await supabase
       .from('profiles')
@@ -208,7 +252,21 @@ const AdminDashboard = () => {
   const handleDeleteAccount = async () => {
     if (!selectedUser) return;
     
-    // Note: This will cascade delete the profile due to our foreign key constraint
+    const { data: adminCheck } = await supabase
+      .from('profiles')
+      .select('is_admin')
+      .eq('email', 'savesuppo@gmail.com')
+      .single();
+
+    if (!adminCheck?.is_admin) {
+      toast({
+        title: "Permission Denied",
+        description: "Only the admin can perform this action.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const { error } = await supabase.auth.admin.deleteUser(selectedUser.id);
 
     if (error) {
@@ -233,7 +291,6 @@ const AdminDashboard = () => {
     setSelectedChat(chat);
     setIsChatDialogOpen(true);
     
-    // Mark as ongoing if unread
     if (chat.status === "unread") {
       const updatedMessages = supportMessages.map((msg) =>
         msg.id === chat.id ? { ...msg, status: "ongoing" as const } : msg
