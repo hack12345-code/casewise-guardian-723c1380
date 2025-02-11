@@ -23,7 +23,7 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { AIInput } from "@/components/ui/ai-input";
 import { supabase } from "@/integrations/supabase/client";
-import { navigate } from "@reach/router";
+import { useNavigate } from "react-router-dom";
 
 interface User {
   id: string;
@@ -84,6 +84,7 @@ const AdminDashboard = () => {
     },
   ]);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUsers = async () => {
