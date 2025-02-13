@@ -15,8 +15,6 @@ interface ChatMessage {
   created_at: string;
   content: string;
   role: 'user' | 'assistant';
-  chat_id: string;
-  user_id: string;
 }
 
 const Chat = () => {
@@ -76,12 +74,7 @@ const Chat = () => {
           variant: "destructive",
         });
       } else {
-        // Add type assertion to ensure role is correct
-        const typedMessages = (data || []).map(msg => ({
-          ...msg,
-          role: msg.role as 'user' | 'assistant'
-        }));
-        setMessages(typedMessages);
+        setMessages(data || []);
       }
     } finally {
       setLoading(false);

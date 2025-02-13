@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { AIInput } from "./ui/ai-input";
 import { Response } from "./Response";
@@ -27,7 +28,6 @@ export const Hero = () => {
   const [prompts, setPrompts] = useState<Prompt[]>([]);
   const [caseCounter, setCaseCounter] = useState(1);
   const [demoType, setDemoType] = useState<'regular' | 'report'>('regular');
-  const [inputValue, setInputValue] = useState("");
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -166,8 +166,6 @@ export const Hero = () => {
             onSubmit={handleSubmit}
             isLoading={isLoading}
             className="max-w-3xl mx-auto"
-            value={inputValue}
-            setValue={setInputValue}
           />
         </div>
 
@@ -222,8 +220,6 @@ export const Hero = () => {
                           maxHeight={200}
                           onSubmit={handleSubmit}
                           isLoading={isLoading}
-                          value={inputValue}
-                          setValue={setInputValue}
                         />
                       </div>
                     </div>
