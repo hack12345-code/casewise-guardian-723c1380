@@ -339,4 +339,11 @@ const AdminDashboard = () => {
           isOpen={isChatDialogOpen}
           onClose={() => setIsChatDialogOpen(false)}
           onSendMessage={handleSendMessage}
-          onResolve={handleResolve
+          onResolve={handleResolveChat}
+        />
+      </div>
+    </div>
+  );
+};
+
+export default AdminDashboard;
