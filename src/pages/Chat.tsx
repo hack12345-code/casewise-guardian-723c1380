@@ -1,13 +1,12 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/components/ui/use-toast";
-import { AIChatMessage, AIInput } from "@/components/ui/ai-input";
-import { Document } from "lucide-react";
+import { AIInput, AIChatMessage } from "@/components/ui/ai-input";
+import { FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Navbar } from "@/components/Navbar";
 
@@ -63,7 +62,7 @@ const Chat = () => {
     setLoading(true);
     try {
       const { data, error } = await supabase
-        .from('messages')
+        .from('medical_messages')
         .select('*')
         .eq('chat_id', chatId)
         .order('created_at', { ascending: true });
@@ -105,34 +104,30 @@ const Chat = () => {
       return;
     }
 
-    const userMessage = {
-      chat_id: chatId,
-      content: input,
-      role: 'user',
-    };
-
-    setMessages(prevMessages => [...prevMessages, userMessage]);
-    setInput('');
-
     try {
+      const userMessage = {
+        chat_id: chatId,
+        content: input,
+        role: 'user' as const,
+        user_id: session.user.id
+      };
+
       const { data: userMessageData, error: userMessageError } = await supabase
-        .from('messages')
+        .from('medical_messages')
         .insert([userMessage])
-        .select()
+        .select();
 
-      if (userMessageError) {
-        throw userMessageError;
-      }
+      if (userMessageError) throw userMessageError;
 
-      // Optimistically update the UI
-      setMessages(prevMessages => [...prevMessages, userMessageData[0]]);
+      setMessages(prev => [...prev, userMessageData[0] as ChatMessage]);
+      setInput('');
 
       const response = await fetch('https://bdyudlqxufggzdzolayb.supabase.co/functions/v1/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJkeXVkbHF4dWZnZ3pkem9sYXliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk0NzIwMDcsImV4cCI6MjA1NTA0ODAwN30.eJP_nC3ylOJaX-tWirZQjlArHjsqOp3kHy_UxY5u7zA`,
-          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJkeXVkbHF4dWZnZ3pkem9sYXliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk0NzIwMDcsImV4cCI6MjA1NTA0ODAwN30.eJP_nC3ylOJaX-tWirZQjlArHjsqOp3kHy_UxY5u7zA'
+          'Authorization': `Bearer ${process.env.SUPABASE_ANON_KEY}`,
+          'apikey': process.env.SUPABASE_ANON_KEY || ''
         },
         body: JSON.stringify({ message: input, chatId: chatId }),
       });
@@ -146,19 +141,18 @@ const Chat = () => {
       const aiMessage = {
         chat_id: chatId,
         content: aiResponse.response,
-        role: 'assistant',
+        role: 'assistant' as const,
+        user_id: session.user.id
       };
 
       const { data: aiMessageData, error: aiMessageError } = await supabase
-        .from('messages')
+        .from('medical_messages')
         .insert([aiMessage])
-        .select()
+        .select();
 
-      if (aiMessageError) {
-        throw aiMessageError;
-      }
+      if (aiMessageError) throw aiMessageError;
 
-      setMessages(prevMessages => [...prevMessages, aiMessageData[0]]);
+      setMessages(prev => [...prev, aiMessageData[0] as ChatMessage]);
     } catch (error: any) {
       toast({
         title: "Error sending message",
@@ -192,7 +186,7 @@ const Chat = () => {
 
     try {
       const { data, error } = await supabase
-        .from('chats')
+        .from('medical_chats')
         .insert([{ user_id: session.user.id }])
         .select()
         .single();
@@ -232,13 +226,13 @@ const Chat = () => {
                 onSubmit={handleSendMessage}
                 value={input}
                 setValue={setInput}
-                isDisabled={loading}
+                disabled={loading}
               />
             </div>
           </Card>
         ) : (
           <div className="flex flex-col items-center justify-center h-full">
-            <Document className="w-12 h-12 text-gray-400 mb-4" />
+            <FileText className="w-12 h-12 text-gray-400 mb-4" />
             <h2 className="text-2xl font-semibold text-gray-700 mb-2">
               No case selected.
             </h2>
