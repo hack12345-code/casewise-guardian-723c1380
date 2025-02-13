@@ -12,7 +12,7 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     react({
       plugins: [
-        ['@swc/plugin-react-refresh']
+        ['@swc/plugin-react-refresh', {}]
       ]
     }),
     mode === 'development' &&

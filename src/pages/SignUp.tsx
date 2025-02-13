@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Input } from "@/components/ui/input";
@@ -85,25 +84,6 @@ const SignUp = () => {
     setIsLoading(true);
 
     try {
-      // Check if user exists first
-      const { data: { users }, error: getUserError } = await supabase.auth.admin.listUsers({
-        filters: {
-          email: email
-        }
-      });
-
-      if (getUserError) throw getUserError;
-
-      if (users && users.length > 0) {
-        toast({
-          title: "Account already exists",
-          description: "This email is already registered. Please log in instead.",
-          variant: "destructive",
-        });
-        navigate("/login");
-        return;
-      }
-
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
