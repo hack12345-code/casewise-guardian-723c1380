@@ -43,16 +43,12 @@ const Dashboard = () => {
         return
       }
 
-      console.log("User email:", session.user.email) // Debug log
-
       // Fetch user profile
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('subscription_status, case_count, is_admin, email')
         .eq('id', session.user.id)
         .maybeSingle()
-
-      console.log("Fetched profile:", profile) // Debug log
 
       if (profileError) {
         console.error("Error fetching profile:", profileError)
@@ -62,8 +58,6 @@ const Dashboard = () => {
       if (!profile) {
         // If no profile exists, create one with admin status if email matches
         const isAdmin = session.user.email === 'savesuppo@gmail.com'
-        console.log("Creating new profile with isAdmin:", isAdmin) // Debug log
-        
         const { data: newProfile, error: createError } = await supabase
           .from('profiles')
           .insert({
@@ -81,13 +75,10 @@ const Dashboard = () => {
           return
         }
 
-        console.log("Created new profile:", newProfile) // Debug log
         setUserProfile(newProfile)
       } else {
         // If profile exists but admin status needs to be updated
         if (session.user.email === 'savesuppo@gmail.com' && !profile.is_admin) {
-          console.log("Updating admin status for existing profile") // Debug log
-          
           const { data: updatedProfile, error: updateError } = await supabase
             .from('profiles')
             .update({ is_admin: true })
@@ -100,10 +91,8 @@ const Dashboard = () => {
             return
           }
 
-          console.log("Updated profile:", updatedProfile) // Debug log
           setUserProfile(updatedProfile)
         } else {
-          console.log("Using existing profile:", profile) // Debug log
           setUserProfile(profile)
         }
       }
