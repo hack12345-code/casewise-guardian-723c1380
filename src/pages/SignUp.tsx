@@ -94,6 +94,7 @@ const SignUp = () => {
             country,
             sector,
           },
+          emailRedirectTo: `${window.location.origin}/dashboard`,
         },
       });
 
@@ -101,17 +102,10 @@ const SignUp = () => {
 
       toast({
         title: "Account created successfully!",
-        description: "Welcome to Save! Please check your email to verify your account.",
+        description: "Welcome to Save!",
       });
       
-      // Automatically sign in the user
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (signInError) throw signInError;
-
+      // User is automatically signed in after signup
       navigate("/dashboard");
     } catch (error: any) {
       toast({
