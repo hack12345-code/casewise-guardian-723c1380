@@ -184,7 +184,11 @@ const AdminDashboard = () => {
     
     const { error } = await supabase
       .from('profiles')
-      .update({ subscription_status: newStatus })
+      .update({ 
+        subscription_status: newStatus,
+        subscription_start_date: new Date().toISOString(),
+        payment_method: 'paypal'
+      })
       .eq('id', selectedUser.id);
 
     if (error) {
@@ -205,6 +209,29 @@ const AdminDashboard = () => {
     toast({
       title: "Subscription updated",
       description: `${selectedUser.email}'s subscription has been updated to ${newStatus}`,
+    });
+  };
+
+  const handleUpdateSubscriptionPeriod = async (period: string) => {
+    if (!selectedUser) return;
+    
+    const { error } = await supabase
+      .from('profiles')
+      .update({ subscription_period: period })
+      .eq('id', selectedUser.id);
+
+    if (error) {
+      toast({
+        title: "Error updating subscription period",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    toast({
+      title: "Subscription period updated",
+      description: `${selectedUser.email}'s billing period has been set to ${period}`,
     });
   };
 
@@ -700,6 +727,22 @@ const AdminDashboard = () => {
                   <SelectItem value="pro">Pro</SelectItem>
                   <SelectItem value="enterprise">Enterprise</SelectItem>
                   <SelectItem value="cancelled">Cancelled</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <h4 className="text-sm font-medium">Billing Period</h4>
+              <Select
+                onValueChange={handleUpdateSubscriptionPeriod}
+                defaultValue="monthly"
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select billing period" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="monthly">Monthly</SelectItem>
+                  <SelectItem value="yearly">Yearly</SelectItem>
                 </SelectContent>
               </Select>
             </div>
