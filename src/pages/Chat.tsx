@@ -34,6 +34,11 @@ const Chat = () => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) {
+        toast({
+          title: "Session expired",
+          description: "Please login again to continue.",
+          variant: "destructive",
+        })
         navigate('/login')
         return
       }
@@ -57,7 +62,7 @@ const Chat = () => {
     checkAuth()
 
     // Subscribe to chat messages
-    const channel = supabase
+    let channel = supabase
       .channel(`chat:${chatId}`)
       .on(
         'postgres_changes',
@@ -69,7 +74,6 @@ const Chat = () => {
         },
         (payload) => {
           const newMessage = payload.new
-          // Only add the message if it doesn't already exist in the messages array
           setMessages(prev => {
             const messageExists = prev.some(msg => msg.id === newMessage.id)
             if (messageExists) return prev
@@ -87,7 +91,7 @@ const Chat = () => {
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [chatId, navigate])
+  }, [chatId, navigate, toast])
 
   useEffect(() => {
     const initializeChat = async () => {
@@ -99,74 +103,65 @@ const Chat = () => {
 
       setIsLoading(true)
 
-      // Load existing chat
-      const { data: chatData, error: chatError } = await supabase
-        .from('medical_chats')
-        .select('case_title')
-        .eq('id', chatId)
-        .eq('user_id', session.user.id)  // Make sure user owns this chat
-        .maybeSingle()
+      try {
+        // Load existing chat
+        const { data: chatData, error: chatError } = await supabase
+          .from('medical_chats')
+          .select('case_title')
+          .eq('id', chatId)
+          .eq('user_id', session.user.id)  // Make sure user owns this chat
+          .maybeSingle()
 
-      if (chatError) {
-        console.error("Error fetching chat:", chatError)
+        if (chatError) throw chatError
+
+        if (!chatData) {
+          toast({
+            title: "Chat not found",
+            description: "The requested chat could not be found.",
+            variant: "destructive",
+          })
+          navigate('/dashboard')
+          return
+        }
+
+        setCaseTitle(chatData.case_title)
+
+        // Get chat messages
+        const { data: messagesData, error: messagesError } = await supabase
+          .from('medical_messages')
+          .select('*')
+          .eq('chat_id', chatId)
+          .order('created_at', { ascending: true })
+
+        if (messagesError) throw messagesError
+
+        if (messagesData) {
+          const formattedMessages: Message[] = messagesData.map(msg => ({
+            id: msg.id,
+            text: msg.content,
+            sender: msg.role === 'user' ? 'user' : 'ai',
+            timestamp: msg.created_at
+          }))
+          setMessages(formattedMessages)
+          
+          // Find the latest user message for the prompt
+          const latestUserMessage = [...messagesData]
+            .reverse()
+            .find(msg => msg.role === 'user')
+          if (latestUserMessage) {
+            setLatestUserPrompt(latestUserMessage.content)
+          }
+        }
+      } catch (error: any) {
+        console.error("Error:", error)
         toast({
           title: "Error loading chat",
-          description: chatError.message,
+          description: error.message,
           variant: "destructive",
         })
+      } finally {
         setIsLoading(false)
-        return
       }
-
-      if (!chatData) {
-        toast({
-          title: "Chat not found",
-          description: "The requested chat could not be found.",
-          variant: "destructive",
-        })
-        navigate('/dashboard')
-        return
-      }
-
-      setCaseTitle(chatData.case_title)
-
-      // Get chat messages
-      const { data: messagesData, error: messagesError } = await supabase
-        .from('medical_messages')
-        .select('*')
-        .eq('chat_id', chatId)
-        .order('created_at', { ascending: true })
-
-      if (messagesError) {
-        console.error("Error fetching messages:", messagesError)
-        toast({
-          title: "Error loading messages",
-          description: messagesError.message,
-          variant: "destructive",
-        })
-        setIsLoading(false)
-        return
-      }
-
-      if (messagesData) {
-        const formattedMessages: Message[] = messagesData.map(msg => ({
-          id: msg.id,
-          text: msg.content,
-          sender: msg.role === 'user' ? 'user' : 'ai',
-          timestamp: msg.created_at
-        }))
-        setMessages(formattedMessages)
-        
-        // Find the latest user message for the prompt
-        const latestUserMessage = [...messagesData]
-          .reverse()
-          .find(msg => msg.role === 'user')
-        if (latestUserMessage) {
-          setLatestUserPrompt(latestUserMessage.content)
-        }
-      }
-      
-      setIsLoading(false)
     }
 
     if (chatId) {
@@ -179,6 +174,11 @@ const Chat = () => {
 
     const { data: { session } } = await supabase.auth.getSession()
     if (!session) {
+      toast({
+        title: "Session expired",
+        description: "Please login again to continue.",
+        variant: "destructive",
+      })
       navigate('/login')
       return
     }
@@ -210,8 +210,7 @@ const Chat = () => {
 
       if (messageError) throw messageError
 
-      // The message will be added through the subscription
-
+      // Update chat timestamp
       const { error: updateError } = await supabase
         .from('medical_chats')
         .update({
@@ -226,7 +225,14 @@ const Chat = () => {
         body: { prompt: input }
       })
 
-      if (error) throw error
+      if (error) {
+        console.error("Edge function error:", error)
+        throw new Error("Failed to get AI response. Please try again.")
+      }
+
+      if (!data || !data.response) {
+        throw new Error("Invalid response from AI service")
+      }
 
       const { error: aiError } = await supabase
         .from('medical_messages')
@@ -243,7 +249,7 @@ const Chat = () => {
       console.error("Error:", error)
       toast({
         title: "Error",
-        description: error.message,
+        description: error.message || "Failed to process your request",
         variant: "destructive",
       })
     } finally {
