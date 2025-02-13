@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { Navbar } from "@/components/Navbar"
@@ -68,12 +69,17 @@ const Chat = () => {
         },
         (payload) => {
           const newMessage = payload.new
-          setMessages(prev => [...prev, {
-            id: newMessage.id,
-            text: newMessage.content,
-            sender: newMessage.role === 'user' ? 'user' : 'ai',
-            timestamp: newMessage.created_at
-          }])
+          // Only add the message if it doesn't already exist in the messages array
+          setMessages(prev => {
+            const messageExists = prev.some(msg => msg.id === newMessage.id)
+            if (messageExists) return prev
+            return [...prev, {
+              id: newMessage.id,
+              text: newMessage.content,
+              sender: newMessage.role === 'user' ? 'user' : 'ai',
+              timestamp: newMessage.created_at
+            }]
+          })
         }
       )
       .subscribe()
@@ -188,19 +194,10 @@ const Chat = () => {
 
     setIsLoading(true)
     setLatestUserPrompt(input)
-    
+
     try {
-      const tempId = Math.random().toString()
-      const timestamp = new Date().toISOString()
-      
-      setMessages(prev => [...prev, {
-        id: tempId,
-        text: input,
-        sender: 'user',
-        timestamp
-      }])
-      
-      const { error: messageError } = await supabase
+      // Send the message to the database first
+      const { data: messageData, error: messageError } = await supabase
         .from('medical_messages')
         .insert({
           chat_id: chatId,
@@ -208,8 +205,12 @@ const Chat = () => {
           role: 'user',
           user_id: session.user.id
         })
+        .select()
+        .single()
 
       if (messageError) throw messageError
+
+      // The message will be added through the subscription
 
       const { error: updateError } = await supabase
         .from('medical_chats')
