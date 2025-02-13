@@ -22,6 +22,7 @@ import ContactSales from "./pages/ContactSales"
 import { AdminRoute } from "./components/AdminRoute"
 import Chat from "./pages/Chat"
 import BlogPost from "./pages/BlogPost"
+import { ScrollToTop } from "./components/ScrollToTop"
 
 const queryClient = new QueryClient()
 
@@ -31,6 +32,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <ScrollToTop />
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/pricing" element={<Pricing />} />
