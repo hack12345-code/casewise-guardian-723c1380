@@ -20,7 +20,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { AIInput } from "@/components/ui/ai-input";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -208,13 +208,28 @@ const AdminDashboard = () => {
   const handleDeleteAccount = async () => {
     if (!selectedUser) return;
     
-    // Note: This will cascade delete the profile due to our foreign key constraint
-    const { error } = await supabase.auth.admin.deleteUser(selectedUser.id);
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .delete()
+      .eq('id', selectedUser.id);
 
-    if (error) {
+    if (profileError) {
       toast({
-        title: "Error deleting account",
-        description: error.message,
+        title: "Error deleting profile",
+        description: profileError.message,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const { error: authError } = await supabase.auth.admin.deleteUser(
+      selectedUser.id
+    );
+
+    if (authError) {
+      toast({
+        title: "Error deleting user account",
+        description: authError.message,
         variant: "destructive",
       });
       return;
@@ -225,7 +240,7 @@ const AdminDashboard = () => {
     
     toast({
       title: "Account deleted",
-      description: `Account deleted for ${selectedUser.email}`,
+      description: `Account for ${selectedUser.email} has been permanently deleted`,
     });
   };
 
@@ -233,7 +248,6 @@ const AdminDashboard = () => {
     setSelectedChat(chat);
     setIsChatDialogOpen(true);
     
-    // Mark as ongoing if unread
     if (chat.status === "unread") {
       const updatedMessages = supportMessages.map((msg) =>
         msg.id === chat.id ? { ...msg, status: "ongoing" as const } : msg
