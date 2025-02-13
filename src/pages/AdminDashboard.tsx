@@ -166,7 +166,7 @@ const AdminDashboard = () => {
     
     toast({
       title: newBlockedStatus ? "User blocked" : "User unblocked",
-      description: `${selectedUser.email} has been ${newBlockedStatus ? 'blocked from sending prompts' : 'unblocked'}`,
+      description: `${selectedUser.email} has been ${newBlockedStatus ? 'blocked from creating new cases' : 'unblocked'}`,
     });
     setIsManageDialogOpen(false);
   };
@@ -616,7 +616,7 @@ const AdminDashboard = () => {
               onClick={handleBlockUser}
               className="w-full"
             >
-              {selectedUser?.isBlocked ? 'Unblock User' : 'Block User from Prompting'}
+              {selectedUser?.isBlocked ? 'Unblock User Access' : 'Block User from Creating Cases'}
             </Button>
             
             <Button
