@@ -7,6 +7,9 @@ interface AdminRouteProps {
   children: React.ReactNode;
 }
 
+// Cache for admin status
+let adminStatusCache: { [key: string]: boolean } = {};
+
 export const AdminRoute = ({ children }: AdminRouteProps) => {
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -21,6 +24,13 @@ export const AdminRoute = ({ children }: AdminRouteProps) => {
         return;
       }
 
+      // Check cache first
+      if (adminStatusCache[session.user.id] !== undefined) {
+        setIsAdmin(adminStatusCache[session.user.id]);
+        setIsLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('profiles')
         .select('is_admin')
@@ -31,7 +41,9 @@ export const AdminRoute = ({ children }: AdminRouteProps) => {
         console.error('Error checking admin status:', error);
         setIsAdmin(false);
       } else {
-        setIsAdmin(data?.is_admin ?? false);
+        const isAdminUser = data?.is_admin ?? false;
+        adminStatusCache[session.user.id] = isAdminUser; // Cache the result
+        setIsAdmin(isAdminUser);
       }
       
       setIsLoading(false);
@@ -39,7 +51,10 @@ export const AdminRoute = ({ children }: AdminRouteProps) => {
 
     checkAdminStatus();
 
-    const { data: authListener } = supabase.auth.onAuthStateChange(() => {
+    const { data: authListener } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_OUT') {
+        adminStatusCache = {}; // Clear cache on sign out
+      }
       checkAdminStatus();
     });
 
@@ -53,7 +68,6 @@ export const AdminRoute = ({ children }: AdminRouteProps) => {
   }
 
   if (!isAdmin) {
-    // Add returnTo parameter when redirecting to login
     const returnUrl = encodeURIComponent(window.location.pathname);
     return <Navigate to={`/login?returnTo=${returnUrl}`} replace />;
   }
