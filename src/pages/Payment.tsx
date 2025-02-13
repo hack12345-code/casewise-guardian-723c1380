@@ -1,5 +1,6 @@
 
 import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
 import { Card } from "@/components/ui/card";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -113,17 +114,16 @@ const Payment = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <Navbar />
-      <div className="pt-24 pb-12 px-4">
+      <div className="flex-grow pt-24 pb-12 px-4">
         <div className="max-w-3xl mx-auto">
           <Card className="p-8">
             <div className="text-center mb-8">
               <h1 className="text-3xl font-bold text-gray-900">Complete Your Purchase</h1>
               {plan && (
                 <p className="text-xl text-blue-600 mt-2">
-                  {plan.name} Plan - {billingCycle === 'yearly' ? '$25' : plan.price}/month
-                  {billingCycle === 'yearly' && ' (billed yearly)'}
+                  {plan.name} Plan - {billingCycle === 'yearly' ? '$25/month (billed yearly)' : '$29.99/month'}
                 </p>
               )}
             </div>
@@ -139,6 +139,7 @@ const Payment = () => {
           </Card>
         </div>
       </div>
+      <Footer />
     </div>
   );
 };
