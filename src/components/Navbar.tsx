@@ -99,9 +99,9 @@ export const Navbar = () => {
     },
     { 
       name: "Pricing", 
-      url: "/pricing", 
+      url: "#cases-section", 
       icon: DollarSign,
-      onClick: () => setActiveTab("Pricing")
+      onClick: handleCasesClick
     },
     { 
       name: "Support", 
