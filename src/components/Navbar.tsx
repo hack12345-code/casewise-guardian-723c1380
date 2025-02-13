@@ -100,15 +100,21 @@ export const Navbar = () => {
     },
     { 
       name: "Pricing", 
-      url: "#cases-section", 
+      url: "/pricing", 
       icon: DollarSign,
-      onClick: handleCasesClick
+      onClick: () => {
+        setActiveTab("Pricing");
+        navigate('/pricing');
+      }
     },
     { 
       name: "Support", 
       url: "/support", 
       icon: MessageSquare,
-      onClick: () => setActiveTab("Support")
+      onClick: () => {
+        setActiveTab("Support");
+        navigate('/support');
+      }
     },
   ].map(item => ({
     ...item,
