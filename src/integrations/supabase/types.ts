@@ -153,6 +153,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          case_blocked: boolean | null
           case_count: number | null
           country: string | null
           created_at: string | null
@@ -165,6 +166,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          case_blocked?: boolean | null
           case_count?: number | null
           country?: string | null
           created_at?: string | null
@@ -177,6 +179,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          case_blocked?: boolean | null
           case_count?: number | null
           country?: string | null
           created_at?: string | null

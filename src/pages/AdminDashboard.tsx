@@ -33,6 +33,7 @@ interface User {
   sector: string;
   lastActive: string;
   isBlocked?: boolean;
+  caseBlocked?: boolean;
 }
 
 interface EnterpriseLead {
@@ -111,6 +112,7 @@ const AdminDashboard = () => {
           sector: user.medical_sector || 'N/A',
           lastActive: new Date(user.updated_at).toLocaleDateString(),
           isBlocked: user.is_blocked,
+          caseBlocked: user.case_blocked,
         }));
         setUsers(formattedUsers);
       }
@@ -170,6 +172,37 @@ const AdminDashboard = () => {
       description: `${selectedUser.email} has been ${newBlockedStatus ? 'blocked from creating new cases' : 'unblocked'}`,
     });
     setIsManageDialogOpen(false);
+  };
+
+  const handleBlockCases = async () => {
+    if (!selectedUser) return;
+    
+    const newBlockedStatus = !selectedUser.caseBlocked;
+    
+    const { error } = await supabase
+      .from('profiles')
+      .update({ case_blocked: newBlockedStatus })
+      .eq('id', selectedUser.id);
+
+    if (error) {
+      toast({
+        title: "Error updating case block status",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setUsers(users.map(user => 
+      user.id === selectedUser.id 
+        ? { ...user, caseBlocked: newBlockedStatus }
+        : user
+    ));
+    
+    toast({
+      title: newBlockedStatus ? "Cases blocked" : "Cases unblocked",
+      description: `${selectedUser.email} has been ${newBlockedStatus ? 'blocked from creating new cases' : 'unblocked from creating cases'}`,
+    });
   };
 
   const handleManageUser = (user: User) => {
@@ -617,7 +650,15 @@ const AdminDashboard = () => {
               onClick={handleBlockUser}
               className="w-full"
             >
-              {selectedUser?.isBlocked ? 'Unblock User Access' : 'Block User from Creating Cases'}
+              {selectedUser?.isBlocked ? 'Unblock User Access' : 'Block User Access'}
+            </Button>
+            
+            <Button
+              variant={selectedUser?.caseBlocked ? "outline" : "destructive"}
+              onClick={handleBlockCases}
+              className="w-full"
+            >
+              {selectedUser?.caseBlocked ? 'Allow Creating Cases' : 'Block from Creating Cases'}
             </Button>
             
             <Button
