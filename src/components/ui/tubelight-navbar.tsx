@@ -1,6 +1,7 @@
+
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom"; // Changed from next/link to react-router-dom
+import { Link } from "react-router-dom";
 import { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -8,6 +9,8 @@ interface NavItem {
   name: string;
   url: string;
   icon: LucideIcon;
+  onClick?: (e: React.MouseEvent) => void;
+  active?: boolean;
 }
 
 interface NavBarProps {
@@ -16,7 +19,6 @@ interface NavBarProps {
 }
 
 export function NavBar({ items, className }: NavBarProps) {
-  const [activeTab, setActiveTab] = useState(items[0].name);
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -39,13 +41,13 @@ export function NavBar({ items, className }: NavBarProps) {
       <div className="flex items-center gap-3 bg-background/5 border border-border backdrop-blur-lg py-1 px-1 rounded-full shadow-lg">
         {items.map((item) => {
           const Icon = item.icon;
-          const isActive = activeTab === item.name;
+          const isActive = item.active;
 
           return (
             <Link
               key={item.name}
-              to={item.url} // Changed from href to to for react-router
-              onClick={() => setActiveTab(item.name)}
+              to={item.url}
+              onClick={item.onClick}
               className={cn(
                 "relative cursor-pointer text-sm font-semibold px-6 py-2 rounded-full transition-colors",
                 "text-foreground/80 hover:text-primary",
