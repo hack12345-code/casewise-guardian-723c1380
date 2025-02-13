@@ -53,7 +53,9 @@ export const AdminRoute = ({ children }: AdminRouteProps) => {
   }
 
   if (!isAdmin) {
-    return <Navigate to="/login" replace />;
+    // Add returnTo parameter when redirecting to login
+    const returnUrl = encodeURIComponent(window.location.pathname);
+    return <Navigate to={`/login?returnTo=${returnUrl}`} replace />;
   }
 
   return <>{children}</>;
