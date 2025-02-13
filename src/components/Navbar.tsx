@@ -1,3 +1,4 @@
+
 import { User, LogIn, Home, FileText, DollarSign, LogOut, MessageSquare, Settings, Grid } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { NavBar } from "@/components/ui/tubelight-navbar";

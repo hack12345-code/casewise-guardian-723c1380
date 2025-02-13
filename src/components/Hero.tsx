@@ -137,7 +137,7 @@ export const Hero = () => {
           <h1 className="text-6xl font-bold text-[#1a1a1a] mb-4">
             Healthcare Workers,
           </h1>
-          <h2 className="text-4xl font-bold mb-4">
+          <h2 className="text-5xl font-bold mb-4">
             <span className="bg-gradient-to-r from-[#1877F2] to-[#9b87f5] bg-clip-text text-transparent whitespace-nowrap">
               Prevent Malpractice Lawsuits with AI
             </span>
