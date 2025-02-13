@@ -20,6 +20,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { AIInput } from "@/components/ui/ai-input";
 import { supabase } from "@/integrations/supabase/client";
@@ -33,6 +40,7 @@ interface User {
   sector: string;
   lastActive: string;
   isBlocked?: boolean;
+  caseBlocked?: boolean;
 }
 
 interface EnterpriseLead {
@@ -110,6 +118,7 @@ const AdminDashboard = () => {
           sector: user.medical_sector || 'N/A',
           lastActive: new Date(user.updated_at).toLocaleDateString(),
           isBlocked: user.is_blocked,
+          caseBlocked: user.case_blocked,
         }));
         setUsers(formattedUsers);
       }
@@ -138,6 +147,66 @@ const AdminDashboard = () => {
     fetchUsers();
     fetchEnterpriseLeads();
   }, [toast]);
+
+  const handleBlockCases = async () => {
+    if (!selectedUser) return;
+    
+    const newBlockedStatus = !selectedUser.caseBlocked;
+    
+    const { error } = await supabase
+      .from('profiles')
+      .update({ case_blocked: newBlockedStatus })
+      .eq('id', selectedUser.id);
+
+    if (error) {
+      toast({
+        title: "Error updating case blocking status",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setUsers(users.map(user => 
+      user.id === selectedUser.id 
+        ? { ...user, caseBlocked: newBlockedStatus }
+        : user
+    ));
+    
+    toast({
+      title: newBlockedStatus ? "Cases blocked" : "Cases unblocked",
+      description: `${selectedUser.email} has been ${newBlockedStatus ? 'blocked from creating new cases' : 'allowed to create cases again'}`,
+    });
+  };
+
+  const handleUpdateSubscription = async (newStatus: string) => {
+    if (!selectedUser) return;
+    
+    const { error } = await supabase
+      .from('profiles')
+      .update({ subscription_status: newStatus })
+      .eq('id', selectedUser.id);
+
+    if (error) {
+      toast({
+        title: "Error updating subscription",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setUsers(users.map(user => 
+      user.id === selectedUser.id 
+        ? { ...user, subscription: newStatus }
+        : user
+    ));
+    
+    toast({
+      title: "Subscription updated",
+      description: `${selectedUser.email}'s subscription has been updated to ${newStatus}`,
+    });
+  };
 
   const handleBlockUser = async () => {
     if (!selectedUser) return;
@@ -617,12 +686,38 @@ const AdminDashboard = () => {
           </DialogHeader>
           
           <div className="grid gap-4 py-4">
+            <div className="space-y-2">
+              <h4 className="text-sm font-medium">Subscription Status</h4>
+              <Select
+                onValueChange={handleUpdateSubscription}
+                defaultValue={selectedUser?.subscription}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select subscription status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="free">Free</SelectItem>
+                  <SelectItem value="pro">Pro</SelectItem>
+                  <SelectItem value="enterprise">Enterprise</SelectItem>
+                  <SelectItem value="cancelled">Cancelled</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
             <Button
               variant="destructive"
               onClick={handleCancelSubscription}
               className="w-full"
             >
               Cancel Subscription
+            </Button>
+            
+            <Button
+              variant={selectedUser?.caseBlocked ? "outline" : "destructive"}
+              onClick={handleBlockCases}
+              className="w-full"
+            >
+              {selectedUser?.caseBlocked ? 'Unblock Case Creation' : 'Block Case Creation'}
             </Button>
             
             <Button
