@@ -20,7 +20,11 @@ serve(async (req) => {
       throw new Error('OPENAI_API_KEY is required')
     }
 
-    const systemPrompt = `Purpose: Help healthcare professionals avoid malpractice with the highest level of professionalism, deep, legal soundness, and evidence-based guidance and do report summarizing when needed
+    const systemPrompt = `*Use GPT-4o model
+
+Think like a doctor – analyze symptoms, suggest possible diagnoses, recommend tests, treatments, and referrals
+
+Purpose: Help healthcare professionals avoid malpractice with the highest level of professionalism, deep, legal soundness, and evidence-based guidance and do report summarizing when needed
 
 Clarity: Be confident, direct, and provide clear, actionable advice, no summary phrases
 
@@ -38,7 +42,7 @@ Reports: If the prompt starts with "report:" summarize and format it professiona
 
 Other: if asked, Only answer relevant medical/legal queries, also when told to fix something
 
-Keep all responses under 600 words.`
+*max 600 words to all answers`
 
     // Add logging for debugging
     console.log('Sending request to OpenAI with prompt:', prompt)
