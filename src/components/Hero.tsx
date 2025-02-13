@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { AIInput } from "./ui/ai-input";
 import { Response } from "./Response";
@@ -41,16 +42,17 @@ export const Hero = () => {
   const handleSubmit = async (caseDetails: string) => {
     if (!caseDetails.trim()) return;
 
-    const { data: { session } } = await supabase.auth.getSession();
-    
-    if (!session) {
-      localStorage.setItem('pendingPrompt', caseDetails);
-      navigate('/signup');
-      return;
-    }
-
     setIsLoading(true);
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        localStorage.setItem('pendingPrompt', caseDetails);
+        navigate('/signup');
+        return;
+      }
+
+      // Check if user is blocked or has reached case limit
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('subscription_status, case_count, is_blocked')
@@ -65,7 +67,6 @@ export const Hero = () => {
           description: "Your account has been blocked from sending prompts. Please contact support for assistance.",
           variant: "destructive",
         });
-        setIsLoading(false);
         return;
       }
 
@@ -77,10 +78,10 @@ export const Hero = () => {
           description: "Free users can only have one case. Please upgrade to create more cases!",
           variant: "destructive",
         });
-        setIsLoading(false);
         return;
       }
 
+      // Create a new chat
       const { data: newChat, error: chatError } = await supabase
         .from('medical_chats')
         .insert({
@@ -92,6 +93,7 @@ export const Hero = () => {
 
       if (chatError) throw chatError;
 
+      // Create the first message
       const { error: messageError } = await supabase
         .from('medical_messages')
         .insert({
@@ -103,7 +105,9 @@ export const Hero = () => {
 
       if (messageError) throw messageError;
 
+      // Redirect to the new chat
       navigate(`/chat/${newChat.id}`);
+
     } catch (error: any) {
       console.error("Error:", error);
       toast({
