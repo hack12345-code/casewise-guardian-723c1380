@@ -14,11 +14,38 @@ export const AdminRoute = ({ children }: AdminRouteProps) => {
   useEffect(() => {
     const checkAdminStatus = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      setIsAdmin(session?.user?.email === "savesuppo@gmail.com");
+      
+      if (!session) {
+        setIsAdmin(false);
+        setIsLoading(false);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', session.user.id)
+        .single();
+
+      if (error) {
+        console.error('Error checking admin status:', error);
+        setIsAdmin(false);
+      } else {
+        setIsAdmin(data?.is_admin ?? false);
+      }
+      
       setIsLoading(false);
     };
 
     checkAdminStatus();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange(() => {
+      checkAdminStatus();
+    });
+
+    return () => {
+      authListener?.subscription.unsubscribe();
+    };
   }, []);
 
   if (isLoading) {
@@ -26,7 +53,7 @@ export const AdminRoute = ({ children }: AdminRouteProps) => {
   }
 
   if (!isAdmin) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   return <>{children}</>;
