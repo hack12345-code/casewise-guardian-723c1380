@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Input } from "@/components/ui/input";
@@ -40,7 +41,6 @@ const SignUp = () => {
   const countries = [
     "United States", "Canada", "United Kingdom", "Australia", "Germany", "France", "Japan", 
     "Brazil", "India", "China", "South Africa", "Mexico", "Spain", "Italy", "Russia",
-    // Add more countries as needed
   ];
 
   const medicalSectors = [
@@ -85,6 +85,25 @@ const SignUp = () => {
     setIsLoading(true);
 
     try {
+      // Check if user exists first
+      const { data: { users }, error: getUserError } = await supabase.auth.admin.listUsers({
+        filters: {
+          email: email
+        }
+      });
+
+      if (getUserError) throw getUserError;
+
+      if (users && users.length > 0) {
+        toast({
+          title: "Account already exists",
+          description: "This email is already registered. Please log in instead.",
+          variant: "destructive",
+        });
+        navigate("/login");
+        return;
+      }
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -97,7 +116,18 @@ const SignUp = () => {
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        if (error.message.includes("already registered")) {
+          toast({
+            title: "Account already exists",
+            description: "This email is already registered. Please log in instead.",
+            variant: "destructive",
+          });
+          navigate("/login");
+          return;
+        }
+        throw error;
+      }
 
       toast({
         title: "Account created successfully!",
@@ -114,6 +144,7 @@ const SignUp = () => {
 
       navigate("/dashboard");
     } catch (error: any) {
+      console.error("Signup error:", error);
       toast({
         title: "Error creating account",
         description: error.message,
