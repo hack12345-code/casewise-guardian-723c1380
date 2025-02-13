@@ -1,9 +1,9 @@
+
 import { CornerRightUp, Mic, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
 import { useAutoResizeTextarea } from "@/hooks/use-auto-resize-textarea";
-import { Avatar } from "@/components/ui/avatar";
 
 interface AIInputProps {
   id?: string
@@ -14,8 +14,6 @@ interface AIInputProps {
   className?: string
   isLoading?: boolean
   disabled?: boolean
-  value: string;
-  setValue: (value: string) => void;
 }
 
 const placeholders = [
@@ -26,24 +24,6 @@ const placeholders = [
   "A 47-year-old woman reports the appearance of dark, irregular spots on her cheeks and forehead over the past six months..."
 ];
 
-export function AIChatMessage({ role, content }: AIChatMessageProps) {
-  return (
-    <div className={cn(
-      "flex gap-3 p-4",
-      role === 'assistant' ? "bg-gray-50" : ""
-    )}>
-      <Avatar className="h-8 w-8">
-        <span className="text-xs">
-          {role === 'assistant' ? 'AI' : 'You'}
-        </span>
-      </Avatar>
-      <div className="flex-1">
-        <p className="text-sm text-gray-800 whitespace-pre-wrap">{content}</p>
-      </div>
-    </div>
-  );
-}
-
 export function AIInput({
   id = "ai-input",
   placeholder = "",
@@ -52,18 +32,13 @@ export function AIInput({
   onSubmit,
   className,
   isLoading = false,
-  disabled = false,
-  value,
-  setValue
-}: AIInputProps & {
-  value: string;
-  setValue: (value: string) => void;
-}) {
+  disabled = false
+}: AIInputProps) {
   const { textareaRef, adjustHeight } = useAutoResizeTextarea({
     minHeight,
     maxHeight,
   });
-  const [inputValue, setInputValue] = useState(value);
+  const [inputValue, setInputValue] = useState("");
   const [currentPlaceholder, setCurrentPlaceholder] = useState("");
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const [isTyping, setIsTyping] = useState(true);
@@ -103,7 +78,7 @@ export function AIInput({
   const handleReset = () => {
     if (!inputValue.trim()) return;
     onSubmit?.(inputValue);
-    setValue("");
+    setInputValue("");
     adjustHeight(true);
   };
 
@@ -178,3 +153,4 @@ export function AIInput({
     </div>
   );
 }
+
