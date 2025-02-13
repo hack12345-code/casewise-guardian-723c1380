@@ -66,14 +66,22 @@ const Payment = () => {
             }
 
             // Store subscription in database
-            const { error } = await supabase
+            const { error: subscriptionError } = await supabase
               .from('paypal_subscriptions')
               .insert({
                 user_id: session.user.id,
                 subscription_id: data.subscriptionID,
               });
 
-            if (error) throw error;
+            if (subscriptionError) throw subscriptionError;
+
+            // Update user's subscription status
+            const { error: profileError } = await supabase
+              .from('profiles')
+              .update({ subscription_status: 'pro' })
+              .eq('id', session.user.id);
+
+            if (profileError) throw profileError;
 
             toast({
               title: "Success!",
