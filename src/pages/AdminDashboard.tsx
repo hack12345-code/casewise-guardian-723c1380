@@ -82,6 +82,7 @@ const AdminDashboard = () => {
       readTime: "5 min read"
     },
   ]);
+  const [chatInputValue, setChatInputValue] = useState("");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -676,6 +677,8 @@ const AdminDashboard = () => {
                 minHeight={80}
                 maxHeight={120}
                 onSubmit={handleSendMessage}
+                value={chatInputValue}
+                setValue={setChatInputValue}
               />
               <div className="flex justify-end mt-4 gap-2">
                 <Button
