@@ -219,7 +219,17 @@ const Chat = () => {
     setLatestUserPrompt(input)
 
     try {
-      // Send the message to the database first
+      // Add user message immediately to the UI
+      const tempUserMessageId = `temp-${Date.now()}`
+      const userMessage = {
+        id: tempUserMessageId,
+        text: input,
+        sender: 'user' as const,
+        timestamp: new Date().toISOString()
+      }
+      setMessages(prev => [...prev, userMessage])
+
+      // Send the message to the database
       const { data: messageData, error: messageError } = await supabase
         .from('medical_messages')
         .insert({
@@ -244,6 +254,16 @@ const Chat = () => {
 
       if (updateError) throw updateError
 
+      // Add AI response immediately with loading state
+      const tempAiMessageId = `temp-ai-${Date.now()}`
+      const loadingMessage = {
+        id: tempAiMessageId,
+        text: "Analyzing your input...",
+        sender: 'ai' as const,
+        timestamp: new Date().toISOString()
+      }
+      setMessages(prev => [...prev, loadingMessage])
+
       const { data, error } = await supabase.functions.invoke('medical-ai-chat', {
         body: { prompt: input }
       })
@@ -256,6 +276,13 @@ const Chat = () => {
       if (!data || !data.response) {
         throw new Error("Invalid response from AI service")
       }
+
+      // Replace loading message with actual AI response
+      setMessages(prev => prev.map(msg => 
+        msg.id === tempAiMessageId 
+          ? { ...msg, text: data.response }
+          : msg
+      ))
 
       const { error: aiError } = await supabase
         .from('medical_messages')
@@ -275,6 +302,8 @@ const Chat = () => {
         description: error.message || "Failed to process your request",
         variant: "destructive",
       })
+      // Remove loading message if there was an error
+      setMessages(prev => prev.filter(msg => !msg.id.startsWith('temp-ai-')))
     } finally {
       setIsLoading(false)
     }
