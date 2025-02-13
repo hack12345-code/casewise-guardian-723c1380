@@ -30,7 +30,7 @@ const Login = () => {
       // Check if user is blocked
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('is_blocked, is_admin')
+        .select('is_blocked')
         .eq('id', session?.user?.id)
         .single();
 
@@ -46,17 +46,12 @@ const Login = () => {
         description: "Welcome back!",
       });
 
-      // Get the return path from URL parameters
-      const params = new URLSearchParams(window.location.search);
-      const returnTo = params.get('returnTo');
-
-      // Check if user is admin and redirect accordingly
-      if (profile?.is_admin) {
-        navigate(returnTo || "/admin");
+      // Redirect to admin dashboard if admin user
+      if (email === "savesuppo@gmail.com") {
+        navigate("/admin");
       } else {
         navigate("/dashboard");
       }
-
     } catch (error: any) {
       toast({
         title: "Error logging in",
