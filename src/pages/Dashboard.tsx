@@ -1,3 +1,4 @@
+
 import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -143,16 +144,6 @@ const Dashboard = () => {
       return
     }
 
-    // Check if user is on free plan and already has a case
-    if (userProfile?.subscription_status !== 'active' && userProfile?.case_count >= 1) {
-      toast({
-        title: "Case limit reached",
-        description: "Free users can only have one case. Please upgrade to create more cases.",
-        variant: "destructive",
-      })
-      return
-    }
-
     try {
       const { data: newChat, error } = await supabase
         .from('medical_chats')
@@ -165,19 +156,11 @@ const Dashboard = () => {
 
       if (error) {
         console.error("Error creating new chat:", error)
-        if (error.message.includes('can only have one case')) {
-          toast({
-            title: "Case limit reached",
-            description: "Free users can only have one case. Please upgrade to create more cases.",
-            variant: "destructive",
-          })
-        } else {
-          toast({
-            title: "Error creating new chat",
-            description: error.message,
-            variant: "destructive",
-          })
-        }
+        toast({
+          title: "Error creating new chat",
+          description: error.message,
+          variant: "destructive",
+        })
         return
       }
 
@@ -219,26 +202,6 @@ const Dashboard = () => {
       // Update local state
       setChats(chats.filter((chat) => chat.id !== chatId))
       
-      // Update case count in profile
-      if (userProfile && userProfile.case_count > 0) {
-        const { data: { session } } = await supabase.auth.getSession()
-        if (session) {
-          const { error: updateError } = await supabase
-            .from('profiles')
-            .update({ case_count: userProfile.case_count - 1 })
-            .eq('id', session.user.id)
-
-          if (updateError) {
-            console.error("Error updating case count:", updateError)
-          } else {
-            setUserProfile({
-              ...userProfile,
-              case_count: userProfile.case_count - 1
-            })
-          }
-        }
-      }
-
       toast({
         title: "Chat deleted",
         description: "The chat and all its messages have been removed.",
@@ -281,36 +244,16 @@ const Dashboard = () => {
         <div className="flex min-h-[calc(100vh-4rem)] pt-16">
           <DashboardSidebar />
           <main className="flex-1 p-8">
-            <div className="flex justify-between items-center mb-8 gap-8">
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">My Cases</h1>
-              </div>
-              <div className="flex items-center gap-4 ml-auto">
-                {userProfile?.subscription_status !== 'active' && (
-                  <div className="text-sm text-gray-600">
-                    Free plan: {userProfile?.case_count === 0 ? (
-                      "You can create one case"
-                    ) : (
-                      "Case limit reached"
-                    )}
-                    {" - "}
-                    <a 
-                      href="/dashboard/billing" 
-                      className="text-blue-600 hover:text-blue-700 underline"
-                    >
-                      Upgrade to Pro
-                    </a>
-                  </div>
-                )}
-                <Button
-                  onClick={handleNewChat}
-                  size="lg"
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6"
-                >
-                  <Plus className="mr-2 h-5 w-5" />
-                  New Case
-                </Button>
-              </div>
+            <div className="flex justify-between items-center mb-8">
+              <h1 className="text-3xl font-bold text-gray-900">My Cases</h1>
+              <Button
+                onClick={handleNewChat}
+                size="lg"
+                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6"
+              >
+                <Plus className="mr-2 h-5 w-5" />
+                New Case
+              </Button>
             </div>
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -382,7 +325,7 @@ const Dashboard = () => {
         </AlertDialog>
       </SidebarProvider>
     </div>
-  );
-};
+  )
+}
 
-export default Dashboard;
+export default Dashboard
