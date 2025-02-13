@@ -86,8 +86,7 @@ Other: if asked, Only answer relevant medical/legal queries, also when told to f
     return new Response(
       JSON.stringify({ response: aiResponse }),
       { 
-        status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       },
     )
   } catch (error) {

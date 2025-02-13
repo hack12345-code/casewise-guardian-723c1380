@@ -150,6 +150,29 @@ const Chat = () => {
             .find(msg => msg.role === 'user')
           if (latestUserMessage) {
             setLatestUserPrompt(latestUserMessage.content)
+
+            // Get AI response for the initial message
+            if (messagesData.length === 1) {
+              const { data: aiResponse, error } = await supabase.functions.invoke('medical-ai-chat', {
+                body: { prompt: latestUserMessage.content }
+              })
+
+              if (!error && aiResponse?.response) {
+                // Store AI response in the database
+                const { error: messageError } = await supabase
+                  .from('medical_messages')
+                  .insert({
+                    chat_id: chatId,
+                    content: aiResponse.response,
+                    role: 'assistant',
+                    user_id: session.user.id
+                  })
+
+                if (messageError) {
+                  console.error('Error storing AI response:', messageError)
+                }
+              }
+            }
           }
         }
       } catch (error: any) {
