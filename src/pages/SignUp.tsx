@@ -40,6 +40,7 @@ const SignUp = () => {
   const countries = [
     "United States", "Canada", "United Kingdom", "Australia", "Germany", "France", "Japan", 
     "Brazil", "India", "China", "South Africa", "Mexico", "Spain", "Italy", "Russia",
+    // Add more countries as needed
   ];
 
   const medicalSectors = [
@@ -96,18 +97,7 @@ const SignUp = () => {
         },
       });
 
-      if (error) {
-        if (error.message.includes("already registered")) {
-          toast({
-            title: "Account already exists",
-            description: "This email is already registered. Please log in instead.",
-            variant: "destructive",
-          });
-          navigate("/login");
-          return;
-        }
-        throw error;
-      }
+      if (error) throw error;
 
       toast({
         title: "Account created successfully!",
@@ -124,7 +114,6 @@ const SignUp = () => {
 
       navigate("/dashboard");
     } catch (error: any) {
-      console.error("Signup error:", error);
       toast({
         title: "Error creating account",
         description: error.message,

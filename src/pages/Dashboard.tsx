@@ -1,4 +1,3 @@
-
 import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -48,35 +47,14 @@ const Dashboard = () => {
         .from('profiles')
         .select('subscription_status, case_count')
         .eq('id', session.user.id)
-        .maybeSingle()
+        .single()
 
       if (profileError) {
         console.error("Error fetching profile:", profileError)
         return
       }
 
-      if (!profile) {
-        // If no profile exists, create one
-        const { data: newProfile, error: createError } = await supabase
-          .from('profiles')
-          .insert({
-            id: session.user.id,
-            email: session.user.email,
-            subscription_status: 'free',
-            case_count: 0
-          })
-          .select('subscription_status, case_count')
-          .single()
-
-        if (createError) {
-          console.error("Error creating profile:", createError)
-          return
-        }
-
-        setUserProfile(newProfile)
-      } else {
-        setUserProfile(profile)
-      }
+      setUserProfile(profile)
     }
     checkAuth()
   }, [navigate])
@@ -404,7 +382,7 @@ const Dashboard = () => {
         </AlertDialog>
       </SidebarProvider>
     </div>
-  )
-}
+  );
+};
 
-export default Dashboard
+export default Dashboard;
