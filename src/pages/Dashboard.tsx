@@ -33,7 +33,7 @@ const Dashboard = () => {
   const [chats, setChats] = useState<Chat[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [chatToDelete, setChatToDelete] = useState<string | null>(null)
-  const [userProfile, setUserProfile] = useState<{ subscription_status: string; case_count: number; is_admin?: boolean } | null>(null)
+  const [userProfile, setUserProfile] = useState<{ subscription_status: string; case_count: number } | null>(null)
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -46,7 +46,7 @@ const Dashboard = () => {
       // Fetch user profile
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('subscription_status, case_count, is_admin, email')
+        .select('subscription_status, case_count')
         .eq('id', session.user.id)
         .maybeSingle()
 
@@ -56,18 +56,16 @@ const Dashboard = () => {
       }
 
       if (!profile) {
-        // If no profile exists, create one with admin status if email matches
-        const isAdmin = session.user.email === 'savesuppo@gmail.com'
+        // If no profile exists, create one
         const { data: newProfile, error: createError } = await supabase
           .from('profiles')
           .insert({
             id: session.user.id,
             email: session.user.email,
             subscription_status: 'free',
-            case_count: 0,
-            is_admin: isAdmin
+            case_count: 0
           })
-          .select('subscription_status, case_count, is_admin')
+          .select('subscription_status, case_count')
           .single()
 
         if (createError) {
@@ -77,24 +75,7 @@ const Dashboard = () => {
 
         setUserProfile(newProfile)
       } else {
-        // If profile exists but admin status needs to be updated
-        if (session.user.email === 'savesuppo@gmail.com' && !profile.is_admin) {
-          const { data: updatedProfile, error: updateError } = await supabase
-            .from('profiles')
-            .update({ is_admin: true })
-            .eq('id', session.user.id)
-            .select('subscription_status, case_count, is_admin')
-            .single()
-
-          if (updateError) {
-            console.error("Error updating admin status:", updateError)
-            return
-          }
-
-          setUserProfile(updatedProfile)
-        } else {
-          setUserProfile(profile)
-        }
+        setUserProfile(profile)
       }
     }
     checkAuth()
