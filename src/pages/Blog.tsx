@@ -32,21 +32,22 @@ const Blog = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      <div className="flex-grow pt-24 pb-16">
+      <main className="flex-grow pt-24 pb-16">
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-center gap-3 mb-12">
-            <Book className="w-8 h-8 text-blue-600" />
-            <h1 className="text-4xl font-bold text-center">Blog</h1>
-          </div>
+          <header className="mb-12 text-center">
+            <h1 className="text-4xl font-bold inline-flex items-center justify-center gap-3">
+              <Book className="w-8 h-8 text-blue-600" />
+              Blog
+            </h1>
+          </header>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
             {blogPosts.map((post) => (
-              <Link 
-                to={`/blog/${post.id}`} 
+              <article 
                 key={post.id}
                 className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
               >
-                <div className="p-6">
+                <Link to={`/blog/${post.id}`} className="p-6 block">
                   <h2 className="text-xl font-semibold mb-3 text-gray-900 hover:text-blue-600 transition-colors">
                     {post.title}
                   </h2>
@@ -54,15 +55,15 @@ const Blog = () => {
                     {post.excerpt}
                   </p>
                   <div className="flex justify-between items-center text-sm text-gray-500">
-                    <span>{new Date(post.date).toLocaleDateString()}</span>
+                    <time dateTime={post.date}>{new Date(post.date).toLocaleDateString()}</time>
                     <span>{post.readTime}</span>
                   </div>
-                </div>
-              </Link>
+                </Link>
+              </article>
             ))}
           </div>
         </div>
-      </div>
+      </main>
       <Footer />
     </div>
   );

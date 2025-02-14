@@ -19,21 +19,23 @@ const BlogPost = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      <div className="flex-grow pt-24 pb-16">
+      <main className="flex-grow pt-24 pb-16">
         <article className="container mx-auto px-4 max-w-4xl">
-          <h1 className="text-4xl font-bold mb-4">{post.title}</h1>
-          <div className="flex items-center gap-4 text-gray-600 mb-8">
-            <span>{new Date(post.date).toLocaleDateString()}</span>
-            <span>•</span>
-            <span>{post.readTime}</span>
-            <span>•</span>
-            <span>{post.author}</span>
-          </div>
+          <header className="mb-8">
+            <h1 className="text-4xl font-bold mb-4">{post.title}</h1>
+            <div className="flex items-center gap-4 text-gray-600">
+              <time dateTime={post.date}>{new Date(post.date).toLocaleDateString()}</time>
+              <span>•</span>
+              <span>{post.readTime}</span>
+              <span>•</span>
+              <span>{post.author}</span>
+            </div>
+          </header>
           <div className="prose prose-lg max-w-none">
             {post.content}
           </div>
         </article>
-      </div>
+      </main>
       <Footer />
     </div>
   );
