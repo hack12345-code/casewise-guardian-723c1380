@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -146,6 +147,7 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     const fetchSupportChats = async () => {
+      // First, fetch all support chats
       const { data: chats, error: chatsError } = await supabase
         .from('support_chats')
         .select(`
@@ -153,11 +155,7 @@ const AdminDashboard = () => {
           user_id,
           status,
           created_at,
-          updated_at,
-          profiles:user_id (
-            full_name,
-            email
-          )
+          updated_at
         `)
         .order('created_at', { ascending: false });
 
@@ -171,7 +169,21 @@ const AdminDashboard = () => {
       }
 
       if (chats) {
+        // For each chat, fetch the associated profile and messages
         const formattedChats = await Promise.all(chats.map(async (chat) => {
+          // Fetch user profile
+          const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('full_name, email')
+            .eq('id', chat.user_id)
+            .single();
+
+          if (profileError) {
+            console.error('Error fetching profile:', profileError);
+            return null;
+          }
+
+          // Fetch messages for this chat
           const { data: messages, error: messagesError } = await supabase
             .from('support_messages')
             .select('*')
@@ -186,7 +198,7 @@ const AdminDashboard = () => {
           return {
             id: chat.id,
             userId: chat.user_id,
-            userName: chat.profiles?.full_name || 'Unknown User',
+            userName: profile?.full_name || 'Unknown User',
             message: messages?.[messages.length - 1]?.content || '',
             timestamp: chat.created_at,
             status: chat.status as "unread" | "ongoing" | "resolved",
@@ -206,6 +218,7 @@ const AdminDashboard = () => {
     fetchSupportChats();
   }, [toast]);
 
+  // Update real-time subscription for new messages
   useEffect(() => {
     const channel = supabase
       .channel('admin-support-updates')
@@ -219,23 +232,27 @@ const AdminDashboard = () => {
         async (payload) => {
           const newMessage = payload.new;
           
+          // Fetch the chat details
           const { data: chat, error: chatError } = await supabase
             .from('support_chats')
-            .select(`
-              id,
-              user_id,
-              status,
-              created_at,
-              profiles:user_id (
-                full_name,
-                email
-              )
-            `)
+            .select('id, user_id, status, created_at')
             .eq('id', newMessage.chat_id)
             .single();
 
           if (chatError) {
             console.error('Error fetching chat:', chatError);
+            return;
+          }
+
+          // Fetch the user profile
+          const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('full_name')
+            .eq('id', chat.user_id)
+            .single();
+
+          if (profileError) {
+            console.error('Error fetching profile:', profileError);
             return;
           }
 
@@ -262,7 +279,7 @@ const AdminDashboard = () => {
               return [{
                 id: chat.id,
                 userId: chat.user_id,
-                userName: chat.profiles?.full_name || 'Unknown User',
+                userName: profile?.full_name || 'Unknown User',
                 message: newMessage.content,
                 timestamp: chat.created_at,
                 status: "unread",
@@ -279,7 +296,7 @@ const AdminDashboard = () => {
           if (!isChatDialogOpen || (selectedChat?.id !== newMessage.chat_id && !newMessage.is_admin)) {
             toast({
               title: "New Support Message",
-              description: `New message from ${chat.profiles?.full_name || 'Unknown User'}`,
+              description: `New message from ${profile?.full_name || 'Unknown User'}`,
             });
           }
         }
