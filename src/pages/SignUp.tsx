@@ -1,9 +1,10 @@
+
 import { useState } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useNavigate, Link } from "react-router-dom";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Footer } from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
@@ -100,13 +101,15 @@ const SignUp = () => {
 
       if (error) throw error;
 
+      // Show verification email message
       toast({
-        title: "Account created successfully!",
-        description: "Welcome to Save!",
+        title: "Verification email sent",
+        description: "Please check your email to verify your account. You need to verify your email before you can log in.",
+        duration: 6000,
       });
       
-      // User is automatically signed in after signup
-      navigate("/dashboard");
+      // Redirect to a verification pending page or show additional instructions
+      navigate("/login", { replace: true });
     } catch (error: any) {
       toast({
         title: "Error creating account",
