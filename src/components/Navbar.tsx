@@ -1,9 +1,9 @@
 
-import { User, LogIn, Home, FileText, DollarSign, LogOut, MessageSquare, Settings, Grid } from "lucide-react";
+import { User, LogIn, Home, FileText, DollarSign, Building2, BarChart3, MessageSquare, Settings, Grid, Menu, X } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { NavBar } from "@/components/ui/tubelight-navbar";
 import { useEffect, useState } from "react";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import {
   DropdownMenu,
@@ -13,6 +13,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 
 export const Navbar = () => {
@@ -22,6 +29,7 @@ export const Navbar = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userName, setUserName] = useState("");
   const [activeTab, setActiveTab] = useState("Home");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     // Check initial auth state
@@ -51,75 +59,7 @@ export const Navbar = () => {
     else if (path === "/pricing") setActiveTab("Pricing");
     else if (path === "/support") setActiveTab("Support");
     else if (path.includes("cases")) setActiveTab("Cases");
-
-    // Handle scrolling when navigating back to home with state
-    if (path === "/" && location.state?.scrollTo === "cases-section") {
-      const casesSection = document.querySelector('#cases-section');
-      if (casesSection) {
-        casesSection.scrollIntoView({ behavior: 'smooth' });
-      }
-    }
-  }, [location.pathname, location.state]);
-
-  const handleCasesClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    setActiveTab("Cases");
-    
-    if (location.pathname !== '/') {
-      navigate('/', { state: { scrollTo: 'cases-section' } });
-    } else {
-      const casesSection = document.querySelector('#cases-section');
-      if (casesSection) {
-        casesSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    }
-  };
-
-  const handleHomeClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    setActiveTab("Home");
-    navigate('/');
-    const heroSection = document.querySelector('#hero-section');
-    if (heroSection) {
-      heroSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  };
-
-  const navItems = [
-    { 
-      name: "Home", 
-      url: "/", 
-      icon: Home,
-      onClick: handleHomeClick 
-    },
-    { 
-      name: "Cases", 
-      url: "#cases-section", 
-      icon: FileText,
-      onClick: handleCasesClick 
-    },
-    { 
-      name: "Pricing", 
-      url: "/pricing", 
-      icon: DollarSign,
-      onClick: () => {
-        setActiveTab("Pricing");
-        navigate('/pricing');
-      }
-    },
-    { 
-      name: "Support", 
-      url: "/support", 
-      icon: MessageSquare,
-      onClick: () => {
-        setActiveTab("Support");
-        navigate('/support');
-      }
-    },
-  ].map(item => ({
-    ...item,
-    active: activeTab === item.name
-  }));
+  }, [location.pathname]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -132,23 +72,35 @@ export const Navbar = () => {
     navigate('/');
   };
 
+  const navItems = [
+    { name: "Home", url: "/", icon: Home },
+    { name: "Cases", url: "#cases-section", icon: FileText },
+    { name: "Pricing", url: "/pricing", icon: DollarSign },
+    { name: "Support", url: "/support", icon: MessageSquare },
+  ].map(item => ({
+    ...item,
+    active: activeTab === item.name
+  }));
+
   return (
     <nav className="fixed top-0 left-0 right-0 bg-white/50 backdrop-blur-lg border-b border-gray-100 z-50">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          <a 
-            href="/"
-            onClick={handleHomeClick}
-            className="text-3xl font-bold cursor-pointer bg-gradient-to-r from-[#1877F2] to-[#9b87f5] bg-clip-text text-transparent"
+          {/* Logo */}
+          <Link 
+            to="/"
+            className="text-2xl md:text-3xl font-bold cursor-pointer bg-gradient-to-r from-[#1877F2] to-[#9b87f5] bg-clip-text text-transparent"
           >
             Saver
-          </a>
+          </Link>
 
-          <div className="absolute left-1/2 -translate-x-1/2">
+          {/* Desktop Navigation */}
+          <div className="hidden md:block absolute left-1/2 -translate-x-1/2">
             <NavBar items={navItems} className="relative !fixed:none !bottom-auto !top-auto !mb-0 !pt-0" />
           </div>
 
-          <div className="flex items-center space-x-4">
+          {/* Desktop Auth Buttons */}
+          <div className="hidden md:flex items-center space-x-4">
             {isAuthenticated ? (
               <>
                 <Button
@@ -157,13 +109,13 @@ export const Navbar = () => {
                   onClick={() => navigate('/dashboard')}
                 >
                   <Grid className="w-4 h-4" />
-                  <span>Dashboard</span>
+                  <span className="hidden sm:inline">Dashboard</span>
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="flex items-center gap-2">
                       <User className="w-4 h-4" />
-                      <span>{userName}</span>
+                      <span className="hidden sm:inline">{userName}</span>
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56">
@@ -187,7 +139,7 @@ export const Navbar = () => {
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleLogout}>
-                      <LogOut className="w-4 h-4 mr-2" />
+                      <LogIn className="w-4 h-4 mr-2" />
                       <span>Log out</span>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -211,6 +163,100 @@ export const Navbar = () => {
                 </Link>
               </>
             )}
+          </div>
+
+          {/* Mobile Menu Button */}
+          <div className="md:hidden">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <Menu className="h-6 w-6" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+                <SheetHeader>
+                  <SheetTitle>Menu</SheetTitle>
+                </SheetHeader>
+                <div className="flex flex-col gap-4 mt-6">
+                  {navItems.map((item) => (
+                    <Link
+                      key={item.name}
+                      to={item.url}
+                      className={`flex items-center gap-2 p-2 rounded-lg transition-colors ${
+                        item.active
+                          ? "bg-blue-100 text-blue-600"
+                          : "hover:bg-gray-100"
+                      }`}
+                    >
+                      <item.icon className="w-5 h-5" />
+                      <span>{item.name}</span>
+                    </Link>
+                  ))}
+                  <div className="border-t my-4" />
+                  {isAuthenticated ? (
+                    <>
+                      <Button
+                        variant="ghost"
+                        className="flex items-center justify-start gap-2 w-full"
+                        onClick={() => navigate('/dashboard')}
+                      >
+                        <Grid className="w-5 h-5" />
+                        <span>Dashboard</span>
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="flex items-center justify-start gap-2 w-full"
+                        onClick={() => navigate('/dashboard/cases')}
+                      >
+                        <FileText className="w-5 h-5" />
+                        <span>My Cases</span>
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="flex items-center justify-start gap-2 w-full"
+                        onClick={() => navigate('/dashboard/settings')}
+                      >
+                        <Settings className="w-5 h-5" />
+                        <span>Settings</span>
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="flex items-center justify-start gap-2 w-full"
+                        onClick={() => navigate('/dashboard/billing')}
+                      >
+                        <DollarSign className="w-5 h-5" />
+                        <span>Billing</span>
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="flex items-center justify-start gap-2 w-full"
+                        onClick={handleLogout}
+                      >
+                        <LogIn className="w-5 h-5" />
+                        <span>Log out</span>
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Link 
+                        to="/login"
+                        className="flex items-center gap-2 p-2 text-gray-600 hover:text-gray-900 transition-colors"
+                      >
+                        <LogIn className="w-5 h-5" />
+                        <span>Log in</span>
+                      </Link>
+                      <Link
+                        to="/signup"
+                        className="flex items-center gap-2 p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                      >
+                        <User className="w-5 h-5" />
+                        <span>Sign up</span>
+                      </Link>
+                    </>
+                  )}
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </div>
