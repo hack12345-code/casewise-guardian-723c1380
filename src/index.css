@@ -32,21 +32,8 @@
   * {
     @apply border-border;
   }
-  
-  html, body {
-    @apply overflow-x-hidden max-w-[100vw];
-  }
-  
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
-  }
-
-  img {
-    @apply max-w-full h-auto;
-  }
-
-  pre, code {
-    @apply max-w-full overflow-x-auto;
   }
 }
