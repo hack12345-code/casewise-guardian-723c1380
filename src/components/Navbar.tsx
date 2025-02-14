@@ -1,4 +1,3 @@
-
 import { User, LogIn, Home, FileText, DollarSign, Building2, BarChart3, MessageSquare, Settings, Grid, Menu, X } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { NavBar } from "@/components/ui/tubelight-navbar";
@@ -32,7 +31,6 @@ export const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    // Check initial auth state
     supabase.auth.getSession().then(({ data: { session } }) => {
       setIsAuthenticated(!!session);
       if (session?.user) {
@@ -40,7 +38,6 @@ export const Navbar = () => {
       }
     });
 
-    // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
@@ -72,6 +69,15 @@ export const Navbar = () => {
     navigate('/');
   };
 
+  const handleCasesClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsMobileMenuOpen(false);
+    const casesSection = document.querySelector('#cases-section');
+    if (casesSection) {
+      casesSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   const navItems = [
     { name: "Home", url: "/", icon: Home },
     { name: "Cases", url: "#cases-section", icon: FileText },
@@ -86,7 +92,6 @@ export const Navbar = () => {
     <nav className="fixed top-0 left-0 right-0 bg-white/50 backdrop-blur-lg border-b border-gray-100 z-50">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          {/* Logo */}
           <Link 
             to="/"
             className="text-2xl md:text-3xl font-bold cursor-pointer bg-gradient-to-r from-[#1877F2] to-[#9b87f5] bg-clip-text text-transparent"
@@ -94,12 +99,10 @@ export const Navbar = () => {
             Saver
           </Link>
 
-          {/* Desktop Navigation */}
           <div className="hidden md:block absolute left-1/2 -translate-x-1/2">
             <NavBar items={navItems} className="relative !fixed:none !bottom-auto !top-auto !mb-0 !pt-0" />
           </div>
 
-          {/* Desktop Auth Buttons */}
           <div className="hidden md:flex items-center space-x-4">
             {isAuthenticated ? (
               <>
@@ -165,7 +168,6 @@ export const Navbar = () => {
             )}
           </div>
 
-          {/* Mobile Menu Button */}
           <div className="md:hidden">
             <Sheet>
               <SheetTrigger asChild>
@@ -182,6 +184,11 @@ export const Navbar = () => {
                     <Link
                       key={item.name}
                       to={item.url}
+                      onClick={(e) => {
+                        if (item.name === "Cases") {
+                          handleCasesClick(e);
+                        }
+                      }}
                       className={`flex items-center gap-2 p-2 rounded-lg transition-colors ${
                         item.active
                           ? "bg-blue-100 text-blue-600"
