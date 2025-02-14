@@ -86,7 +86,8 @@ const SignUp = () => {
     setIsLoading(true);
 
     try {
-      const { data, error } = await supabase.auth.signUp({
+      // Sign up the user
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -94,22 +95,28 @@ const SignUp = () => {
             name,
             country,
             sector,
-          },
-          emailRedirectTo: `${window.location.origin}/dashboard`,
+          }
         },
       });
 
-      if (error) throw error;
+      if (signUpError) throw signUpError;
 
-      // Show verification email message
+      // Immediately sign in the user
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (signInError) throw signInError;
+
       toast({
-        title: "Verification email sent",
-        description: "Please check your email to verify your account. You need to verify your email before you can log in.",
-        duration: 6000,
+        title: "Account created successfully!",
+        description: "Welcome to Saver! You are now logged in.",
+        duration: 5000,
       });
       
-      // Redirect to a verification pending page or show additional instructions
-      navigate("/login", { replace: true });
+      // Redirect to dashboard
+      navigate("/dashboard", { replace: true });
     } catch (error: any) {
       toast({
         title: "Error creating account",
