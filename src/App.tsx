@@ -18,7 +18,6 @@ import DashboardSettings from "./pages/DashboardSettings"
 import TermsOfService from "./pages/TermsOfService"
 import PrivacyPolicy from "./pages/PrivacyPolicy"
 import AdminDashboard from "./pages/AdminDashboard"
-import AdminSupport from "./pages/AdminSupport"
 import ContactSales from "./pages/ContactSales"
 import { AdminRoute } from "./components/AdminRoute"
 import Chat from "./pages/Chat"
@@ -57,14 +56,6 @@ const App = () => (
             element={
               <AdminRoute>
                 <AdminDashboard />
-              </AdminRoute>
-            }
-          />
-          <Route
-            path="/admin/support"
-            element={
-              <AdminRoute>
-                <AdminSupport />
               </AdminRoute>
             }
           />

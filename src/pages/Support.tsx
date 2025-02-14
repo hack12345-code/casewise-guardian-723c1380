@@ -1,187 +1,95 @@
 
 import { MessageCircle, Mail } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { supabase } from "@/integrations/supabase/client";
-
-interface Message {
-  id: string;
-  content: string;
-  is_admin: boolean;
-  created_at: string;
-}
-
-interface Chat {
-  id: string;
-  messages: Message[];
-}
 
 const Support = () => {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [currentChatId, setCurrentChatId] = useState<string | null>(null);
+  const [messages, setMessages] = useState<{ text: string; isUser: boolean }[]>([]);
   const { toast } = useToast();
 
-  useEffect(() => {
-    if (currentChatId) {
-      // Set up real-time subscription for new messages
-      const channel = supabase
-        .channel(`support_chat:${currentChatId}`)
-        .on(
-          'postgres_changes',
-          {
-            event: 'INSERT',
-            schema: 'public',
-            table: 'support_messages',
-            filter: `chat_id=eq.${currentChatId}`
-          },
-          (payload) => {
-            const newMessage = payload.new as Message;
-            setMessages(prev => [...prev, newMessage]);
-          }
-        )
-        .subscribe();
+  const handleStartChat = () => {
+    setIsChatOpen(true);
+    setMessages([
+      { 
+        text: "Hello! How can I help you today?", 
+        isUser: false 
+      }
+    ]);
 
-      return () => {
-        supabase.removeChannel(channel);
+    // Create a new support chat in localStorage
+    const newChat = {
+      id: Date.now().toString(),
+      userId: "user-" + Date.now(), // Simple user ID generation
+      userName: "Guest User",
+      message: "Started a new chat",
+      timestamp: new Date().toISOString(),
+      status: "unread" as const,
+      messages: [{
+        id: Date.now().toString(),
+        text: "Hello! How can I help you today?",
+        sender: "admin" as const,
+        timestamp: new Date().toISOString(),
+      }]
+    };
+
+    const existingMessages = localStorage.getItem("support-messages");
+    const supportMessages = existingMessages ? JSON.parse(existingMessages) : [];
+    supportMessages.push(newChat);
+    localStorage.setItem("support-messages", JSON.stringify(supportMessages));
+  };
+
+  const handleSendMessage = () => {
+    if (!message.trim()) return;
+    
+    // Add message to chat window
+    const newUserMessage = { text: message, isUser: true };
+    setMessages(prev => [...prev, newUserMessage]);
+    setMessage("");
+    
+    // Update support messages in localStorage
+    const existingMessages = localStorage.getItem("support-messages");
+    if (existingMessages) {
+      const supportMessages = JSON.parse(existingMessages);
+      const currentChat = supportMessages[supportMessages.length - 1];
+      
+      currentChat.messages.push({
+        id: Date.now().toString(),
+        text: message,
+        sender: "user" as const,
+        timestamp: new Date().toISOString(),
+      });
+
+      currentChat.message = message; // Update last message preview
+      localStorage.setItem("support-messages", JSON.stringify(supportMessages));
+    }
+
+    // Simulate admin response after a delay
+    setTimeout(() => {
+      const autoResponse = {
+        text: "Thank you for your message. Our support team will get back to you shortly.",
+        isUser: false
       };
-    }
-  }, [currentChatId]);
+      setMessages(prev => [...prev, autoResponse]);
 
-  const handleStartChat = async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
+      // Update support messages with auto-response
+      const updatedMessages = JSON.parse(localStorage.getItem("support-messages") || "[]");
+      const currentChat = updatedMessages[updatedMessages.length - 1];
       
-      if (!session) {
-        toast({
-          title: "Authentication required",
-          description: "Please log in to start a chat",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Create a new chat
-      const { data: chatData, error: chatError } = await supabase
-        .from('support_chats')
-        .insert({
-          user_id: session.user.id,
-          status: 'open'
-        })
-        .select()
-        .single();
-
-      if (chatError) throw chatError;
-
-      // Add initial message
-      const { data: messageData, error: messageError } = await supabase
-        .from('support_messages')
-        .insert({
-          chat_id: chatData.id,
-          user_id: session.user.id,
-          content: "Hello! How can I help you today?",
-          is_admin: true
-        })
-        .select()
-        .single();
-
-      if (messageError) throw messageError;
-
-      setCurrentChatId(chatData.id);
-      setMessages([messageData]);
-      setIsChatOpen(true);
-    } catch (error: any) {
-      console.error('Error starting chat:', error);
-      toast({
-        title: "Error",
-        description: "Failed to start chat. Please try again.",
-        variant: "destructive",
+      currentChat.messages.push({
+        id: Date.now().toString(),
+        text: autoResponse.text,
+        sender: "admin" as const,
+        timestamp: new Date().toISOString(),
       });
-    }
-  };
 
-  const loadExistingChat = async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) return;
-
-      // Get the most recent open chat
-      const { data: chatData, error: chatError } = await supabase
-        .from('support_chats')
-        .select('id')
-        .eq('user_id', session.user.id)
-        .eq('status', 'open')
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
-
-      if (chatError || !chatData) return;
-
-      // Load messages for this chat
-      const { data: messagesData, error: messagesError } = await supabase
-        .from('support_messages')
-        .select('*')
-        .eq('chat_id', chatData.id)
-        .order('created_at', { ascending: true });
-
-      if (messagesError) throw messagesError;
-
-      if (messagesData && messagesData.length > 0) {
-        setCurrentChatId(chatData.id);
-        setMessages(messagesData);
-        setIsChatOpen(true);
-      }
-    } catch (error) {
-      console.error('Error loading chat:', error);
-    }
-  };
-
-  useEffect(() => {
-    loadExistingChat();
-  }, []);
-
-  const handleSendMessage = async () => {
-    if (!message.trim() || !currentChatId) return;
-
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        toast({
-          title: "Authentication required",
-          description: "Please log in to send messages",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Send message
-      const { error: messageError } = await supabase
-        .from('support_messages')
-        .insert({
-          chat_id: currentChatId,
-          user_id: session.user.id,
-          content: message,
-          is_admin: false
-        });
-
-      if (messageError) throw messageError;
-
-      setMessage("");
-    } catch (error: any) {
-      console.error('Error sending message:', error);
-      toast({
-        title: "Error",
-        description: "Failed to send message. Please try again.",
-        variant: "destructive",
-      });
-    }
+      localStorage.setItem("support-messages", JSON.stringify(updatedMessages));
+    }, 1000);
   };
 
   const handleEmailSupport = () => {
@@ -237,19 +145,19 @@ const Support = () => {
               </div>
               
               <div className="flex-1 p-4 overflow-y-auto space-y-4">
-                {messages.map((msg) => (
+                {messages.map((msg, index) => (
                   <div
-                    key={msg.id}
-                    className={`flex ${!msg.is_admin ? 'justify-end' : 'justify-start'}`}
+                    key={index}
+                    className={`flex ${msg.isUser ? 'justify-end' : 'justify-start'}`}
                   >
                     <div
                       className={`max-w-[80%] p-3 rounded-lg ${
-                        !msg.is_admin
+                        msg.isUser
                           ? 'bg-blue-600 text-white'
                           : 'bg-gray-100 text-gray-800'
                       }`}
                     >
-                      {msg.content}
+                      {msg.text}
                     </div>
                   </div>
                 ))}
