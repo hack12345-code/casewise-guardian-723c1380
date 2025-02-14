@@ -72,11 +72,7 @@ interface SupportMessage {
 const AdminDashboard = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [enterpriseLeads, setEnterpriseLeads] = useState<EnterpriseLead[]>([]);
-  const [supportMessages, setSupportMessages] = useState<SupportMessage[]>(() => {
-    const savedMessages = localStorage.getItem("support-messages");
-    return savedMessages ? JSON.parse(savedMessages) : [];
-  });
-
+  const [supportMessages, setSupportMessages] = useState<SupportMessage[]>([]);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [selectedChat, setSelectedChat] = useState<SupportMessage | null>(null);
   const [isManageDialogOpen, setIsManageDialogOpen] = useState(false);
@@ -147,6 +143,153 @@ const AdminDashboard = () => {
     fetchUsers();
     fetchEnterpriseLeads();
   }, [toast]);
+
+  useEffect(() => {
+    const fetchSupportChats = async () => {
+      const { data: chats, error: chatsError } = await supabase
+        .from('support_chats')
+        .select(`
+          id,
+          user_id,
+          status,
+          created_at,
+          updated_at,
+          profiles:user_id (
+            full_name,
+            email
+          )
+        `)
+        .order('created_at', { ascending: false });
+
+      if (chatsError) {
+        toast({
+          title: "Error fetching support chats",
+          description: chatsError.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (chats) {
+        const formattedChats = await Promise.all(chats.map(async (chat) => {
+          const { data: messages, error: messagesError } = await supabase
+            .from('support_messages')
+            .select('*')
+            .eq('chat_id', chat.id)
+            .order('created_at', { ascending: true });
+
+          if (messagesError) {
+            console.error('Error fetching messages:', messagesError);
+            return null;
+          }
+
+          return {
+            id: chat.id,
+            userId: chat.user_id,
+            userName: chat.profiles?.full_name || 'Unknown User',
+            message: messages?.[messages.length - 1]?.content || '',
+            timestamp: chat.created_at,
+            status: chat.status as "unread" | "ongoing" | "resolved",
+            messages: messages?.map(msg => ({
+              id: msg.id,
+              text: msg.content,
+              sender: msg.is_admin ? "admin" as const : "user" as const,
+              timestamp: msg.created_at,
+            })) || [],
+          };
+        }));
+
+        setSupportMessages(formattedChats.filter(Boolean) as SupportMessage[]);
+      }
+    };
+
+    fetchSupportChats();
+  }, [toast]);
+
+  useEffect(() => {
+    const channel = supabase
+      .channel('admin-support-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'support_messages'
+        },
+        async (payload) => {
+          const newMessage = payload.new;
+          
+          const { data: chat, error: chatError } = await supabase
+            .from('support_chats')
+            .select(`
+              id,
+              user_id,
+              status,
+              created_at,
+              profiles:user_id (
+                full_name,
+                email
+              )
+            `)
+            .eq('id', newMessage.chat_id)
+            .single();
+
+          if (chatError) {
+            console.error('Error fetching chat:', chatError);
+            return;
+          }
+
+          setSupportMessages(prev => {
+            const existingChatIndex = prev.findIndex(msg => msg.id === newMessage.chat_id);
+            
+            if (existingChatIndex >= 0) {
+              const updatedMessages = [...prev];
+              updatedMessages[existingChatIndex] = {
+                ...updatedMessages[existingChatIndex],
+                message: newMessage.content,
+                messages: [
+                  ...updatedMessages[existingChatIndex].messages,
+                  {
+                    id: newMessage.id,
+                    text: newMessage.content,
+                    sender: newMessage.is_admin ? "admin" : "user",
+                    timestamp: newMessage.created_at,
+                  }
+                ]
+              };
+              return updatedMessages;
+            } else {
+              return [{
+                id: chat.id,
+                userId: chat.user_id,
+                userName: chat.profiles?.full_name || 'Unknown User',
+                message: newMessage.content,
+                timestamp: chat.created_at,
+                status: "unread",
+                messages: [{
+                  id: newMessage.id,
+                  text: newMessage.content,
+                  sender: newMessage.is_admin ? "admin" : "user",
+                  timestamp: newMessage.created_at,
+                }]
+              }, ...prev];
+            }
+          });
+
+          if (!isChatDialogOpen || (selectedChat?.id !== newMessage.chat_id && !newMessage.is_admin)) {
+            toast({
+              title: "New Support Message",
+              description: `New message from ${chat.profiles?.full_name || 'Unknown User'}`,
+            });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [toast, isChatDialogOpen, selectedChat]);
 
   const handleBlockCases = async () => {
     if (!selectedUser) return;
@@ -326,32 +469,31 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleSendMessage = (message: string) => {
+  const handleSendMessage = async (message: string) => {
     if (!selectedChat || !message.trim()) return;
 
-    const newMessage = {
-      id: Date.now().toString(),
-      text: message,
-      sender: "admin" as const,
-      timestamp: new Date().toISOString(),
-    };
+    try {
+      const { error } = await supabase
+        .from('support_messages')
+        .insert({
+          chat_id: selectedChat.id,
+          content: message,
+          is_admin: true
+        });
 
-    const updatedMessages = supportMessages.map((chat) =>
-      chat.id === selectedChat.id
-        ? {
-            ...chat,
-            messages: [...chat.messages, newMessage],
-          }
-        : chat
-    );
-
-    setSupportMessages(updatedMessages);
-    localStorage.setItem("support-messages", JSON.stringify(updatedMessages));
-    
-    toast({
-      title: "Message sent",
-      description: "Your response has been sent to the user.",
-    });
+      if (error) throw error;
+      
+      toast({
+        title: "Message sent",
+        description: "Your response has been sent to the user.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error sending message",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
   const handleResolveChat = (chatId: string) => {
