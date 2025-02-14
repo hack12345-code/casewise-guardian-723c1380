@@ -1,3 +1,4 @@
+
 import { User, LogIn, Home, FileText, DollarSign, Building2, BarChart3, MessageSquare, Settings, Grid, Menu, X } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { NavBar } from "@/components/ui/tubelight-navbar";
@@ -72,15 +73,33 @@ export const Navbar = () => {
   const handleCasesClick = (e: React.MouseEvent) => {
     e.preventDefault();
     setIsMobileMenuOpen(false);
-    const casesSection = document.querySelector('#cases-section');
-    if (casesSection) {
-      casesSection.scrollIntoView({ behavior: 'smooth' });
+    if (location.pathname === '/') {
+      // If we're already on the home page, just scroll to the section
+      const casesSection = document.querySelector('#cases-section');
+      if (casesSection) {
+        casesSection.scrollIntoView({ behavior: 'smooth' });
+      }
+    } else {
+      // If we're on a different page, navigate to home and then scroll
+      navigate('/', { state: { scrollToCases: true } });
     }
   };
 
+  useEffect(() => {
+    // Check if we need to scroll to cases section after navigation
+    if (location.pathname === '/' && location.state?.scrollToCases) {
+      const casesSection = document.querySelector('#cases-section');
+      if (casesSection) {
+        casesSection.scrollIntoView({ behavior: 'smooth' });
+      }
+      // Clear the state
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
+
   const navItems = [
     { name: "Home", url: "/", icon: Home },
-    { name: "Cases", url: "#cases-section", icon: FileText },
+    { name: "Cases", url: "#cases-section", icon: FileText, onClick: handleCasesClick },
     { name: "Pricing", url: "/pricing", icon: DollarSign },
     { name: "Support", url: "/support", icon: MessageSquare },
   ].map(item => ({
