@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { AIInput } from "./ui/ai-input";
 import { Response } from "./Response";
@@ -129,12 +128,12 @@ export const Hero = () => {
   };
 
   return (
-    <div id="hero-section" className="min-h-screen bg-[#f8f9ff]">
+    <main id="hero-section" className="min-h-screen bg-[#f8f9ff]">
       <div className={cn(
         "container mx-auto px-4 py-6 transition-all duration-500 ease-in-out",
         hasResponse ? "flex flex-col" : ""
       )}>
-        <div className={cn(
+        <header className={cn(
           "text-center mb-8 max-w-4xl mx-auto transition-all duration-500",
           hasResponse ? "opacity-0 h-0 mb-0 overflow-hidden" : "opacity-100"
         )}>
@@ -149,16 +148,16 @@ export const Hero = () => {
           <p className="text-xl text-gray-600 mb-6">
             Enter your patient's case/condition, and our tailored AI will generate actionable guidance to prevent malpractice. Also, generate full reports or fixes for existing reports instantly.
           </p>
-        </div>
+        </header>
         
-        <div className={cn(
+        <section className={cn(
           "transition-all duration-500",
           hasResponse ? "opacity-0 h-0 overflow-hidden" : "opacity-100"
         )}>
           <Sectors />
-        </div>
+        </section>
 
-        <div className="mt-8">
+        <section className="mt-8">
           <AIInput 
             placeholder="Enter your case details here... Be specific about the patient's condition and any concerns."
             minHeight={250}
@@ -167,13 +166,13 @@ export const Hero = () => {
             isLoading={isLoading}
             className="max-w-3xl mx-auto"
           />
-        </div>
+        </section>
 
         {hasResponse ? (
-          <div className="flex min-h-[calc(100vh-4rem)] pt-8">
-            <main className="flex-1">
+          <section className="flex min-h-[calc(100vh-4rem)] pt-8">
+            <div className="flex-1">
               <div className="grid grid-cols-3 gap-8">
-                <div className="col-span-1">
+                <aside className="col-span-1">
                   <Card className="h-[calc(100vh-8rem)] p-6 overflow-y-auto">
                     <Response
                       response={
@@ -186,9 +185,9 @@ export const Hero = () => {
                       onRename={(newTitle) => handleRename(prompts.length - 1, newTitle)}
                     />
                   </Card>
-                </div>
+                </aside>
 
-                <div className="col-span-2">
+                <article className="col-span-2">
                   <Card className="h-[calc(100vh-8rem)]">
                     <div className="h-full flex flex-col">
                       <div className="flex-1 overflow-y-auto p-6 space-y-4">
@@ -197,23 +196,23 @@ export const Hero = () => {
                             <div className="flex justify-end">
                               <div className="max-w-[80%] p-4 rounded-lg bg-blue-600 text-white">
                                 <p className="text-sm whitespace-pre-wrap">{prompt.text}</p>
-                                <span className="text-xs opacity-70 mt-2 block">
+                                <time className="text-xs opacity-70 mt-2 block">
                                   {new Date().toLocaleTimeString()}
-                                </span>
+                                </time>
                               </div>
                             </div>
                             <div className="flex justify-start">
                               <div className="max-w-[80%] p-4 rounded-lg bg-gray-100">
                                 <p className="text-sm whitespace-pre-wrap">{prompt.response}</p>
-                                <span className="text-xs text-gray-500 mt-2 block">
+                                <time className="text-xs text-gray-500 mt-2 block">
                                   {new Date().toLocaleTimeString()}
-                                </span>
+                                </time>
                               </div>
                             </div>
                           </div>
                         ))}
                       </div>
-                      <div className="p-4 border-t">
+                      <footer className="p-4 border-t">
                         <AIInput
                           placeholder="Enter your case details here..."
                           minHeight={100}
@@ -221,47 +220,47 @@ export const Hero = () => {
                           onSubmit={handleSubmit}
                           isLoading={isLoading}
                         />
-                      </div>
+                      </footer>
                     </div>
                   </Card>
-                </div>
+                </article>
               </div>
-            </main>
-          </div>
+            </div>
+          </section>
         ) : (
           <>
-            <div className="mt-12 text-center">
+            <section className="mt-12 text-center">
               <p className="text-sm text-gray-500 mb-6">Following industry-leading standards</p>
               <div className="flex justify-between items-center px-16 py-8 bg-white/50 rounded-lg backdrop-blur-sm">
                 <img 
                   src="/lovable-uploads/1510baf5-fa8b-42a8-9f74-ef904389fa4a.png" 
-                  alt="HIPAA" 
+                  alt="HIPAA Compliant"
                   className="h-20 object-contain"
                 />
                 <img 
                   src="/lovable-uploads/fdc5f2a1-dc7e-4165-80cd-67c6ec32dc13.png" 
-                  alt="GDPR" 
+                  alt="GDPR Compliant" 
                   className="h-20 object-contain"
                 />
                 <img 
                   src="/lovable-uploads/c9b981d9-8d96-48a5-9637-093c2dfee8a0.png" 
-                  alt="HHS" 
+                  alt="HHS Guidelines" 
                   className="h-20 object-contain"
                 />
                 <img 
                   src="/lovable-uploads/b4b50947-99f9-4652-8f8f-5d1ad9d1025a.png" 
-                  alt="AMA" 
+                  alt="AMA Standards" 
                   className="h-20 object-contain"
                 />
                 <img 
                   src="/lovable-uploads/64d59b40-6f92-4424-863b-4954432c53b1.png" 
-                  alt="AHA" 
+                  alt="AHA Guidelines" 
                   className="h-20 object-contain"
                 />
               </div>
-            </div>
+            </section>
 
-            <div className="mt-20 mb-20">
+            <section className="mt-20 mb-20">
               <div className="max-w-5xl mx-auto">
                 <div className="flex justify-center mb-12">
                   <div className="flex w-fit rounded-full bg-muted p-1">
@@ -296,13 +295,12 @@ export const Hero = () => {
                   </div>
                 </div>
 
-                <div className="aspect-video w-full bg-white rounded-xl shadow-lg overflow-hidden">
+                <figure className="aspect-video w-full bg-white rounded-xl shadow-lg overflow-hidden">
                   {demoType === 'regular' ? (
                     <iframe 
                       className="w-full h-full"
                       src="https://www.youtube.com/embed/your-regular-demo-id"
-                      title="Regular Demo"
-                      frameBorder="0"
+                      title="Regular Demo Video"
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                       allowFullScreen
                     />
@@ -310,32 +308,31 @@ export const Hero = () => {
                     <iframe 
                       className="w-full h-full"
                       src="https://www.youtube.com/embed/your-report-demo-id"
-                      title="Report Demo"
-                      frameBorder="0"
+                      title="Report Demo Video"
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                       allowFullScreen
                     />
                   )}
-                </div>
+                </figure>
               </div>
-            </div>
+            </section>
 
-            <div className="mt-12">
+            <section className="mt-12">
               <DisplayCards />
-            </div>
+            </section>
             
-            <div className="mt-20">
+            <section className="mt-20">
               <Cases />
-            </div>
+            </section>
 
-            <div className="mt-20">
+            <section className="mt-20">
               <FAQs />
-            </div>
+            </section>
 
             <Footer />
           </>
         )}
       </div>
-    </div>
+    </main>
   );
 };
