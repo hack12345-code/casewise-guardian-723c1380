@@ -381,7 +381,16 @@ const Chat = () => {
                               : "bg-gray-100 text-gray-900"
                           }`}
                         >
-                          <p className="text-sm">{message.text}</p>
+                          {message.text.split('\n').map((paragraph, index) => (
+                            <p 
+                              key={index} 
+                              className={`${
+                                index > 0 ? 'mt-4' : ''
+                              } text-sm leading-relaxed`}
+                            >
+                              {paragraph}
+                            </p>
+                          ))}
                           <span className="text-xs opacity-70 mt-2 block">
                             {new Date(message.timestamp).toLocaleTimeString()}
                           </span>
@@ -430,7 +439,7 @@ const Chat = () => {
         </main>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Chat
+export default Chat;
