@@ -30,6 +30,19 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { AIInput } from "@/components/ui/ai-input";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
 
 interface User {
   id: string;
@@ -69,6 +82,13 @@ interface SupportMessage {
   }>;
 }
 
+const blogPostSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  excerpt: z.string().min(1, "Excerpt is required"),
+  content: z.string().min(1, "Content is required"),
+  readTime: z.string().min(1, "Read time is required"),
+});
+
 const AdminDashboard = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [enterpriseLeads, setEnterpriseLeads] = useState<EnterpriseLead[]>([]);
@@ -90,7 +110,18 @@ const AdminDashboard = () => {
       readTime: "5 min read"
     },
   ]);
+  const [isNewPostDialogOpen, setIsNewPostDialogOpen] = useState(false);
   const { toast } = useToast();
+
+  const form = useForm<z.infer<typeof blogPostSchema>>({
+    resolver: zodResolver(blogPostSchema),
+    defaultValues: {
+      title: "",
+      excerpt: "",
+      content: "",
+      readTime: "",
+    },
+  });
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -368,11 +399,49 @@ const AdminDashboard = () => {
     });
   };
 
-  const handleAddBlogPost = () => {
-    toast({
-      title: "Blog post created",
-      description: "Your new blog post has been created successfully.",
-    });
+  const handleAddBlogPost = async (values: z.infer<typeof blogPostSchema>) => {
+    try {
+      const { error } = await supabase
+        .from('blog_posts')
+        .insert({
+          title: values.title,
+          excerpt: values.excerpt,
+          content: values.content,
+          read_time: values.readTime,
+        });
+
+      if (error) throw error;
+
+      // Fetch the latest blog posts
+      const { data: newPosts, error: fetchError } = await supabase
+        .from('blog_posts')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (fetchError) throw fetchError;
+
+      setBlogPosts(newPosts.map(post => ({
+        id: post.id,
+        title: post.title,
+        excerpt: post.excerpt,
+        date: new Date(post.created_at).toISOString(),
+        readTime: post.read_time
+      })));
+
+      setIsNewPostDialogOpen(false);
+      form.reset();
+      
+      toast({
+        title: "Blog post created",
+        description: "Your new blog post has been created successfully.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error creating blog post",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
   const handleDeleteBlogPost = (postId: number) => {
@@ -632,7 +701,7 @@ const AdminDashboard = () => {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>Blog Posts</CardTitle>
-                <Button onClick={handleAddBlogPost}>Add New Post</Button>
+                <Button onClick={() => setIsNewPostDialogOpen(true)}>Add New Post</Button>
               </CardHeader>
               <CardContent className="p-0">
                 <Table>
@@ -802,6 +871,95 @@ const AdminDashboard = () => {
               </div>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isNewPostDialogOpen} onOpenChange={setIsNewPostDialogOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Create New Blog Post</DialogTitle>
+            <DialogDescription>
+              Fill in the details for your new blog post
+            </DialogDescription>
+          </DialogHeader>
+          
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleAddBlogPost)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Title</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter post title" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="excerpt"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Excerpt</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        placeholder="Enter a brief excerpt" 
+                        className="resize-none" 
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="content"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Content</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        placeholder="Write your blog post content" 
+                        className="min-h-[200px]" 
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="readTime"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Read Time</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., 5 min read" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => {
+                  setIsNewPostDialogOpen(false);
+                  form.reset();
+                }}>
+                  Cancel
+                </Button>
+                <Button type="submit">Create Post</Button>
+              </DialogFooter>
+            </form>
+          </Form>
         </DialogContent>
       </Dialog>
     </div>
