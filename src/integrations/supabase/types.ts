@@ -192,6 +192,7 @@ export type Database = {
           id: string
           is_blocked: boolean | null
           medical_sector: string | null
+          raw_user_meta_data: Json | null
           subscription_status: string | null
           updated_at: string | null
         }
@@ -205,6 +206,7 @@ export type Database = {
           id: string
           is_blocked?: boolean | null
           medical_sector?: string | null
+          raw_user_meta_data?: Json | null
           subscription_status?: string | null
           updated_at?: string | null
         }
@@ -218,6 +220,7 @@ export type Database = {
           id?: string
           is_blocked?: boolean | null
           medical_sector?: string | null
+          raw_user_meta_data?: Json | null
           subscription_status?: string | null
           updated_at?: string | null
         }
