@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Input } from "@/components/ui/input";
@@ -130,13 +129,9 @@ const SignUp = () => {
 
   const handleGoogleSignUp = async () => {
     try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
-          },
           redirectTo: `${window.location.origin}/dashboard`,
         },
       });
