@@ -1,5 +1,5 @@
 
-import { Shield, FileText, Scale, Robot } from "lucide-react";
+import { Shield, FileText, Scale, Bot } from "lucide-react";
 
 export const Cases = () => {
   const cases = [
@@ -19,7 +19,7 @@ export const Cases = () => {
       description: "Ensure alignment with industry standards and best practices."
     },
     {
-      icon: <Robot className="w-6 h-6" />,
+      icon: <Bot className="w-6 h-6" />,
       title: "AI Advisor",
       description: "Get AI medical and legal advice for patient cases and malpractice prevention."
     }
