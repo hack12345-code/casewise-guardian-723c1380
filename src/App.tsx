@@ -1,13 +1,14 @@
+
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AuthHandler } from "@/components/AuthHandler";
-import Home from "./pages/Home";
-import Login from "./pages/Login";
-import SignUp from "./pages/SignUp";
-import Dashboard from "./pages/Dashboard";
-import Admin from "./pages/Admin";
-import Support from "./pages/Support";
-import TermsOfService from "./pages/TermsOfService";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
+import Home from "@/pages/Home";
+import Login from "@/pages/Login";
+import SignUp from "@/pages/SignUp";
+import Dashboard from "@/pages/Dashboard";
+import Admin from "@/pages/Admin";
+import Support from "@/pages/Support";
+import TermsOfService from "@/pages/TermsOfService";
+import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import { Toaster } from "@/components/ui/toaster"
 
 const App = () => {
