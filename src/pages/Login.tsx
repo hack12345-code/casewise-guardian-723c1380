@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Input } from "@/components/ui/input";
@@ -23,9 +24,52 @@ const Login = () => {
 
     if (window.location.hash.includes('access_token')) {
       cleanUpHash();
-      navigate('/dashboard', { replace: true });
+      handlePendingPrompt();
     }
   }, [navigate]);
+
+  const handlePendingPrompt = async () => {
+    const pendingPrompt = localStorage.getItem('pendingPrompt');
+    if (pendingPrompt) {
+      try {
+        // Create a new chat
+        const { data: newChat, error: chatError } = await supabase
+          .from('medical_chats')
+          .insert({
+            case_title: 'New Case',
+            user_id: (await supabase.auth.getSession()).data.session?.user.id
+          })
+          .select()
+          .single();
+
+        if (chatError) throw chatError;
+
+        // Create the first message
+        const { error: messageError } = await supabase
+          .from('medical_messages')
+          .insert({
+            chat_id: newChat.id,
+            content: pendingPrompt,
+            role: 'user',
+            user_id: (await supabase.auth.getSession()).data.session?.user.id
+          });
+
+        if (messageError) throw messageError;
+
+        localStorage.removeItem('pendingPrompt');
+        navigate(`/chat/${newChat.id}`);
+      } catch (error: any) {
+        console.error("Error handling pending prompt:", error);
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
+    } else {
+      navigate("/dashboard");
+    }
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,16 +96,8 @@ const Login = () => {
         throw new Error("Your account has been blocked. Please contact support.");
       }
 
-      toast({
-        title: "Logged in successfully!",
-        description: "Welcome back!",
-      });
+      await handlePendingPrompt();
 
-      if (email === "savesuppo@gmail.com") {
-        navigate("/admin");
-      } else {
-        navigate("/dashboard");
-      }
     } catch (error: any) {
       toast({
         title: "Error logging in",

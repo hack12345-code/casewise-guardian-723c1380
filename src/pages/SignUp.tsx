@@ -58,6 +58,49 @@ const SignUp = () => {
     "Other"
   ];
 
+  const handlePendingPrompt = async () => {
+    const pendingPrompt = localStorage.getItem('pendingPrompt');
+    if (pendingPrompt) {
+      try {
+        // Create a new chat
+        const { data: newChat, error: chatError } = await supabase
+          .from('medical_chats')
+          .insert({
+            case_title: 'New Case',
+            user_id: (await supabase.auth.getSession()).data.session?.user.id
+          })
+          .select()
+          .single();
+
+        if (chatError) throw chatError;
+
+        // Create the first message
+        const { error: messageError } = await supabase
+          .from('medical_messages')
+          .insert({
+            chat_id: newChat.id,
+            content: pendingPrompt,
+            role: 'user',
+            user_id: (await supabase.auth.getSession()).data.session?.user.id
+          });
+
+        if (messageError) throw messageError;
+
+        localStorage.removeItem('pendingPrompt');
+        navigate(`/chat/${newChat.id}`);
+      } catch (error: any) {
+        console.error("Error handling pending prompt:", error);
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
+    } else {
+      navigate("/dashboard");
+    }
+  };
+
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -111,8 +154,9 @@ const SignUp = () => {
         duration: 5000,
       });
       
-      // Redirect to dashboard
-      navigate("/dashboard", { replace: true });
+      // Handle any pending prompt after successful signup
+      await handlePendingPrompt();
+
     } catch (error: any) {
       toast({
         title: "Error creating account",
