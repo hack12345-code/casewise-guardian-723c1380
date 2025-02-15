@@ -6,6 +6,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { DashboardSidebar } from "@/components/DashboardSidebar";
 
 declare global {
   interface Window {
@@ -114,31 +116,37 @@ const Payment = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-gray-50 flex flex-col relative">
       <Navbar />
-      <div className="flex-grow pt-24 pb-12 px-4">
-        <div className="max-w-3xl mx-auto">
-          <Card className="p-8">
-            <div className="text-center mb-8">
-              <h1 className="text-3xl font-bold text-gray-900">Complete Your Purchase</h1>
-              {plan && (
-                <p className="text-xl text-blue-600 mt-2">
-                  {plan.name} Plan - {billingCycle === 'yearly' ? '$25/month (billed yearly)' : '$29.99/month'}
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-4">
-              <div id="paypal-button-container" className="min-h-[150px]" />
-              {isLoading && (
-                <div className="text-center text-gray-600">
-                  Processing your subscription...
+      <SidebarProvider>
+        <div className="flex min-h-[calc(100vh-4rem)] w-full pt-16">
+          <DashboardSidebar />
+          <main className="flex-1 p-4 md:p-8 relative z-0">
+            <div className="max-w-3xl mx-auto">
+              <Card className="p-8">
+                <div className="text-center mb-8">
+                  <h1 className="text-3xl font-bold text-gray-900">Complete Your Purchase</h1>
+                  {plan && (
+                    <p className="text-xl text-blue-600 mt-2">
+                      {plan.name} Plan - {billingCycle === 'yearly' ? '$25/month (billed yearly)' : '$29.99/month'}
+                    </p>
+                  )}
                 </div>
-              )}
+
+                <div className="space-y-4">
+                  <div id="paypal-button-container" className="min-h-[150px] relative z-0" />
+                  {isLoading && (
+                    <div className="text-center text-gray-600">
+                      Processing your subscription...
+                    </div>
+                  )}
+                </div>
+              </Card>
             </div>
-          </Card>
+          </main>
+          <SidebarTrigger className="fixed bottom-4 right-4 md:hidden z-50" />
         </div>
-      </div>
+      </SidebarProvider>
       <Footer />
     </div>
   );
