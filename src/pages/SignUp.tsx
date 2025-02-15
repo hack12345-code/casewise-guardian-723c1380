@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -129,9 +129,13 @@ const SignUp = () => {
 
   const handleGoogleSignUp = async () => {
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
           redirectTo: `${window.location.origin}/dashboard`,
         },
       });
@@ -145,6 +149,22 @@ const SignUp = () => {
       });
     }
   };
+
+  useEffect(() => {
+    const cleanUpHash = () => {
+      if (window.location.hash) {
+        // Remove the hash but keep the base URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    };
+
+    // Check if we have an access token in the URL (indicating successful OAuth)
+    if (window.location.hash.includes('access_token')) {
+      cleanUpHash();
+      // Navigate to dashboard without the hash
+      navigate('/dashboard', { replace: true });
+    }
+  }, [navigate]);
 
   return (
     <div className="min-h-screen bg-gray-50">

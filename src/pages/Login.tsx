@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,19 @@ const Login = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  useEffect(() => {
+    const cleanUpHash = () => {
+      if (window.location.hash) {
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    };
+
+    if (window.location.hash.includes('access_token')) {
+      cleanUpHash();
+      navigate('/dashboard', { replace: true });
+    }
+  }, [navigate]);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -26,7 +39,6 @@ const Login = () => {
 
       if (authError) throw authError;
 
-      // Check if user is blocked
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('is_blocked')
@@ -45,7 +57,6 @@ const Login = () => {
         description: "Welcome back!",
       });
 
-      // Redirect to admin dashboard if admin user
       if (email === "savesuppo@gmail.com") {
         navigate("/admin");
       } else {
@@ -64,9 +75,13 @@ const Login = () => {
 
   const handleGoogleLogin = async () => {
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
           redirectTo: `${window.location.origin}/dashboard`,
         },
       });
