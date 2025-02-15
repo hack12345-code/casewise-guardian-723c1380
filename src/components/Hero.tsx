@@ -137,15 +137,31 @@ export const Hero = () => {
           "text-center mb-8 max-w-4xl mx-auto transition-all duration-500",
           hasResponse ? "opacity-0 h-0 mb-0 overflow-hidden" : "opacity-100"
         )}>
-          <h1 className="text-4xl md:text-6xl font-bold text-[#1a1a1a] mb-4 leading-tight">
-            Healthcare Workers, <br />
-            <span className="bg-gradient-to-r from-[#1877F2] to-[#9b87f5] bg-clip-text text-transparent">
-              Prevent Malpractice Lawsuits with AI
-            </span>
-          </h1>
-          <p className="text-lg md:text-xl text-gray-600 mb-6 px-4">
-            Enter your patient's case/condition, and our tailored AI will generate actionable guidance to prevent malpractice. Also, generate full reports or fixes for existing reports instantly.
-          </p>
+          <div className="hidden md:block">
+            <h1 className="text-6xl font-bold text-[#1a1a1a] mb-4">
+              Healthcare Workers,
+            </h1>
+            <h2 className="text-5xl font-bold mb-4">
+              <span className="bg-gradient-to-r from-[#1877F2] to-[#9b87f5] bg-clip-text text-transparent whitespace-nowrap">
+                Prevent Malpractice Lawsuits with AI
+              </span>
+            </h2>
+            <p className="text-xl text-gray-600 mb-6">
+              Enter your patient's case/condition, and our tailored AI will generate actionable guidance to prevent malpractice. Also, generate full reports or fixes for existing reports instantly.
+            </p>
+          </div>
+
+          <div className="md:hidden">
+            <h1 className="text-4xl font-bold text-[#1a1a1a] mb-4 leading-tight">
+              Healthcare Workers, <br />
+              <span className="bg-gradient-to-r from-[#1877F2] to-[#9b87f5] bg-clip-text text-transparent">
+                Prevent Malpractice Lawsuits with AI
+              </span>
+            </h1>
+            <p className="text-lg text-gray-600 mb-6 px-4">
+              Enter your patient's case/condition, and our tailored AI will generate actionable guidance to prevent malpractice. Also, generate full reports or fixes for existing reports instantly.
+            </p>
+          </div>
         </header>
         
         <section className={cn(
@@ -229,31 +245,59 @@ export const Hero = () => {
           <>
             <section className="mt-12 text-center">
               <p className="text-sm text-gray-500 mb-6">Following industry-leading standards</p>
-              <div className="flex flex-wrap justify-center items-center gap-8 px-4 md:px-16 py-8 bg-white/50 rounded-lg backdrop-blur-sm">
+              <div className="hidden md:flex justify-between items-center px-16 py-8 bg-white/50 rounded-lg backdrop-blur-sm">
                 <img 
                   src="/lovable-uploads/1510baf5-fa8b-42a8-9f74-ef904389fa4a.png" 
                   alt="HIPAA Compliant"
-                  className="h-12 md:h-20 object-contain"
+                  className="h-20 object-contain"
                 />
                 <img 
                   src="/lovable-uploads/fdc5f2a1-dc7e-4165-80cd-67c6ec32dc13.png" 
                   alt="GDPR Compliant" 
-                  className="h-12 md:h-20 object-contain"
+                  className="h-20 object-contain"
                 />
                 <img 
                   src="/lovable-uploads/c9b981d9-8d96-48a5-9637-093c2dfee8a0.png" 
                   alt="HHS Guidelines" 
-                  className="h-12 md:h-20 object-contain"
+                  className="h-20 object-contain"
                 />
                 <img 
                   src="/lovable-uploads/b4b50947-99f9-4652-8f8f-5d1ad9d1025a.png" 
                   alt="AMA Standards" 
-                  className="h-12 md:h-20 object-contain"
+                  className="h-20 object-contain"
                 />
                 <img 
                   src="/lovable-uploads/64d59b40-6f92-4424-863b-4954432c53b1.png" 
                   alt="AHA Guidelines" 
-                  className="h-12 md:h-20 object-contain"
+                  className="h-20 object-contain"
+                />
+              </div>
+
+              <div className="md:hidden flex flex-wrap justify-center items-center gap-8 px-4 py-8 bg-white/50 rounded-lg backdrop-blur-sm">
+                <img 
+                  src="/lovable-uploads/1510baf5-fa8b-42a8-9f74-ef904389fa4a.png" 
+                  alt="HIPAA Compliant"
+                  className="h-12 object-contain"
+                />
+                <img 
+                  src="/lovable-uploads/fdc5f2a1-dc7e-4165-80cd-67c6ec32dc13.png" 
+                  alt="GDPR Compliant" 
+                  className="h-12 object-contain"
+                />
+                <img 
+                  src="/lovable-uploads/c9b981d9-8d96-48a5-9637-093c2dfee8a0.png" 
+                  alt="HHS Guidelines" 
+                  className="h-12 object-contain"
+                />
+                <img 
+                  src="/lovable-uploads/b4b50947-99f9-4652-8f8f-5d1ad9d1025a.png" 
+                  alt="AMA Standards" 
+                  className="h-12 object-contain"
+                />
+                <img 
+                  src="/lovable-uploads/64d59b40-6f92-4424-863b-4954432c53b1.png" 
+                  alt="AHA Guidelines" 
+                  className="h-12 object-contain"
                 />
               </div>
             </section>
