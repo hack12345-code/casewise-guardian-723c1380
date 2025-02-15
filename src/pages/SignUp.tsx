@@ -28,12 +28,9 @@ const SignUp = () => {
   const { toast } = useToast();
 
   const handleBackToHero = () => {
-    navigate('/', { replace: true });
-    requestAnimationFrame(() => {
-      const heroSection = document.querySelector('#hero-section');
-      if (heroSection) {
-        heroSection.scrollIntoView({ behavior: 'smooth' });
-      }
+    navigate('/', { 
+      replace: true,
+      state: { scrollToHero: true }
     });
   };
 
