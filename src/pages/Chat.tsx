@@ -359,8 +359,8 @@ const Chat = () => {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       <div className="flex min-h-[calc(100vh-4rem)] pt-16">
-        <main className="flex-1 p-8">
-          <div className="grid grid-cols-3 gap-8">
+        <main className="w-full p-4 md:p-8 overflow-x-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8 min-w-[800px]">
             <div className="col-span-1">
               <Card className="h-[calc(100vh-16rem)] p-6 overflow-y-auto">
                 <Response
