@@ -6,10 +6,13 @@ import {
   HelpCircle,
   FileText,
   LayoutDashboard,
+  LogIn,
+  UserPlus,
 } from "lucide-react"
 import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 import { supabase } from "@/integrations/supabase/client"
+import { Button } from "@/components/ui/button"
 
 import {
   Sidebar,
@@ -55,14 +58,28 @@ const settingsItems = [
 
 export function DashboardSidebar() {
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
   
   useEffect(() => {
-    const checkAdminStatus = async () => {
+    const checkAuthStatus = async () => {
       const { data: { session } } = await supabase.auth.getSession();
+      setIsAuthenticated(!!session);
       setIsAdmin(session?.user?.email === "savesuppo@gmail.com");
+      setUserEmail(session?.user?.email || null);
     };
     
-    checkAdminStatus();
+    checkAuthStatus();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      setIsAuthenticated(!!session);
+      setIsAdmin(session?.user?.email === "savesuppo@gmail.com");
+      setUserEmail(session?.user?.email || null);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
   
   const adminItems = [
@@ -73,9 +90,50 @@ export function DashboardSidebar() {
     },
   ];
 
+  const authItems = [
+    {
+      title: "Log In",
+      icon: LogIn,
+      url: "/login",
+    },
+    {
+      title: "Sign Up",
+      icon: UserPlus,
+      url: "/signup",
+    },
+  ];
+
   return (
     <Sidebar>
       <SidebarContent>
+        {/* User Status Section for Mobile */}
+        <div className="md:hidden p-4 border-b">
+          {isAuthenticated ? (
+            <div className="flex flex-col space-y-2">
+              <span className="text-sm text-gray-600">Logged in as:</span>
+              <span className="font-medium truncate">{userEmail}</span>
+            </div>
+          ) : (
+            <div className="flex flex-col space-y-2">
+              <span className="text-sm text-gray-600">Not logged in</span>
+              <div className="flex gap-2">
+                <Link to="/login" className="flex-1">
+                  <Button variant="outline" className="w-full">
+                    <LogIn className="w-4 h-4 mr-2" />
+                    Log In
+                  </Button>
+                </Link>
+                <Link to="/signup" className="flex-1">
+                  <Button variant="default" className="w-full">
+                    <UserPlus className="w-4 h-4 mr-2" />
+                    Sign Up
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          )}
+        </div>
+
         <SidebarGroup>
           <SidebarGroupLabel>Dashboard</SidebarGroupLabel>
           <SidebarGroupContent>
