@@ -21,7 +21,7 @@ export const Cases = () => {
     {
       icon: <Scale className="w-6 h-6" />,
       title: "Regulatory Compliance",
-      description: "Receive precedent-based insights to ensure better decisions."
+      description: "Ensure alignment with industry standards and best practices. Receive precedent-based insights to ensure better decisions."
     }
   ];
 
