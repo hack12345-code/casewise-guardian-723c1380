@@ -1,5 +1,5 @@
 
-import { Shield, FileText, Scale, Brain } from "lucide-react";
+import { Shield, FileText, Scale, Robot } from "lucide-react";
 
 export const Cases = () => {
   const cases = [
@@ -19,9 +19,9 @@ export const Cases = () => {
       description: "Ensure alignment with industry standards and best practices."
     },
     {
-      icon: <Brain className="w-6 h-6" />,
-      title: "Better Decision-Making",
-      description: "Receive evidence-based and precedent-based insights to ensure better decisions."
+      icon: <Robot className="w-6 h-6" />,
+      title: "AI Advisor",
+      description: "Get AI medical and legal advice for patient cases and malpractice prevention."
     }
   ];
 
@@ -44,4 +44,3 @@ export const Cases = () => {
     </section>
   );
 };
-
