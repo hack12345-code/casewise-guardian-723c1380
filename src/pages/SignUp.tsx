@@ -28,10 +28,7 @@ const SignUp = () => {
   const { toast } = useToast();
 
   const handleBackToHero = () => {
-    navigate('/', { 
-      replace: true,
-      state: { scrollToHero: true }
-    });
+    navigate(-1);
   };
 
   const countries = [
@@ -174,7 +171,7 @@ const SignUp = () => {
               size="icon"
               onClick={handleBackToHero}
               className="mr-4 hover:bg-gray-100"
-              aria-label="Back to hero section"
+              aria-label="Go back"
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
