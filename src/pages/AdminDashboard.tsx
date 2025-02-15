@@ -67,6 +67,14 @@ interface EnterpriseLead {
   status: string;
 }
 
+interface BlogPost {
+  id: string;  // Changed from number to string to match Supabase UUID
+  title: string;
+  excerpt: string;
+  date: string;
+  readTime: string;
+}
+
 interface SupportMessage {
   id: string;
   userId: string;
@@ -96,20 +104,11 @@ const AdminDashboard = () => {
     const savedMessages = localStorage.getItem("support-messages");
     return savedMessages ? JSON.parse(savedMessages) : [];
   });
-
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);  // Updated to use the BlogPost interface
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [selectedChat, setSelectedChat] = useState<SupportMessage | null>(null);
   const [isManageDialogOpen, setIsManageDialogOpen] = useState(false);
   const [isChatDialogOpen, setIsChatDialogOpen] = useState(false);
-  const [blogPosts, setBlogPosts] = useState([
-    {
-      id: 1,
-      title: "Understanding Medical Risk Management",
-      excerpt: "Learn about the key principles of managing medical risks in modern healthcare practices.",
-      date: "2024-03-15",
-      readTime: "5 min read"
-    },
-  ]);
   const [isNewPostDialogOpen, setIsNewPostDialogOpen] = useState(false);
   const { toast } = useToast();
 
@@ -175,8 +174,35 @@ const AdminDashboard = () => {
       }
     };
 
+    const fetchBlogPosts = async () => {
+      const { data, error } = await supabase
+        .from('blog_posts')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        toast({
+          title: "Error fetching blog posts",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (data) {
+        setBlogPosts(data.map(post => ({
+          id: post.id,
+          title: post.title,
+          excerpt: post.excerpt,
+          date: new Date(post.created_at).toISOString(),
+          readTime: post.read_time
+        })));
+      }
+    };
+
     fetchUsers();
     fetchEnterpriseLeads();
+    fetchBlogPosts();
   }, [toast]);
 
   const handleBlockCases = async () => {
@@ -444,12 +470,27 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleDeleteBlogPost = (postId: number) => {
-    setBlogPosts(blogPosts.filter(post => post.id !== postId));
-    toast({
-      title: "Blog post deleted",
-      description: "The blog post has been deleted successfully.",
-    });
+  const handleDeleteBlogPost = async (postId: string) => {  // Updated parameter type to string
+    try {
+      const { error } = await supabase
+        .from('blog_posts')
+        .delete()
+        .eq('id', postId);
+
+      if (error) throw error;
+
+      setBlogPosts(blogPosts.filter(post => post.id !== postId));
+      toast({
+        title: "Blog post deleted",
+        description: "The blog post has been deleted successfully.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error deleting blog post",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
   const handleResetPassword = async (userId: string, userEmail: string) => {
