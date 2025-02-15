@@ -152,10 +152,10 @@ export const Hero = () => {
           </div>
 
           <div className="md:hidden">
-            <h1 className="text-4xl font-bold text-[#1a1a1a] mb-4 leading-tight">
+            <h1 className="text-3xl sm:text-4xl font-bold text-[#1a1a1a] mb-4 leading-tight">
               Healthcare Workers, <br />
               <span className="bg-gradient-to-r from-[#1877F2] to-[#9b87f5] bg-clip-text text-transparent">
-                Prevent Malpractice Lawsuits with AI
+                Prevent Malpractice <br />Lawsuits with AI
               </span>
             </h1>
             <p className="text-lg text-gray-600 mb-6 px-4">
