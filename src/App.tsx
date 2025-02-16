@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { BrowserRouter, Routes, Route } from "react-router-dom"
+import ErrorBoundary from "./components/ErrorBoundary"
 import Index from "./pages/Index"
 import Pricing from "./pages/Pricing"
 import Payment from "./pages/Payment"
@@ -32,35 +33,37 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <ScrollToTop />
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/pricing" element={<Pricing />} />
-          <Route path="/payment" element={<Payment />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<SignUp />} />
-          <Route path="/blog" element={<Blog />} />
-          <Route path="/blog/:id" element={<BlogPost />} />
-          <Route path="/support" element={<Support />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/dashboard/cases" element={<Dashboard />} />
-          <Route path="/dashboard/billing" element={<DashboardBilling />} />
-          <Route path="/dashboard/settings" element={<DashboardSettings />} />
-          <Route path="/terms-of-service" element={<TermsOfService />} />
-          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-          <Route path="/contact-sales" element={<ContactSales />} />
-          <Route path="/chat" element={<Chat />} />
-          <Route path="/chat/:chatId" element={<Chat />} />
-          <Route
-            path="/admin"
-            element={
-              <AdminRoute>
-                <AdminDashboard />
-              </AdminRoute>
-            }
-          />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <ErrorBoundary>
+          <ScrollToTop />
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/pricing" element={<Pricing />} />
+            <Route path="/payment" element={<Payment />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<SignUp />} />
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/blog/:id" element={<BlogPost />} />
+            <Route path="/support" element={<Support />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/dashboard/cases" element={<Dashboard />} />
+            <Route path="/dashboard/billing" element={<DashboardBilling />} />
+            <Route path="/dashboard/settings" element={<DashboardSettings />} />
+            <Route path="/terms-of-service" element={<TermsOfService />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/contact-sales" element={<ContactSales />} />
+            <Route path="/chat" element={<Chat />} />
+            <Route path="/chat/:chatId" element={<Chat />} />
+            <Route
+              path="/admin"
+              element={
+                <AdminRoute>
+                  <AdminDashboard />
+                </AdminRoute>
+              }
+            />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </ErrorBoundary>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
