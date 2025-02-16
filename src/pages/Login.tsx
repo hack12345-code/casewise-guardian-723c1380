@@ -1,9 +1,8 @@
-
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, Navigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { Footer } from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,27 +11,43 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [redirectTo404, setRedirectTo404] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
     const cleanUpHash = () => {
       if (window.location.hash) {
-        window.history.replaceState({}, document.title, window.location.pathname);
+        try {
+          const hashParams = new URLSearchParams(window.location.hash.substring(1));
+          const error = hashParams.get('error');
+          const errorDescription = hashParams.get('error_description');
+          
+          if (error) {
+            console.error("OAuth error:", error, errorDescription);
+            setRedirectTo404(true);
+            return;
+          }
+          
+          window.history.replaceState({}, document.title, window.location.pathname);
+        } catch (error) {
+          console.error("Error parsing hash:", error);
+          setRedirectTo404(true);
+        }
       }
     };
 
-    if (window.location.hash.includes('access_token')) {
-      cleanUpHash();
-      handlePendingPrompt();
-    }
-  }, [navigate]);
+    cleanUpHash();
+  }, []);
+
+  if (redirectTo404) {
+    return <Navigate to="/404" replace />;
+  }
 
   const handlePendingPrompt = async () => {
     const pendingPrompt = localStorage.getItem('pendingPrompt');
     if (pendingPrompt) {
       try {
-        // Create a new chat
         const { data: newChat, error: chatError } = await supabase
           .from('medical_chats')
           .insert({
@@ -44,7 +59,6 @@ const Login = () => {
 
         if (chatError) throw chatError;
 
-        // Create the first message
         const { error: messageError } = await supabase
           .from('medical_messages')
           .insert({
