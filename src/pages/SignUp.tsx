@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useNavigate, Link, Navigate } from "react-router-dom";
-import { useToast } from "@/components/ui/use-toast";
+import { useNavigate, Link } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Footer } from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
@@ -26,7 +26,6 @@ const SignUp = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [redirectTo404, setRedirectTo404] = useState(false);
 
   const handleBackToHero = () => {
     navigate('/', { 
@@ -195,31 +194,18 @@ const SignUp = () => {
   useEffect(() => {
     const cleanUpHash = () => {
       if (window.location.hash) {
-        try {
-          const hashParams = new URLSearchParams(window.location.hash.substring(1));
-          const error = hashParams.get('error');
-          const errorDescription = hashParams.get('error_description');
-          
-          if (error) {
-            console.error("OAuth error:", error, errorDescription);
-            setRedirectTo404(true);
-            return;
-          }
-          
-          window.history.replaceState({}, document.title, window.location.pathname);
-        } catch (error) {
-          console.error("Error parsing hash:", error);
-          setRedirectTo404(true);
-        }
+        // Remove the hash but keep the base URL
+        window.history.replaceState({}, document.title, window.location.pathname);
       }
     };
 
-    cleanUpHash();
-  }, []);
-
-  if (redirectTo404) {
-    return <Navigate to="/404" replace />;
-  }
+    // Check if we have an access token in the URL (indicating successful OAuth)
+    if (window.location.hash.includes('access_token')) {
+      cleanUpHash();
+      // Navigate to dashboard without the hash
+      navigate('/dashboard', { replace: true });
+    }
+  }, [navigate]);
 
   return (
     <div className="min-h-screen bg-gray-50">
