@@ -359,12 +359,12 @@ const Chat = () => {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       <div className="flex min-h-[calc(100vh-4rem)] pt-16">
-        <main className="w-full p-4 md:p-8 overflow-x-auto">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8 min-w-[800px]">
+        <main className="w-full p-4 md:p-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8 md:min-w-[800px]">
             <div className="col-span-2 md:order-1">
               <Card className="h-[calc(100vh-12rem)]">
                 <div className="h-full flex flex-col">
-                  <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                  <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4">
                     {messages.map((message) => (
                       <div
                         key={message.id}
@@ -375,7 +375,7 @@ const Chat = () => {
                         }`}
                       >
                         <div
-                          className={`max-w-[80%] p-4 rounded-lg ${
+                          className={`max-w-[90%] md:max-w-[80%] p-3 md:p-4 rounded-lg ${
                             message.sender === "user"
                               ? "bg-blue-600 text-white"
                               : "bg-gray-100 text-gray-900"
@@ -398,7 +398,7 @@ const Chat = () => {
                       </div>
                     ))}
                   </div>
-                  <div className="p-4 border-t">
+                  <div className="p-3 md:p-4 border-t">
                     <AIInput
                       placeholder={isBlocked ? "Your account has been blocked from sending prompts" : "Enter your case details here..."}
                       minHeight={100}
@@ -422,7 +422,7 @@ const Chat = () => {
             </div>
 
             <div className="col-span-1 md:order-2">
-              <Card className="h-[calc(100vh-12rem)] p-6 overflow-y-auto">
+              <Card className="h-[calc(100vh-12rem)] p-4 md:p-6 overflow-y-auto">
                 <Response
                   response={
                     messages.length > 0
