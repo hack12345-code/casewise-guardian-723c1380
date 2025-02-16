@@ -51,7 +51,6 @@ export const Hero = () => {
         return;
       }
 
-      // Check if user is blocked or has reached case limit
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('subscription_status, case_count, is_blocked')
@@ -80,7 +79,6 @@ export const Hero = () => {
         return;
       }
 
-      // Create a new chat
       const { data: newChat, error: chatError } = await supabase
         .from('medical_chats')
         .insert({
@@ -92,7 +90,6 @@ export const Hero = () => {
 
       if (chatError) throw chatError;
 
-      // Create the first message
       const { error: messageError } = await supabase
         .from('medical_messages')
         .insert({
@@ -104,7 +101,6 @@ export const Hero = () => {
 
       if (messageError) throw messageError;
 
-      // Redirect to the new chat
       navigate(`/chat/${newChat.id}`);
 
     } catch (error: any) {
@@ -138,22 +134,20 @@ export const Hero = () => {
           hasResponse ? "opacity-0 h-0 mb-0 overflow-hidden" : "opacity-100"
         )}>
           <div className="hidden md:block">
-            <h1 className="text-6xl font-bold text-[#1a1a1a] mb-4">
-              Healthcare Workers,
-            </h1>
-            <h2 className="text-5xl font-bold mb-4">
+            <h1 className="text-6xl font-bold mb-4">
+              Healthcare Workers,{" "}
               <span className="bg-gradient-to-r from-[#1877F2] to-[#9b87f5] bg-clip-text text-transparent whitespace-nowrap">
                 Prevent Malpractice Lawsuits with AI
               </span>
-            </h2>
+            </h1>
             <p className="text-xl text-gray-600 mb-6">
               Enter your patient's case/condition, and our tailored AI will generate actionable guidance to prevent malpractice. Also, generate full reports or fixes for existing reports instantly.
             </p>
           </div>
 
           <div className="md:hidden">
-            <h1 className="text-3xl sm:text-4xl font-bold text-[#1a1a1a] mb-4 leading-tight">
-              Healthcare Workers, <br />
+            <h1 className="text-3xl sm:text-4xl font-bold mb-4 leading-tight">
+              Healthcare Workers,{" "}
               <span className="bg-gradient-to-r from-[#1877F2] to-[#9b87f5] bg-clip-text text-transparent">
                 Prevent Malpractice <br />Lawsuits with AI
               </span>
