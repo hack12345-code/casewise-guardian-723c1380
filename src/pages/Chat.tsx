@@ -356,15 +356,15 @@ const Chat = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="h-screen overflow-hidden bg-gray-50">
       <Navbar />
-      <div className="flex min-h-[calc(100vh-4rem)] pt-16">
-        <main className="w-full p-4 md:p-8 overflow-x-auto">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8 min-w-[800px]">
-            <div className="col-span-2 md:order-1">
-              <Card className="h-[calc(100vh-16rem)]">
+      <div className="h-[calc(100vh-4rem)] pt-14">
+        <main className="h-full w-full p-3 md:p-4 overflow-x-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 h-full min-w-[800px]">
+            <div className="col-span-2 md:order-1 h-full">
+              <Card className="h-full">
                 <div className="h-full flex flex-col">
-                  <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                  <div className="flex-1 overflow-y-auto p-4 space-y-4">
                     {messages.map((message) => (
                       <div
                         key={message.id}
@@ -398,11 +398,11 @@ const Chat = () => {
                       </div>
                     ))}
                   </div>
-                  <div className="p-4 border-t">
+                  <div className="p-3 border-t">
                     <AIInput
                       placeholder={isBlocked ? "Your account has been blocked from sending prompts" : "Enter your case details here..."}
-                      minHeight={100}
-                      maxHeight={200}
+                      minHeight={80}
+                      maxHeight={160}
                       onSubmit={handleSendMessage}
                       isLoading={isLoading}
                       disabled={isBlocked}
@@ -421,8 +421,8 @@ const Chat = () => {
               </Card>
             </div>
 
-            <div className="col-span-1 md:order-2">
-              <Card className="h-[calc(100vh-16rem)] p-6 overflow-y-auto">
+            <div className="col-span-1 md:order-2 h-full">
+              <Card className="h-full p-4 overflow-y-auto">
                 <Response
                   response={
                     messages.length > 0
