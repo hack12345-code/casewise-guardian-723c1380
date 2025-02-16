@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { AIInput } from "./ui/ai-input";
 import { Response } from "./Response";
@@ -134,27 +135,31 @@ export const Hero = () => {
           hasResponse ? "opacity-0 h-0 mb-0 overflow-hidden" : "opacity-100"
         )}>
           <div className="hidden md:block">
-            <h1 className="text-6xl font-bold mb-4">
-              Healthcare Workers,{" "}
-              <span className="bg-gradient-to-r from-[#1877F2] to-[#9b87f5] bg-clip-text text-transparent whitespace-nowrap">
-                Prevent Malpractice Lawsuits with AI
-              </span>
-            </h1>
-            <p className="text-xl text-gray-600 mb-6">
-              Enter your patient's case/condition, and our tailored AI will generate actionable guidance to prevent malpractice. Also, generate full reports or fixes for existing reports instantly.
-            </p>
+            <div className="max-w-2xl mx-auto">
+              <h1 className="text-[3.5rem] font-bold mb-4">
+                Healthcare Workers,{" "}
+                <span className="bg-gradient-to-r from-[#1877F2] to-[#9b87f5] bg-clip-text text-transparent whitespace-nowrap">
+                  Prevent Malpractice Lawsuits with AI
+                </span>
+              </h1>
+              <p className="text-xl text-gray-600 mb-6">
+                Enter your patient's case/condition, and our tailored AI will generate actionable guidance to prevent malpractice. Also, generate full reports or fixes for existing reports instantly.
+              </p>
+            </div>
           </div>
 
           <div className="md:hidden">
-            <h1 className="text-3xl sm:text-4xl font-bold mb-4 leading-tight">
-              Healthcare Workers,{" "}
-              <span className="bg-gradient-to-r from-[#1877F2] to-[#9b87f5] bg-clip-text text-transparent">
-                Prevent Malpractice <br />Lawsuits with AI
-              </span>
-            </h1>
-            <p className="text-lg text-gray-600 mb-6 px-4">
-              Enter your patient's case/condition, and our tailored AI will generate actionable guidance to prevent malpractice. Also, generate full reports or fixes for existing reports instantly.
-            </p>
+            <div className="max-w-sm mx-auto">
+              <h1 className="text-3xl sm:text-4xl font-bold mb-4 leading-tight">
+                Healthcare Workers,{" "}
+                <span className="bg-gradient-to-r from-[#1877F2] to-[#9b87f5] bg-clip-text text-transparent">
+                  Prevent Malpractice <br />Lawsuits with AI
+                </span>
+              </h1>
+              <p className="text-lg text-gray-600 mb-6 px-4">
+                Enter your patient's case/condition, and our tailored AI will generate actionable guidance to prevent malpractice. Also, generate full reports or fixes for existing reports instantly.
+              </p>
+            </div>
           </div>
         </header>
         
