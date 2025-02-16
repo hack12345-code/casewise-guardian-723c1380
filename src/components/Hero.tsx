@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { AIInput } from "./ui/ai-input";
 import { Response } from "./Response";
@@ -136,9 +137,11 @@ export const Hero = () => {
           <div className="hidden md:block">
             <h1 className="text-6xl font-bold mb-4">
               Healthcare Workers,{" "}
-              <span className="bg-gradient-to-r from-[#1877F2] to-[#9b87f5] bg-clip-text text-transparent whitespace-nowrap">
-                Prevent Malpractice Lawsuits with AI
-              </span>
+              <div className="flex justify-center">
+                <span className="bg-gradient-to-r from-[#1877F2] to-[#9b87f5] bg-clip-text text-transparent whitespace-nowrap">
+                  Prevent Malpractice Lawsuits with AI
+                </span>
+              </div>
             </h1>
             <p className="text-xl text-gray-600 mb-6">
               Enter your patient's case/condition, and our tailored AI will generate actionable guidance to prevent malpractice. Also, generate full reports or fixes for existing reports instantly.
