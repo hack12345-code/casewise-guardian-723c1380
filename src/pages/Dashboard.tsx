@@ -1,4 +1,3 @@
-
 import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -19,6 +18,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { cn } from "@/lib/utils"
 
 interface Chat {
   id: string
@@ -244,7 +244,10 @@ const Dashboard = () => {
         <div className="flex min-h-[calc(100vh-4rem)] pt-16">
           <DashboardSidebar />
           <main className="flex-1 p-8">
-            <div className="flex justify-between items-center mb-8">
+            <div className={cn(
+              "flex justify-between items-center mb-8",
+              chats.length === 0 && "flex-col gap-8"
+            )}>
               <h1 className="text-3xl font-bold text-gray-900">My Cases</h1>
               <Button
                 onClick={handleNewChat}
