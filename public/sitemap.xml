@@ -3,51 +3,51 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <!-- Main pages -->
   <url>
-    <loc>https://saver.lovable.ai/</loc>
+    <loc>https://the-saver.com/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://saver.lovable.ai/pricing</loc>
+    <loc>https://the-saver.com/pricing</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://saver.lovable.ai/blog</loc>
+    <loc>https://the-saver.com/blog</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://saver.lovable.ai/support</loc>
+    <loc>https://the-saver.com/support</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://saver.lovable.ai/contact-sales</loc>
+    <loc>https://the-saver.com/contact-sales</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <!-- Auth pages -->
   <url>
-    <loc>https://saver.lovable.ai/login</loc>
+    <loc>https://the-saver.com/login</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://saver.lovable.ai/signup</loc>
+    <loc>https://the-saver.com/signup</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
 
   <!-- Legal pages -->
   <url>
-    <loc>https://saver.lovable.ai/terms-of-service</loc>
+    <loc>https://the-saver.com/terms-of-service</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://saver.lovable.ai/privacy-policy</loc>
+    <loc>https://the-saver.com/privacy-policy</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
