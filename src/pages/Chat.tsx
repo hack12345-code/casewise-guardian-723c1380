@@ -361,7 +361,7 @@ const Chat = () => {
       <div className="flex min-h-[calc(100vh-4rem)] pt-16">
         <main className="w-full p-4 md:p-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8 md:min-w-[800px]">
-            <div className="col-span-2 md:order-1">
+            <div className="w-full col-span-2 md:order-1">
               <Card className="h-[calc(100vh-12rem)]">
                 <div className="h-full flex flex-col">
                   <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4">
@@ -421,7 +421,7 @@ const Chat = () => {
               </Card>
             </div>
 
-            <div className="col-span-1 md:order-2">
+            <div className="w-full col-span-1 md:order-2">
               <Card className="h-[calc(100vh-12rem)] p-4 md:p-6 overflow-y-auto">
                 <Response
                   response={
