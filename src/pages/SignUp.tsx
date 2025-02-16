@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Input } from "@/components/ui/input";
@@ -253,7 +254,7 @@ const SignUp = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      <div className="pt-24 px-4">
+      <div className="pt-24 px-4 pb-24">
         <div className="max-w-md mx-auto bg-white rounded-2xl shadow-lg p-8">
           <div className="flex items-center mb-6">
             <Button
