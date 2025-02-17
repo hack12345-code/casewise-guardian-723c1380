@@ -1,6 +1,6 @@
 
 import { ApiKeyInput } from "@/components/ApiKeyInput";
-import { Hero } from "@/components/Hero";
+import { Hero } from "./Hero";
 import { Navbar } from "@/components/Navbar";
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
