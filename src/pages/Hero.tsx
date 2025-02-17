@@ -351,7 +351,7 @@ export const Hero = () => {
                   {demoType === 'regular' ? (
                     <iframe 
                       className="w-full h-full"
-                      src="https://www.youtube.com/embed/your-regular-demo-id"
+                      src="https://www.youtube.com/embed/dD9xH48eLX4"
                       title="Regular Demo Video"
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                       allowFullScreen
@@ -359,7 +359,7 @@ export const Hero = () => {
                   ) : demoType === 'report' ? (
                     <iframe 
                       className="w-full h-full"
-                      src="https://www.youtube.com/embed/your-report-demo-id"
+                      src="https://www.youtube.com/embed/2MWH2SpTXkI"
                       title="Report Demo Video"
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                       allowFullScreen
@@ -367,7 +367,7 @@ export const Hero = () => {
                   ) : (
                     <iframe 
                       className="w-full h-full"
-                      src="https://www.youtube.com/embed/your-advice-demo-id"
+                      src="https://www.youtube.com/embed/-UsmkcIMSzI"
                       title="Advice Demo Video"
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                       allowFullScreen
