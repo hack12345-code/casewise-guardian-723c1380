@@ -182,7 +182,7 @@ export const Hero = () => {
               />
             </div>
             <div className="w-full md:w-1/2 h-[450px]">
-              <Card className="w-full h-full bg-black/[0.96] relative overflow-hidden">
+              <Card className="w-full h-full relative overflow-hidden">
                 <Spotlight
                   className="-top-40 left-0 md:left-60 md:-top-20"
                   fill="white"
