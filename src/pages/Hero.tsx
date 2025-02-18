@@ -183,10 +183,6 @@ export const Hero = () => {
             </div>
             <div className="absolute right-0 h-[450px] w-[450px] hidden md:block">
               <Card className="w-full h-full relative overflow-hidden bg-[#f8f9ff]">
-                <Spotlight
-                  className="-top-40 left-0 md:left-60 md:-top-20"
-                  fill="white"
-                />
                 <div className="w-full h-full relative">
                   <SplineScene 
                     scene="https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode"
