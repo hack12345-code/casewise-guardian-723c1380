@@ -181,7 +181,7 @@ export const Hero = () => {
                 className="w-full"
               />
             </div>
-            <div className="absolute -right-20 bottom-[-50px] h-[550px] w-[450px] hidden md:block z-0">
+            <div className="absolute -right-20 h-[450px] w-[450px] hidden md:block z-0">
               <div className="w-full h-full relative">
                 <SplineScene 
                   scene="https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode"

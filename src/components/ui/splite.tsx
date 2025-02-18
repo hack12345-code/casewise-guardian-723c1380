@@ -26,13 +26,12 @@ export function SplineScene({ scene, className }: SplineSceneProps) {
       }
     };
 
-    document.addEventListener('mousemove', handleMouseMove);
-    return () => document.removeEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
   const onLoad = (splineApp: any) => {
     splineRef.current = splineApp;
-    console.log("Spline scene loaded", splineApp); // Debug log
   };
 
   return (
