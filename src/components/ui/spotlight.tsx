@@ -8,12 +8,14 @@ type SpotlightProps = {
   className?: string;
   size?: number;
   springOptions?: SpringOptions;
+  fill?: string;
 };
 
 export function Spotlight({
   className,
   size = 200,
   springOptions = { bounce: 0 },
+  fill,
 }: SpotlightProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
@@ -60,12 +62,22 @@ export function Spotlight({
     };
   }, [parentElement, handleMouseMove]);
 
+  const gradientColors = fill ? {
+    from: `${fill}`,
+    via: `${fill}`,
+    to: `${fill}`
+  } : {
+    from: 'zinc-50',
+    via: 'zinc-100',
+    to: 'zinc-200'
+  };
+
   return (
     <motion.div
       ref={containerRef}
       className={cn(
         'pointer-events-none absolute rounded-full bg-[radial-gradient(circle_at_center,var(--tw-gradient-stops),transparent_80%)] blur-xl transition-opacity duration-200',
-        'from-zinc-50 via-zinc-100 to-zinc-200',
+        `from-${gradientColors.from} via-${gradientColors.via} to-${gradientColors.to}`,
         isHovered ? 'opacity-100' : 'opacity-0',
         className
       )}
