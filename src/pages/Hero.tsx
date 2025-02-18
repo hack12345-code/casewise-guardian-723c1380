@@ -170,8 +170,8 @@ export const Hero = () => {
         </section>
 
         <section className="mt-8 relative">
-          <div className="flex flex-col md:flex-row gap-8 items-center">
-            <div className="w-full md:w-1/2">
+          <div className="flex flex-col md:flex-row gap-8 items-center justify-center">
+            <div className="w-full max-w-2xl">
               <AIInput 
                 placeholder="Enter your case details here... Be specific about the patient's condition and any concerns."
                 minHeight={250}
@@ -181,8 +181,8 @@ export const Hero = () => {
                 className="w-full"
               />
             </div>
-            <div className="w-full md:w-1/2 h-[450px]">
-              <Card className="w-full h-full relative overflow-hidden">
+            <div className="absolute right-0 h-[450px] w-[450px] hidden md:block">
+              <Card className="w-full h-full relative overflow-hidden bg-[#f8f9ff]">
                 <Spotlight
                   className="-top-40 left-0 md:left-60 md:-top-20"
                   fill="white"
