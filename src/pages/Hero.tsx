@@ -12,6 +12,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { SplineScene } from "@/components/ui/splite";
+import { Spotlight } from "@/components/ui/spotlight";
 
 interface Prompt {
   text: string;
@@ -167,15 +169,33 @@ export const Hero = () => {
           <Sectors />
         </section>
 
-        <section className="mt-8">
-          <AIInput 
-            placeholder="Enter your case details here... Be specific about the patient's condition and any concerns."
-            minHeight={250}
-            maxHeight={450}
-            onSubmit={handleSubmit}
-            isLoading={isLoading}
-            className="max-w-3xl mx-auto"
-          />
+        <section className="mt-8 relative">
+          <div className="flex flex-col md:flex-row gap-8 items-center">
+            <div className="w-full md:w-1/2">
+              <AIInput 
+                placeholder="Enter your case details here... Be specific about the patient's condition and any concerns."
+                minHeight={250}
+                maxHeight={450}
+                onSubmit={handleSubmit}
+                isLoading={isLoading}
+                className="w-full"
+              />
+            </div>
+            <div className="w-full md:w-1/2 h-[450px]">
+              <Card className="w-full h-full bg-black/[0.96] relative overflow-hidden">
+                <Spotlight
+                  className="-top-40 left-0 md:left-60 md:-top-20"
+                  fill="white"
+                />
+                <div className="w-full h-full relative">
+                  <SplineScene 
+                    scene="https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode"
+                    className="w-full h-full"
+                  />
+                </div>
+              </Card>
+            </div>
+          </div>
         </section>
 
         {hasResponse ? (
