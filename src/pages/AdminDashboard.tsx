@@ -30,6 +30,8 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { AIInput } from "@/components/ui/ai-input";
 import { supabase } from "@/integrations/supabase/client";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 
 interface User {
   id: string;
@@ -90,6 +92,13 @@ const AdminDashboard = () => {
       readTime: "5 min read"
     },
   ]);
+  const [isNewBlogPostDialogOpen, setIsNewBlogPostDialogOpen] = useState(false);
+  const [newBlogPost, setNewBlogPost] = useState({
+    title: "",
+    excerpt: "",
+    content: "",
+    readTime: "",
+  });
   const { toast } = useToast();
 
   useEffect(() => {
@@ -368,11 +377,59 @@ const AdminDashboard = () => {
     });
   };
 
-  const handleAddBlogPost = () => {
-    toast({
-      title: "Blog post created",
-      description: "Your new blog post has been created successfully.",
-    });
+  const handleAddBlogPost = async () => {
+    try {
+      const { error } = await supabase.from('blog_posts').insert({
+        title: newBlogPost.title,
+        excerpt: newBlogPost.excerpt,
+        content: newBlogPost.content,
+        read_time: newBlogPost.readTime,
+      });
+
+      if (error) {
+        toast({
+          title: "Error creating blog post",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setIsNewBlogPostDialogOpen(false);
+      setNewBlogPost({
+        title: "",
+        excerpt: "",
+        content: "",
+        readTime: "",
+      });
+
+      const { data: updatedPosts, error: fetchError } = await supabase
+        .from('blog_posts')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (fetchError) {
+        toast({
+          title: "Error fetching blog posts",
+          description: fetchError.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setBlogPosts(updatedPosts || []);
+      
+      toast({
+        title: "Blog post created",
+        description: "Your new blog post has been created successfully.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
   const handleDeleteBlogPost = (postId: number) => {
@@ -632,7 +689,7 @@ const AdminDashboard = () => {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>Blog Posts</CardTitle>
-                <Button onClick={handleAddBlogPost}>Add New Post</Button>
+                <Button onClick={() => setIsNewBlogPostDialogOpen(true)}>Add New Post</Button>
               </CardHeader>
               <CardContent className="p-0">
                 <Table>
@@ -650,8 +707,8 @@ const AdminDashboard = () => {
                       <TableRow key={post.id}>
                         <TableCell className="font-medium">{post.title}</TableCell>
                         <TableCell className="max-w-xs truncate">{post.excerpt}</TableCell>
-                        <TableCell>{new Date(post.date).toLocaleDateString()}</TableCell>
-                        <TableCell>{post.readTime}</TableCell>
+                        <TableCell>{new Date(post.created_at || '').toLocaleDateString()}</TableCell>
+                        <TableCell>{post.read_time}</TableCell>
                         <TableCell>
                           <div className="flex gap-2">
                             <Button variant="outline" size="sm">
@@ -672,6 +729,64 @@ const AdminDashboard = () => {
                 </Table>
               </CardContent>
             </Card>
+
+            <Dialog open={isNewBlogPostDialogOpen} onOpenChange={setIsNewBlogPostDialogOpen}>
+              <DialogContent className="sm:max-w-[625px]">
+                <DialogHeader>
+                  <DialogTitle>Create New Blog Post</DialogTitle>
+                  <DialogDescription>
+                    Fill in the details for your new blog post. All fields are required.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid gap-2">
+                    <label htmlFor="title">Title</label>
+                    <Input
+                      id="title"
+                      value={newBlogPost.title}
+                      onChange={(e) => setNewBlogPost({ ...newBlogPost, title: e.target.value })}
+                      placeholder="Enter the blog post title"
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <label htmlFor="excerpt">Excerpt</label>
+                    <Textarea
+                      id="excerpt"
+                      value={newBlogPost.excerpt}
+                      onChange={(e) => setNewBlogPost({ ...newBlogPost, excerpt: e.target.value })}
+                      placeholder="Enter a brief excerpt"
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <label htmlFor="content">Content</label>
+                    <Textarea
+                      id="content"
+                      value={newBlogPost.content}
+                      onChange={(e) => setNewBlogPost({ ...newBlogPost, content: e.target.value })}
+                      placeholder="Enter the full blog post content"
+                      className="min-h-[200px]"
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <label htmlFor="readTime">Read Time</label>
+                    <Input
+                      id="readTime"
+                      value={newBlogPost.readTime}
+                      onChange={(e) => setNewBlogPost({ ...newBlogPost, readTime: e.target.value })}
+                      placeholder="e.g. 5 min read"
+                    />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setIsNewBlogPostDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleAddBlogPost}>
+                    Create Post
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </TabsContent>
         </Tabs>
       </div>
