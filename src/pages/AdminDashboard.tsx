@@ -159,6 +159,42 @@ const AdminDashboard = () => {
       }
     };
 
+    const fetchEnterpriseLeads = async () => {
+      const { data, error } = await supabase
+        .from('enterprise_leads')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        toast({
+          title: "Error fetching enterprise leads",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setEnterpriseLeads(data || []);
+    };
+
+    const fetchBlogPosts = async () => {
+      const { data, error } = await supabase
+        .from('blog_posts')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        toast({
+          title: "Error fetching blog posts",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setBlogPosts(data || []);
+    };
+
     // Initial fetch
     fetchUsers();
     fetchEnterpriseLeads();
