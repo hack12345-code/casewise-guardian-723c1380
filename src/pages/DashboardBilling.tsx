@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { Navbar } from "@/components/Navbar"
@@ -141,12 +140,12 @@ const DashboardBilling = () => {
                           {subscriptionStatus === 'free' ? 'Limited features and functionality' : 'Full access to all features'}
                         </p>
                       </div>
-                      <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-6">
                         {subscriptionStatus === 'free' && (
                           <Button 
                             variant="default"
                             onClick={handleUpgradeToPro}
-                            className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2 rounded-lg transition-colors"
+                            className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2 rounded-lg transition-colors ml-4"
                           >
                             Upgrade to Pro
                           </Button>
