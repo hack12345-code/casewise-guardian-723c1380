@@ -127,7 +127,6 @@ const AdminDashboard = () => {
         
         const userPrompts = await Promise.all(
           data.map(async (user) => {
-            // Get prompts count for last 24 hours
             const { count: promptCount } = await supabase
               .from('medical_messages')
               .select('*', { count: 'exact', head: true })
@@ -135,7 +134,6 @@ const AdminDashboard = () => {
               .eq('role', 'user')
               .gte('created_at', last24Hours);
 
-            // Get total cases count
             const { count: casesCount } = await supabase
               .from('medical_chats')
               .select('*', { count: 'exact', head: true })
@@ -203,6 +201,88 @@ const AdminDashboard = () => {
     fetchEnterpriseLeads();
     fetchBlogPosts();
   }, [toast]);
+
+  useEffect(() => {
+    // Subscribe to new chat notifications
+    const channel = supabase
+      .channel('admin_notifications')
+      .on(
+        'broadcast',
+        { event: 'new_chat' },
+        (payload) => {
+          setSupportMessages(prev => [...prev, payload.payload]);
+        }
+      )
+      .on(
+        'broadcast',
+        { event: 'chat_message' },
+        (payload) => {
+          setSupportMessages(prev => {
+            const newMessages = [...prev];
+            const chatIndex = newMessages.findIndex(chat => chat.id === payload.payload.chatId);
+            
+            if (chatIndex !== -1) {
+              newMessages[chatIndex].messages.push({
+                id: Date.now().toString(),
+                text: payload.payload.message,
+                sender: payload.payload.sender,
+                timestamp: payload.payload.timestamp
+              });
+              newMessages[chatIndex].message = payload.payload.message;
+            }
+            
+            return newMessages;
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  const handleSendMessage = (message: string) => {
+    if (!selectedChat || !message.trim()) return;
+
+    const newMessage = {
+      id: Date.now().toString(),
+      text: message,
+      sender: "admin" as const,
+      timestamp: new Date().toISOString(),
+    };
+
+    // Update local state
+    const updatedMessages = supportMessages.map((chat) =>
+      chat.id === selectedChat.id
+        ? {
+            ...chat,
+            messages: [...chat.messages, newMessage],
+          }
+        : chat
+    );
+
+    setSupportMessages(updatedMessages);
+    localStorage.setItem("support-messages", JSON.stringify(updatedMessages));
+    
+    // Broadcast the message to the user
+    supabase.channel(`chat_${selectedChat.id}`)
+      .send({
+        type: 'broadcast',
+        event: 'chat_message',
+        payload: {
+          chatId: selectedChat.id,
+          message: message,
+          sender: 'admin',
+          timestamp: new Date().toISOString()
+        },
+      });
+    
+    toast({
+      title: "Message sent",
+      description: "Your response has been sent to the user.",
+    });
+  };
 
   const handleBlockCases = async () => {
     if (!selectedUser) return;
@@ -392,6 +472,7 @@ const AdminDashboard = () => {
       timestamp: new Date().toISOString(),
     };
 
+    // Update local state
     const updatedMessages = supportMessages.map((chat) =>
       chat.id === selectedChat.id
         ? {
@@ -403,6 +484,19 @@ const AdminDashboard = () => {
 
     setSupportMessages(updatedMessages);
     localStorage.setItem("support-messages", JSON.stringify(updatedMessages));
+    
+    // Broadcast the message to the user
+    supabase.channel(`chat_${selectedChat.id}`)
+      .send({
+        type: 'broadcast',
+        event: 'chat_message',
+        payload: {
+          chatId: selectedChat.id,
+          message: message,
+          sender: 'admin',
+          timestamp: new Date().toISOString()
+        },
+      });
     
     toast({
       title: "Message sent",
