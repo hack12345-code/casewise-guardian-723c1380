@@ -454,12 +454,34 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleDeleteBlogPost = (postId: number) => {
-    setBlogPosts(blogPosts.filter(post => post.id !== postId));
-    toast({
-      title: "Blog post deleted",
-      description: "The blog post has been deleted successfully.",
-    });
+  const handleDeleteBlogPost = async (postId: string) => {
+    try {
+      const { error } = await supabase
+        .from('blog_posts')
+        .delete()
+        .eq('id', postId);
+
+      if (error) {
+        toast({
+          title: "Error deleting blog post",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setBlogPosts(blogPosts.filter(post => post.id !== postId));
+      toast({
+        title: "Blog post deleted",
+        description: "The blog post has been deleted successfully.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
   const handleResetPassword = async (userId: string, userEmail: string) => {
