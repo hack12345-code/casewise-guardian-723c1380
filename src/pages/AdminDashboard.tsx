@@ -200,6 +200,73 @@ const AdminDashboard = () => {
     fetchUsers();
     fetchEnterpriseLeads();
     fetchBlogPosts();
+
+    // Subscribe to new chat notifications and messages
+    const channel = supabase
+      .channel('admin_notifications')
+      .on(
+        'broadcast',
+        { event: 'new_chat' },
+        (payload) => {
+          setSupportMessages(prev => [...prev, payload.payload]);
+          
+          // Show notification for new chat
+          toast({
+            title: "New Support Chat",
+            description: "A new user has started a support conversation",
+          });
+        }
+      )
+      .on(
+        'broadcast',
+        { event: 'chat_message' },
+        (payload) => {
+          setSupportMessages(prev => {
+            const newMessages = [...prev];
+            const chatIndex = newMessages.findIndex(chat => chat.id === payload.payload.chatId);
+            
+            if (chatIndex !== -1) {
+              newMessages[chatIndex].messages.push({
+                id: Date.now().toString(),
+                text: payload.payload.message,
+                sender: payload.payload.sender,
+                timestamp: payload.payload.timestamp
+              });
+              newMessages[chatIndex].message = payload.payload.message;
+
+              // If it's a user message, show a notification
+              if (payload.payload.sender === 'user') {
+                toast({
+                  title: "New Message",
+                  description: `New message from ${newMessages[chatIndex].userName}`,
+                });
+              }
+            }
+            
+            return newMessages;
+          });
+
+          // Store updated messages in localStorage
+          const existingMessages = JSON.parse(localStorage.getItem("support-messages") || "[]");
+          const chatIndex = existingMessages.findIndex((chat: any) => chat.id === payload.payload.chatId);
+          
+          if (chatIndex !== -1) {
+            existingMessages[chatIndex].messages.push({
+              id: Date.now().toString(),
+              text: payload.payload.message,
+              sender: payload.payload.sender,
+              timestamp: payload.payload.timestamp
+            });
+            existingMessages[chatIndex].message = payload.payload.message;
+            localStorage.setItem("support-messages", JSON.stringify(existingMessages));
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [toast]);
 
   const handleBlockCases = async () => {
