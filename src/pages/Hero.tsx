@@ -55,7 +55,7 @@ export const Hero = () => {
 
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('subscription_status, case_count, is_blocked')
+        .select('subscription_status, case_count, is_blocked, case_blocked')
         .eq('id', session.user.id)
         .single();
 
@@ -70,15 +70,43 @@ export const Hero = () => {
         return;
       }
 
-      const isFreeUser = profile.subscription_status !== 'active';
-
-      if (isFreeUser && profile.case_count >= 1) {
+      if (profile.case_blocked) {
         toast({
-          title: "Case Limit Reached",
-          description: "Free users can only have one case. Please upgrade to create more cases!",
+          title: "Case Creation Blocked",
+          description: "Your account has been blocked from creating new cases. Please contact support for assistance.",
           variant: "destructive",
         });
         return;
+      }
+
+      const isFreeUser = profile.subscription_status !== 'active';
+
+      if (isFreeUser) {
+        // Check prompts in last 24 hours
+        const last24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+        const { count } = await supabase
+          .from('medical_messages')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', session.user.id)
+          .eq('role', 'user')
+          .gte('created_at', last24Hours);
+
+        if (count && count >= 1) {
+          // Update user profile to block case creation
+          const { error: blockError } = await supabase
+            .from('profiles')
+            .update({ case_blocked: true })
+            .eq('id', session.user.id);
+
+          if (blockError) throw blockError;
+
+          toast({
+            title: "Daily Limit Reached",
+            description: "Free users can only create one case every 24 hours. Please upgrade to create more cases!",
+            variant: "destructive",
+          });
+          return;
+        }
       }
 
       const { data: newChat, error: chatError } = await supabase
