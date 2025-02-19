@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { Navbar } from "@/components/Navbar"
@@ -18,6 +17,7 @@ interface Message {
 
 interface UserProfile {
   is_blocked: boolean;
+  case_blocked: boolean;
 }
 
 const Chat = () => {
@@ -29,6 +29,7 @@ const Chat = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [latestUserPrompt, setLatestUserPrompt] = useState("")
   const [isBlocked, setIsBlocked] = useState(false)
+  const [isCaseBlocked, setIsCaseBlocked] = useState(false)
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -46,7 +47,7 @@ const Chat = () => {
       // Check if user is blocked
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('is_blocked')
+        .select('is_blocked, case_blocked')
         .eq('id', session.user.id)
         .single()
 
@@ -57,6 +58,7 @@ const Chat = () => {
 
       if (profile) {
         setIsBlocked(profile.is_blocked || false)
+        setIsCaseBlocked(profile.case_blocked || false)
       }
     }
     checkAuth()
@@ -210,6 +212,15 @@ const Chat = () => {
       toast({
         title: "Account Blocked",
         description: "Your account has been blocked from sending prompts. Please contact support for assistance.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (isCaseBlocked) {
+      toast({
+        title: "Case Creation Blocked",
+        description: "Your account has been blocked from creating new cases. Please contact support for assistance.",
         variant: "destructive",
       })
       return
@@ -400,16 +411,26 @@ const Chat = () => {
                   </div>
                   <div className="p-3 md:p-4 border-t">
                     <AIInput
-                      placeholder={isBlocked ? "Your account has been blocked from sending prompts" : "Enter your case details here..."}
+                      placeholder={
+                        isBlocked 
+                          ? "Your account has been blocked from sending prompts" 
+                          : isCaseBlocked 
+                          ? "Your account has been blocked from creating new cases"
+                          : "Enter your case details here..."
+                      }
                       minHeight={100}
                       maxHeight={200}
                       onSubmit={handleSendMessage}
                       isLoading={isLoading}
-                      disabled={isBlocked}
+                      disabled={isBlocked || isCaseBlocked}
                     />
                     {isBlocked ? (
                       <p className="text-xs text-red-500 mt-2">
                         Your account has been blocked from sending prompts. Please contact support for assistance.
+                      </p>
+                    ) : isCaseBlocked ? (
+                      <p className="text-xs text-red-500 mt-2">
+                        Your account has been blocked from creating new cases. Please contact support for assistance.
                       </p>
                     ) : (
                       <p className="text-xs text-gray-500 mt-2 italic">
