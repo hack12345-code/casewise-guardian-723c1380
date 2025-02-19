@@ -16,7 +16,7 @@ const DashboardBilling = () => {
   const [isEditingPayment, setIsEditingPayment] = useState(false);
   const [hasExistingPayment, setHasExistingPayment] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'card' | 'paypal'>('card');
-  const [subscriptionStatus, setSubscriptionStatus] = useState<'free' | 'active'>('free');
+  const [subscriptionStatus, setSubscriptionStatus] = useState<string>('free');
   const { toast } = useToast();
 
   useEffect(() => {
@@ -29,13 +29,33 @@ const DashboardBilling = () => {
           .eq('id', session.user.id)
           .single();
         
-        if (profile?.subscription_status === 'active') {
-          setSubscriptionStatus('active');
+        if (profile?.subscription_status) {
+          setSubscriptionStatus(profile.subscription_status);
         }
       }
     };
 
     fetchSubscriptionStatus();
+
+    // Set up real-time subscription for profile updates
+    const subscription = supabase
+      .channel('profile_changes')
+      .on('postgres_changes', 
+        { 
+          event: 'UPDATE', 
+          schema: 'public', 
+          table: 'profiles',
+          filter: `id=eq.${supabase.auth.getSession().then(({ data }) => data.session?.user.id)}`
+        }, 
+        () => {
+          fetchSubscriptionStatus();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const handleUpdatePayment = () => {
@@ -58,6 +78,43 @@ const DashboardBilling = () => {
     });
   };
 
+  const getPlanFeatures = () => {
+    switch (subscriptionStatus.toLowerCase()) {
+      case 'pro':
+        return [
+          'Unlimited cases',
+          'Unlimited prompts',
+          'Priority support',
+          'Advanced features'
+        ];
+      case 'enterprise':
+        return [
+          'Custom cases limit',
+          'Unlimited prompts',
+          'Dedicated support',
+          'Custom features',
+          'Team management'
+        ];
+      default: // free
+        return [
+          'Basic features',
+          '1 case',
+          '1 prompt a day'
+        ];
+    }
+  };
+
+  const getPlanPrice = () => {
+    switch (subscriptionStatus.toLowerCase()) {
+      case 'pro':
+        return '$29.99';
+      case 'enterprise':
+        return 'Custom pricing';
+      default:
+        return 'Free';
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       <Navbar />
@@ -72,20 +129,20 @@ const DashboardBilling = () => {
                 <Card className="p-6 border-2 border-blue-100 hover:border-blue-200 transition-all duration-300">
                   <div className="flex justify-between items-center mb-6">
                     <h2 className="text-xl font-semibold text-gray-800">Current Plan</h2>
-                    <span className="px-4 py-1.5 bg-blue-50 text-blue-600 rounded-full text-sm font-medium">
-                      {subscriptionStatus === 'active' ? 'Pro Plan' : 'Free Plan'}
+                    <span className="px-4 py-1.5 bg-blue-50 text-blue-600 rounded-full text-sm font-medium capitalize">
+                      {subscriptionStatus} Plan
                     </span>
                   </div>
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-lg font-medium text-gray-700">{subscriptionStatus === 'active' ? 'Pro Plan' : 'Free Plan'}</p>
+                        <p className="text-lg font-medium text-gray-700 capitalize">{subscriptionStatus} Plan</p>
                         <p className="text-sm text-gray-500 mt-1">
-                          {subscriptionStatus === 'active' ? 'Full access to all features' : 'Limited features and functionality'}
+                          {subscriptionStatus === 'free' ? 'Limited features and functionality' : 'Full access to all features'}
                         </p>
                       </div>
                       <div className="flex items-center gap-4">
-                        {subscriptionStatus !== 'active' && (
+                        {subscriptionStatus === 'free' && (
                           <Button 
                             variant="default"
                             onClick={handleUpgradeToPro}
@@ -95,27 +152,22 @@ const DashboardBilling = () => {
                           </Button>
                         )}
                         <p className="text-sm text-gray-500">
-                          <span className="font-medium text-blue-600">$29.99</span>/month
+                          <span className="font-medium text-blue-600">{getPlanPrice()}</span>
+                          {subscriptionStatus.toLowerCase() !== 'enterprise' && '/month'}
                         </p>
                       </div>
                     </div>
                     <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                      <p className="text-sm text-gray-600 font-medium mb-2">
-                        {subscriptionStatus === 'active' ? 'Pro plan includes:' : 'Free plan includes:'}
+                      <p className="text-sm text-gray-600 font-medium mb-2 capitalize">
+                        {subscriptionStatus} plan includes:
                       </p>
                       <ul className="space-y-2">
-                        <li className="flex items-center text-sm text-gray-600">
-                          <Icons.check className="mr-2 h-4 w-4 text-blue-500" />
-                          Basic features
-                        </li>
-                        <li className="flex items-center text-sm text-gray-600">
-                          <Icons.check className="mr-2 h-4 w-4 text-blue-500" />
-                          1 case
-                        </li>
-                        <li className="flex items-center text-sm text-gray-600">
-                          <Icons.check className="mr-2 h-4 w-4 text-blue-500" />
-                          1 prompt a day
-                        </li>
+                        {getPlanFeatures().map((feature, index) => (
+                          <li key={index} className="flex items-center text-sm text-gray-600">
+                            <Icons.check className="mr-2 h-4 w-4 text-blue-500" />
+                            {feature}
+                          </li>
+                        ))}
                       </ul>
                     </div>
                   </div>
