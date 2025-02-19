@@ -71,6 +71,16 @@ interface SupportMessage {
   }>;
 }
 
+interface BlogPost {
+  id: string;
+  title: string;
+  excerpt: string;
+  content: string;
+  read_time: string;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
 const AdminDashboard = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [enterpriseLeads, setEnterpriseLeads] = useState<EnterpriseLead[]>([]);
@@ -83,15 +93,7 @@ const AdminDashboard = () => {
   const [selectedChat, setSelectedChat] = useState<SupportMessage | null>(null);
   const [isManageDialogOpen, setIsManageDialogOpen] = useState(false);
   const [isChatDialogOpen, setIsChatDialogOpen] = useState(false);
-  const [blogPosts, setBlogPosts] = useState([
-    {
-      id: 1,
-      title: "Understanding Medical Risk Management",
-      excerpt: "Learn about the key principles of managing medical risks in modern healthcare practices.",
-      date: "2024-03-15",
-      readTime: "5 min read"
-    },
-  ]);
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [isNewBlogPostDialogOpen, setIsNewBlogPostDialogOpen] = useState(false);
   const [newBlogPost, setNewBlogPost] = useState({
     title: "",
@@ -99,6 +101,7 @@ const AdminDashboard = () => {
     content: "",
     readTime: "",
   });
+
   const { toast } = useToast();
 
   useEffect(() => {
@@ -153,8 +156,27 @@ const AdminDashboard = () => {
       }
     };
 
+    const fetchBlogPosts = async () => {
+      const { data, error } = await supabase
+        .from('blog_posts')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        toast({
+          title: "Error fetching blog posts",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setBlogPosts(data || []);
+    };
+
     fetchUsers();
     fetchEnterpriseLeads();
+    fetchBlogPosts();
   }, [toast]);
 
   const handleBlockCases = async () => {
