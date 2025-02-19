@@ -1,38 +1,65 @@
 
 import { MessageCircle, Mail } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { supabase } from "@/integrations/supabase/client";
 
 const Support = () => {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<{ text: string; isUser: boolean }[]>([]);
   const { toast } = useToast();
+  const [currentChatId, setCurrentChatId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!currentChatId) return;
+
+    const channel = supabase
+      .channel(`chat_${currentChatId}`)
+      .on(
+        'broadcast',
+        { event: 'chat_message' },
+        (payload) => {
+          if (payload.chatId === currentChatId) {
+            setMessages(prev => [...prev, {
+              text: payload.message,
+              isUser: payload.sender === 'user'
+            }]);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [currentChatId]);
 
   const handleStartChat = () => {
     setIsChatOpen(true);
-    setMessages([
-      { 
-        text: "Hello! How can I help you today?", 
-        isUser: false 
-      }
-    ]);
+    const initialMessage = { 
+      text: "Hello! How can I help you today?", 
+      isUser: false 
+    };
+    setMessages([initialMessage]);
 
-    // Create a new support chat in localStorage
+    const chatId = Date.now().toString();
+    setCurrentChatId(chatId);
+    
     const newChat = {
-      id: Date.now().toString(),
-      userId: "user-" + Date.now(), // Simple user ID generation
+      id: chatId,
+      userId: "user-" + Date.now(),
       userName: "Guest User",
       message: "Started a new chat",
       timestamp: new Date().toISOString(),
       status: "unread" as const,
       messages: [{
         id: Date.now().toString(),
-        text: "Hello! How can I help you today?",
+        text: initialMessage.text,
         sender: "admin" as const,
         timestamp: new Date().toISOString(),
       }]
@@ -42,58 +69,93 @@ const Support = () => {
     const supportMessages = existingMessages ? JSON.parse(existingMessages) : [];
     supportMessages.push(newChat);
     localStorage.setItem("support-messages", JSON.stringify(supportMessages));
+
+    supabase.channel('admin_notifications')
+      .send({
+        type: 'broadcast',
+        event: 'new_chat',
+        payload: newChat,
+      });
   };
 
   const handleSendMessage = () => {
-    if (!message.trim()) return;
+    if (!message.trim() || !currentChatId) return;
     
-    // Add message to chat window
     const newUserMessage = { text: message, isUser: true };
     setMessages(prev => [...prev, newUserMessage]);
-    setMessage("");
     
-    // Update support messages in localStorage
     const existingMessages = localStorage.getItem("support-messages");
     if (existingMessages) {
       const supportMessages = JSON.parse(existingMessages);
-      const currentChat = supportMessages[supportMessages.length - 1];
+      const currentChat = supportMessages.find((chat: any) => chat.id === currentChatId);
       
-      currentChat.messages.push({
-        id: Date.now().toString(),
-        text: message,
-        sender: "user" as const,
-        timestamp: new Date().toISOString(),
-      });
+      if (currentChat) {
+        currentChat.messages.push({
+          id: Date.now().toString(),
+          text: message,
+          sender: "user" as const,
+          timestamp: new Date().toISOString(),
+        });
 
-      currentChat.message = message; // Update last message preview
-      localStorage.setItem("support-messages", JSON.stringify(supportMessages));
+        currentChat.message = message;
+        localStorage.setItem("support-messages", JSON.stringify(supportMessages));
+
+        supabase.channel('admin_notifications')
+          .send({
+            type: 'broadcast',
+            event: 'chat_message',
+            payload: {
+              chatId: currentChatId,
+              message: message,
+              sender: 'user',
+              timestamp: new Date().toISOString()
+            },
+          });
+      }
     }
 
-    // Simulate admin response after a delay
+    setMessage("");
+
+    // Add automatic response after a short delay
     setTimeout(() => {
       const autoResponse = {
-        text: "Thank you for your message. Our support team will get back to you shortly.",
+        text: "Hey! We're getting a lot of support requests at the moment. Drop your email, and we'll get back to you within an hour—or email us at savesuppo@gmail.com. Thanks for your patience! 😊",
         isUser: false
       };
       setMessages(prev => [...prev, autoResponse]);
 
       // Update support messages with auto-response
       const updatedMessages = JSON.parse(localStorage.getItem("support-messages") || "[]");
-      const currentChat = updatedMessages[updatedMessages.length - 1];
+      const currentChat = updatedMessages.find((chat: any) => chat.id === currentChatId);
       
-      currentChat.messages.push({
-        id: Date.now().toString(),
-        text: autoResponse.text,
-        sender: "admin" as const,
-        timestamp: new Date().toISOString(),
-      });
+      if (currentChat) {
+        currentChat.messages.push({
+          id: Date.now().toString(),
+          text: autoResponse.text,
+          sender: "admin" as const,
+          timestamp: new Date().toISOString(),
+        });
 
-      localStorage.setItem("support-messages", JSON.stringify(updatedMessages));
+        localStorage.setItem("support-messages", JSON.stringify(updatedMessages));
+
+        // Broadcast the automated response
+        supabase.channel(`chat_${currentChatId}`)
+          .send({
+            type: 'broadcast',
+            event: 'chat_message',
+            payload: {
+              chatId: currentChatId,
+              message: autoResponse.text,
+              sender: 'admin',
+              timestamp: new Date().toISOString()
+            },
+          });
+      }
     }, 1000);
   };
 
   const handleEmailSupport = () => {
-    window.location.href = "mailto:support@save.com";
+    window.location.href = "mailto:savesuppo@gmail.com";
   };
 
   return (
