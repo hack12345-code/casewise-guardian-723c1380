@@ -43,7 +43,6 @@ const Dashboard = () => {
         return
       }
 
-      // Fetch user profile
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('subscription_status, case_count')
@@ -83,14 +82,13 @@ const Dashboard = () => {
         }
 
         if (chatsData) {
-          // For each chat, fetch the last message from medical_messages
           const chatsWithLastMessage = await Promise.all(
             chatsData.map(async (chat) => {
               const { data: messages, error: messagesError } = await supabase
                 .from('medical_messages')
                 .select('content')
                 .eq('chat_id', chat.id)
-                .eq('role', 'user')  // Only get user messages since these are prompts
+                .eq('role', 'user')
                 .order('created_at', { ascending: false })
                 .limit(1)
 
@@ -116,7 +114,6 @@ const Dashboard = () => {
 
     loadChats()
 
-    // Set up real-time subscription for chat updates
     const subscription = supabase
       .channel('medical_chats_changes')
       .on('postgres_changes', 
@@ -127,7 +124,7 @@ const Dashboard = () => {
         }, 
         (payload) => {
           console.log('Change received!', payload)
-          loadChats() // Reload chats when changes occur
+          loadChats()
         }
       )
       .subscribe()
@@ -145,6 +142,26 @@ const Dashboard = () => {
     }
 
     try {
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('case_blocked')
+        .eq('id', session.user.id)
+        .single()
+
+      if (profileError) {
+        console.error("Error fetching profile:", profileError)
+        return
+      }
+
+      if (profile.case_blocked) {
+        toast({
+          title: "Case Creation Blocked",
+          description: "Your account has been blocked from creating new cases. Please contact support for assistance.",
+          variant: "destructive",
+        })
+        return
+      }
+
       const { data: newChat, error } = await supabase
         .from('medical_chats')
         .insert({
@@ -179,7 +196,6 @@ const Dashboard = () => {
 
   const handleDeleteChat = async (chatId: string) => {
     try {
-      // First delete all messages associated with this chat
       const { error: messagesError } = await supabase
         .from('medical_messages')
         .delete()
@@ -189,7 +205,6 @@ const Dashboard = () => {
         throw messagesError
       }
 
-      // Then delete the chat itself
       const { error: chatError } = await supabase
         .from('medical_chats')
         .delete()
@@ -199,7 +214,6 @@ const Dashboard = () => {
         throw chatError
       }
 
-      // Update local state
       setChats(chats.filter((chat) => chat.id !== chatId))
       
       toast({
