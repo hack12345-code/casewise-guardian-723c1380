@@ -79,10 +79,8 @@ export const Hero = () => {
         return;
       }
 
-      const isFreeUser = profile.subscription_status !== 'active';
-
+      const isFreeUser = profile.subscription_status === 'free';
       if (isFreeUser) {
-        // Check prompts in last 24 hours
         const last24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
         const { count } = await supabase
           .from('medical_messages')
@@ -92,14 +90,6 @@ export const Hero = () => {
           .gte('created_at', last24Hours);
 
         if (count && count >= 1) {
-          // Update user profile to block case creation
-          const { error: blockError } = await supabase
-            .from('profiles')
-            .update({ case_blocked: true })
-            .eq('id', session.user.id);
-
-          if (blockError) throw blockError;
-
           toast({
             title: "Daily Limit Reached",
             description: "Free users can only create one case every 24 hours. Please upgrade to create more cases!",

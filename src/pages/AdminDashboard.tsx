@@ -381,6 +381,35 @@ const AdminDashboard = () => {
     setIsManageDialogOpen(false);
   };
 
+  const handleBlockPrompts = async () => {
+    if (!selectedUser) return;
+    
+    const { error } = await supabase
+      .from('profiles')
+      .update({ case_blocked: !selectedUser.caseBlocked })
+      .eq('id', selectedUser.id);
+
+    if (error) {
+      toast({
+        title: "Error updating user",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setUsers(users.map(user => 
+      user.id === selectedUser.id 
+        ? { ...user, caseBlocked: !selectedUser.caseBlocked }
+        : user
+    ));
+
+    toast({
+      title: selectedUser.caseBlocked ? "Prompts Unblocked" : "Prompts Blocked",
+      description: `${selectedUser.email} ${selectedUser.caseBlocked ? 'can now send prompts' : 'has been blocked from sending prompts'}`,
+    });
+  };
+
   const handleManageUser = (user: User) => {
     setSelectedUser(user);
     setIsManageDialogOpen(true);
@@ -975,6 +1004,17 @@ const AdminDashboard = () => {
           </DialogHeader>
           
           <div className="grid gap-4 py-4">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Prompts in last 24h:</span>
+                <span className="font-mono">{selectedUser?.promptsLastDay}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Total Cases:</span>
+                <span className="font-mono">{selectedUser?.totalCases}</span>
+              </div>
+            </div>
+
             <div className="space-y-2">
               <h4 className="text-sm font-medium">Subscription Status</h4>
               <Select
@@ -994,19 +1034,11 @@ const AdminDashboard = () => {
             </div>
             
             <Button
-              variant="destructive"
-              onClick={handleCancelSubscription}
-              className="w-full"
-            >
-              Cancel Subscription
-            </Button>
-            
-            <Button
               variant={selectedUser?.caseBlocked ? "outline" : "destructive"}
-              onClick={handleBlockCases}
+              onClick={handleBlockPrompts}
               className="w-full"
             >
-              {selectedUser?.caseBlocked ? 'Unblock Case Creation' : 'Block Case Creation'}
+              {selectedUser?.caseBlocked ? 'Unblock Prompts' : 'Block Prompts'}
             </Button>
             
             <Button
@@ -1014,9 +1046,9 @@ const AdminDashboard = () => {
               onClick={handleBlockUser}
               className="w-full"
             >
-              {selectedUser?.isBlocked ? 'Unblock User' : 'Block User from Prompting'}
+              {selectedUser?.isBlocked ? 'Unblock User' : 'Block User'}
             </Button>
-            
+
             <Button
               variant="destructive"
               onClick={handleDeleteAccount}
