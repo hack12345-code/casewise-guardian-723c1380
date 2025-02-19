@@ -1,4 +1,3 @@
-<lov-code>
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -242,6 +241,48 @@ const AdminDashboard = () => {
       supabase.removeChannel(channel);
     };
   }, []);
+
+  const handleSendMessage = (message: string) => {
+    if (!selectedChat || !message.trim()) return;
+
+    const newMessage = {
+      id: Date.now().toString(),
+      text: message,
+      sender: "admin" as const,
+      timestamp: new Date().toISOString(),
+    };
+
+    // Update local state
+    const updatedMessages = supportMessages.map((chat) =>
+      chat.id === selectedChat.id
+        ? {
+            ...chat,
+            messages: [...chat.messages, newMessage],
+          }
+        : chat
+    );
+
+    setSupportMessages(updatedMessages);
+    localStorage.setItem("support-messages", JSON.stringify(updatedMessages));
+    
+    // Broadcast the message to the user
+    supabase.channel(`chat_${selectedChat.id}`)
+      .send({
+        type: 'broadcast',
+        event: 'chat_message',
+        payload: {
+          chatId: selectedChat.id,
+          message: message,
+          sender: 'admin',
+          timestamp: new Date().toISOString()
+        },
+      });
+    
+    toast({
+      title: "Message sent",
+      description: "Your response has been sent to the user.",
+    });
+  };
 
   const handleBlockCases = async () => {
     if (!selectedUser) return;
@@ -1017,4 +1058,40 @@ const AdminDashboard = () => {
                   >
                     <p className="text-sm">{message.text}</p>
                     <span className="text-xs opacity-70 mt-2 block">
-                      
+                      {new Date(message.timestamp).toLocaleTimeString()}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            <div className="p-4 border-t mt-4">
+              <AIInput
+                placeholder="Type your response..."
+                minHeight={80}
+                maxHeight={120}
+                onSubmit={handleSendMessage}
+              />
+              <div className="flex justify-end mt-4 gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setIsChatDialogOpen(false)}
+                >
+                  Close
+                </Button>
+                <Button
+                  variant="default"
+                  onClick={() => selectedChat && handleResolveChat(selectedChat.id)}
+                >
+                  Mark as Resolved
+                </Button>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
+
+export default AdminDashboard;
