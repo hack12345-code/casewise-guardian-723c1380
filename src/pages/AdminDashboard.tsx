@@ -43,6 +43,7 @@ interface User {
   lastActive: string;
   isBlocked?: boolean;
   caseBlocked?: boolean;
+  promptsLastDay: number;
 }
 
 interface EnterpriseLead {
@@ -121,18 +122,33 @@ const AdminDashboard = () => {
       }
 
       if (data) {
-        const formattedUsers = data.map(user => ({
-          id: user.id,
-          name: user.full_name || 'N/A',
-          email: user.email,
-          subscription: user.subscription_status || 'Free',
-          country: user.country || 'N/A',
-          sector: user.medical_sector || 'N/A',
-          lastActive: new Date(user.updated_at).toLocaleDateString(),
-          isBlocked: user.is_blocked,
-          caseBlocked: user.case_blocked,
-        }));
-        setUsers(formattedUsers);
+        const last24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+        
+        const userPrompts = await Promise.all(
+          data.map(async (user) => {
+            const { count } = await supabase
+              .from('medical_messages')
+              .select('*', { count: 'exact', head: true })
+              .eq('user_id', user.id)
+              .eq('role', 'user')
+              .gte('created_at', last24Hours);
+
+            return {
+              id: user.id,
+              name: user.full_name || 'N/A',
+              email: user.email,
+              subscription: user.subscription_status || 'Free',
+              country: user.country || 'N/A',
+              sector: user.medical_sector || 'N/A',
+              lastActive: new Date(user.updated_at).toLocaleDateString(),
+              isBlocked: user.is_blocked,
+              caseBlocked: user.case_blocked,
+              promptsLastDay: count || 0
+            };
+          })
+        );
+
+        setUsers(userPrompts);
       }
     };
 
@@ -577,6 +593,7 @@ const AdminDashboard = () => {
                       <TableHead>Country</TableHead>
                       <TableHead>Sector</TableHead>
                       <TableHead>Last Active</TableHead>
+                      <TableHead>Prompts (24h)</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
@@ -590,6 +607,9 @@ const AdminDashboard = () => {
                         <TableCell>{user.country}</TableCell>
                         <TableCell>{user.sector}</TableCell>
                         <TableCell>{user.lastActive}</TableCell>
+                        <TableCell>
+                          <span className="font-mono">{user.promptsLastDay}</span>
+                        </TableCell>
                         <TableCell>
                           <span className={`px-2 py-1 rounded-full text-xs ${
                             user.isBlocked ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
