@@ -83,19 +83,7 @@ const Login = () => {
 
       if (authError) throw authError;
 
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('is_blocked')
-        .eq('id', session?.user?.id)
-        .single();
-
-      if (profileError) throw profileError;
-
-      if (profile?.is_blocked) {
-        await supabase.auth.signOut();
-        throw new Error("Your account has been blocked. Please contact support.");
-      }
-
+      // Allow login regardless of blocking status
       await handlePendingPrompt();
 
     } catch (error: any) {
