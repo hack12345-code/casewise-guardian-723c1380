@@ -2,6 +2,7 @@
 import { ApiKeyInput } from "@/components/ApiKeyInput";
 import { Hero } from "./Hero";
 import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
@@ -19,12 +20,13 @@ const Index = () => {
   }, [location]);
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen flex flex-col">
       <Navbar />
-      <main className="pt-16">
+      <main className="pt-16 flex-1">
         <ApiKeyInput />
         <Hero />
       </main>
+      <Footer />
     </div>
   );
 };
