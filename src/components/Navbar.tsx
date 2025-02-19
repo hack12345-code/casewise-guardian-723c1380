@@ -54,7 +54,7 @@ export const Navbar = () => {
   useEffect(() => {
     const path = location.pathname;
     if (path === "/") setActiveTab("Home");
-    else if (path === "/pricing") setActiveTab("Pricing");
+    else if (path === "/pricing" || path === "/payment") setActiveTab("Pricing");
     else if (path === "/support") setActiveTab("Support");
     else if (path.includes("cases")) setActiveTab("Cases");
   }, [location.pathname]);
