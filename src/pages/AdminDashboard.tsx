@@ -159,50 +159,30 @@ const AdminDashboard = () => {
       }
     };
 
-    const fetchEnterpriseLeads = async () => {
-      const { data, error } = await supabase
-        .from('enterprise_leads')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        toast({
-          title: "Error fetching enterprise leads",
-          description: error.message,
-          variant: "destructive",
-        });
-        return;
-      }
-
-      if (data) {
-        setEnterpriseLeads(data);
-      }
-    };
-
-    const fetchBlogPosts = async () => {
-      const { data, error } = await supabase
-        .from('blog_posts')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        toast({
-          title: "Error fetching blog posts",
-          description: error.message,
-          variant: "destructive",
-        });
-        return;
-      }
-
-      setBlogPosts(data || []);
-    };
-
+    // Initial fetch
     fetchUsers();
     fetchEnterpriseLeads();
     fetchBlogPosts();
 
+    // Subscribe to medical_chats changes
+    const casesChannel = supabase
+      .channel('medical_chats_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'medical_chats'
+        },
+        () => {
+          // Refresh users data when cases change
+          fetchUsers();
+        }
+      )
+      .subscribe();
+
     // Subscribe to new chat notifications and messages
-    const channel = supabase
+    const chatChannel = supabase
       .channel('admin_notifications')
       .on(
         'broadcast',
@@ -215,6 +195,9 @@ const AdminDashboard = () => {
             title: "New Support Chat",
             description: "A new user has started a support conversation",
           });
+
+          // Refresh users data when a new chat is created
+          fetchUsers();
         }
       )
       .on(
@@ -265,7 +248,8 @@ const AdminDashboard = () => {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(casesChannel);
+      supabase.removeChannel(chatChannel);
     };
   }, [toast]);
 
