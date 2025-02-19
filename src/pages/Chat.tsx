@@ -230,6 +230,43 @@ const Chat = () => {
     setLatestUserPrompt(input)
 
     try {
+      // Check free user limits
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('subscription_status')
+        .eq('id', session.user.id)
+        .single()
+
+      if (profile?.subscription_status === 'free') {
+        const last24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+        const { count } = await supabase
+          .from('medical_messages')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', session.user.id)
+          .eq('role', 'user')
+          .gte('created_at', last24Hours);
+
+        if (count && count >= 1) {
+          // Automatically block the user from creating more cases
+          const { error: blockError } = await supabase
+            .from('profiles')
+            .update({ case_blocked: true })
+            .eq('id', session.user.id);
+
+          if (blockError) {
+            console.error("Error blocking user:", blockError);
+          }
+
+          toast({
+            title: "Daily Limit Reached",
+            description: "Free users can only create one case every 24 hours. Please upgrade to create more cases!",
+            variant: "destructive",
+          });
+          setIsLoading(false);
+          return;
+        }
+      }
+
       // Add user message immediately to the UI
       const tempUserMessageId = `temp-${Date.now()}`
       const userMessage = {

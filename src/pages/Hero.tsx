@@ -90,6 +90,15 @@ export const Hero = () => {
           .gte('created_at', last24Hours);
 
         if (count && count >= 1) {
+          const { error: blockError } = await supabase
+            .from('profiles')
+            .update({ case_blocked: true })
+            .eq('id', session.user.id);
+
+          if (blockError) {
+            console.error("Error blocking user:", blockError);
+          }
+
           toast({
             title: "Daily Limit Reached",
             description: "Free users can only create one case every 24 hours. Please upgrade to create more cases!",
@@ -120,6 +129,18 @@ export const Hero = () => {
         });
 
       if (messageError) throw messageError;
+
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ 
+          case_count: (profile.case_count || 0) + 1,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', session.user.id);
+
+      if (updateError) {
+        console.error("Error updating case count:", updateError);
+      }
 
       navigate(`/chat/${newChat.id}`);
 
