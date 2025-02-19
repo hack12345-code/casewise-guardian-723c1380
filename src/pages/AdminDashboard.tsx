@@ -127,7 +127,6 @@ const AdminDashboard = () => {
         
         const userPrompts = await Promise.all(
           data.map(async (user) => {
-            // Get prompts count for last 24 hours
             const { count: promptCount } = await supabase
               .from('medical_messages')
               .select('*', { count: 'exact', head: true })
@@ -135,7 +134,6 @@ const AdminDashboard = () => {
               .eq('role', 'user')
               .gte('created_at', last24Hours);
 
-            // Get total cases count
             const { count: casesCount } = await supabase
               .from('medical_chats')
               .select('*', { count: 'exact', head: true })
@@ -403,6 +401,18 @@ const AdminDashboard = () => {
 
     setSupportMessages(updatedMessages);
     localStorage.setItem("support-messages", JSON.stringify(updatedMessages));
+    
+    supabase.channel(`chat_${selectedChat.id}`)
+      .send({
+        type: 'broadcast',
+        event: 'chat_message',
+        payload: {
+          chatId: selectedChat.id,
+          message: message,
+          sender: 'admin',
+          timestamp: new Date().toISOString()
+        },
+      });
     
     toast({
       title: "Message sent",
