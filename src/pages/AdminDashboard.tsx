@@ -44,6 +44,7 @@ interface User {
   isBlocked?: boolean;
   caseBlocked?: boolean;
   promptsLastDay: number;
+  totalCases: number;
 }
 
 interface EnterpriseLead {
@@ -126,12 +127,19 @@ const AdminDashboard = () => {
         
         const userPrompts = await Promise.all(
           data.map(async (user) => {
-            const { count } = await supabase
+            // Get prompts count for last 24 hours
+            const { count: promptCount } = await supabase
               .from('medical_messages')
               .select('*', { count: 'exact', head: true })
               .eq('user_id', user.id)
               .eq('role', 'user')
               .gte('created_at', last24Hours);
+
+            // Get total cases count
+            const { count: casesCount } = await supabase
+              .from('medical_chats')
+              .select('*', { count: 'exact', head: true })
+              .eq('user_id', user.id);
 
             return {
               id: user.id,
@@ -143,7 +151,8 @@ const AdminDashboard = () => {
               lastActive: new Date(user.updated_at).toLocaleDateString(),
               isBlocked: user.is_blocked,
               caseBlocked: user.case_blocked,
-              promptsLastDay: count || 0
+              promptsLastDay: promptCount || 0,
+              totalCases: casesCount || 0
             };
           })
         );
@@ -593,6 +602,7 @@ const AdminDashboard = () => {
                       <TableHead>Country</TableHead>
                       <TableHead>Sector</TableHead>
                       <TableHead>Last Active</TableHead>
+                      <TableHead>Total Cases</TableHead>
                       <TableHead>Prompts (24h)</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Actions</TableHead>
@@ -607,6 +617,9 @@ const AdminDashboard = () => {
                         <TableCell>{user.country}</TableCell>
                         <TableCell>{user.sector}</TableCell>
                         <TableCell>{user.lastActive}</TableCell>
+                        <TableCell>
+                          <span className="font-mono">{user.totalCases}</span>
+                        </TableCell>
                         <TableCell>
                           <span className="font-mono">{user.promptsLastDay}</span>
                         </TableCell>
