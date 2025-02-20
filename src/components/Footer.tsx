@@ -9,7 +9,7 @@ export const Footer = () => {
 
   return (
     <footer className="bg-gray-900 text-gray-300">
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 md:py-16">
         {/* Bottom Section */}
         <div className="border-t border-gray-800 mt-8 md:mt-12 pt-6 md:pt-8 flex flex-col md:flex-row justify-between items-center gap-4 md:gap-0">
           {/* Copyright */}
