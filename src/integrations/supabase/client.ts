@@ -14,10 +14,9 @@ const createCustomClient = () => {
   const originalFrom = client.from;
   client.from = ((table: TableName) => {
     const queryBuilder = originalFrom(table);
-    const originalInsert = queryBuilder.insert;
-
     if (table === 'medical_messages' || table === 'medical_chats') {
-      queryBuilder.insert = async function<T extends Database['public']['Tables'][TableName]['Insert']>(values: T) {
+      const originalInsert = queryBuilder.insert.bind(queryBuilder);
+      queryBuilder.insert = async function(values: Database['public']['Tables'][TableName]['Insert']) {
         // First get the user id
         const { data: { user } } = await client.auth.getUser();
         if (!user?.id) {
