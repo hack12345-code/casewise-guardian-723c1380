@@ -202,6 +202,20 @@ const Chat = () => {
     }
   }, [chatId, navigate, toast])
 
+  const convertFileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result === 'string') {
+          const base64String = reader.result.split(',')[1];
+          resolve(base64String);
+        }
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file || !chatId) return
@@ -241,8 +255,13 @@ const Chat = () => {
     setLatestUserPrompt(input)
 
     try {
-      let fileAttachment
+      let fileAttachment;
+      let imageData;
       if (pendingFile) {
+        if (pendingFile.type.startsWith('image/')) {
+          imageData = await convertFileToBase64(pendingFile);
+        }
+
         const formData = new FormData()
         formData.append('file', pendingFile)
         formData.append('chatId', chatId)
@@ -305,7 +324,10 @@ const Chat = () => {
       setMessages(prev => [...prev, loadingMessage])
 
       const { data, error } = await supabase.functions.invoke('medical-ai-chat', {
-        body: { prompt: input }
+        body: { 
+          prompt: input,
+          imageData: imageData
+        },
       })
 
       if (error) {
