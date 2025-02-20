@@ -7,7 +7,6 @@ import { useToast } from "@/components/ui/use-toast";
 import DisplayCards from "@/components/ui/display-cards";
 import { Cases } from "@/components/Cases";
 import { FAQs } from "@/components/FAQs";
-import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
@@ -442,7 +441,6 @@ export const Hero = () => {
               <FAQs />
             </section>
 
-            <Footer />
           </>
         )}
       </div>
