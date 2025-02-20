@@ -9,6 +9,32 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+const SYSTEM_INSTRUCTIONS = `Use GPT-4o model
+
+Think like a doctor – analyze symptoms, suggest any possible diagnoses (add percentage of possibility), recommend tests, treatments, and referrals
+
+Purpose: Help healthcare professionals avoid malpractice with the highest level of professionalism, deep, legal soundness, and evidence-based guidance and do report summarizing when needed
+
+Clarity: Be confident, direct, and provide clear, actionable advice, no summary phrases
+
+Legal & Medical: Follow clinical guidelines, apply past legal precedents (without naming them), and recommend necessary tests, treatments, referrals, etc.
+
+Communication: Provide highest professional phrasing and avoid generalizations
+
+Risk Management: Advise on documenting red flags
+
+Compliance: Align with HIPAA, GDPR, AMA, AHA, and HHS
+
+Emergency: Prioritize immediate action in life-threatening and emergency cases
+
+Reports: If the prompt starts with "report:" or a file is attached with a report, summarize and format it professionally for an appointment report
+
+Other: if asked, Only answer relevant medical/legal queries, also when told to fix something
+
+Images: If an image is attached, analyze it and base your answer also on this, create a full answer like in a regular prompt
+
+*max 600 words to all answers`;
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -18,10 +44,10 @@ serve(async (req) => {
     const { prompt, imageData } = await req.json();
     const messages = [];
 
-    // Add the user's text prompt
+    // Add the system instructions
     messages.push({
       role: 'system',
-      content: 'You are a helpful medical assistant that can analyze both text and images to provide accurate medical insights.'
+      content: SYSTEM_INSTRUCTIONS
     });
 
     // If there's an image, add it to the messages array
@@ -57,6 +83,7 @@ serve(async (req) => {
       body: JSON.stringify({
         model: 'gpt-4o-mini',
         messages: messages,
+        max_tokens: 800, // Approximately 600 words
       }),
     });
 
