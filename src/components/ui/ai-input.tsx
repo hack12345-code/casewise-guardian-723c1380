@@ -1,3 +1,4 @@
+
 import { CornerRightUp, Mic, Loader2, Paperclip } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
@@ -39,6 +40,13 @@ export function AIInput({
   const [isTyping, setIsTyping] = useState(true);
   const [currentTextIndex, setCurrentTextIndex] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const placeholders = [
+    "What would you like to ask?",
+    "How can I assist you today?",
+    "Enter your medical query here...",
+    "Ask me anything about your case..."
+  ];
 
   useEffect(() => {
     let typingTimer: NodeJS.Timeout;
@@ -91,7 +99,7 @@ export function AIInput({
         )}
         <Textarea
           id={id}
-          placeholder={currentPlaceholder}
+          placeholder={placeholder || currentPlaceholder}
           className={cn(
             "max-w-xl bg-black/5 dark:bg-white/5 rounded-3xl pl-6 pr-24",
             "placeholder:text-black/50 dark:placeholder:text-white/50",
