@@ -1,6 +1,5 @@
-
 import { CornerRightUp, Mic, Loader2, Paperclip } from "lucide-react";
-import { useState, useEffect, useRef } from "react"; // Added useRef to imports
+import { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
 import { useAutoResizeTextarea } from "@/hooks/use-auto-resize-textarea";
@@ -15,15 +14,8 @@ interface AIInputProps {
   className?: string
   isLoading?: boolean
   disabled?: boolean
+  pendingFileName?: string
 }
-
-const placeholders = [
-  "A 60-year-old male patient presents with chest discomfort that worsens after meals, with occasional nausea and a burning sensation...",
-  "A 7-year-old boy has been experiencing lower right abdominal pain for the past 12 hours...",
-  "A 19-year-old college student presents with excessive worry, difficulty concentrating, and frequent panic attacks...",
-  "A 2-month-old infant presents with persistent crying, difficulty sleeping, and drawing up of the legs...",
-  "A 47-year-old woman reports the appearance of dark, irregular spots on her cheeks and forehead over the past six months..."
-];
 
 export function AIInput({
   id = "ai-input",
@@ -34,7 +26,8 @@ export function AIInput({
   onFileSelect,
   className,
   isLoading = false,
-  disabled = false
+  disabled = false,
+  pendingFileName
 }: AIInputProps) {
   const { textareaRef, adjustHeight } = useAutoResizeTextarea({
     minHeight,
@@ -88,6 +81,14 @@ export function AIInput({
   return (
     <div className={cn("w-full py-4", className)}>
       <div className="relative max-w-xl w-full mx-auto">
+        {pendingFileName && (
+          <div className="absolute -top-8 left-0 right-0 bg-blue-50 p-2 rounded-md text-sm flex items-center justify-between">
+            <span className="text-blue-600 flex items-center gap-2">
+              <Paperclip className="w-4 h-4" />
+              {pendingFileName}
+            </span>
+          </div>
+        )}
         <Textarea
           id={id}
           placeholder={currentPlaceholder}

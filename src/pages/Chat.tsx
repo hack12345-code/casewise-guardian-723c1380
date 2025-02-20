@@ -43,7 +43,7 @@ const Chat = () => {
   const [latestUserPrompt, setLatestUserPrompt] = useState("")
   const [isBlocked, setIsBlocked] = useState(false)
   const [isCaseBlocked, setIsCaseBlocked] = useState(false)
-  const [chatFiles, setChatFiles] = useState<ChatFile[]>([])
+  const [pendingFile, setPendingFile] = useState<File | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -205,67 +205,15 @@ const Chat = () => {
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file || !chatId) return
-
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) {
-      toast({
-        title: "Session expired",
-        description: "Please login again to continue.",
-        variant: "destructive",
-      })
-      navigate('/login')
-      return
-    }
-
-    setIsLoading(true)
-
-    try {
-      const formData = new FormData()
-      formData.append('file', file)
-      formData.append('chatId', chatId)
-      formData.append('userId', session.user.id)
-
-      const { data, error } = await supabase.functions.invoke('upload-chat-file', {
-        body: formData,
-      })
-
-      if (error) throw error
-
-      const fileMessage: Message = {
-        id: crypto.randomUUID(),
-        text: `Uploaded file: ${file.name}`,
-        sender: 'user',
-        timestamp: new Date().toISOString(),
-        attachments: [{
-          fileName: file.name,
-          fileUrl: data.publicUrl,
-          contentType: file.type
-        }]
-      }
-
-      setMessages(prev => [...prev, fileMessage])
-
-      toast({
-        title: "File uploaded successfully",
-        description: "The file has been added to the chat.",
-      })
-    } catch (error: any) {
-      console.error("Upload error:", error)
-      toast({
-        title: "Error uploading file",
-        description: error.message || "Failed to upload file",
-        variant: "destructive",
-      })
-    } finally {
-      setIsLoading(false)
-      if (fileInputRef.current) {
-        fileInputRef.current.value = ''
-      }
-    }
+    setPendingFile(file)
+    toast({
+      title: "File ready to be sent",
+      description: "Write your message and the file will be sent together.",
+    })
   }
 
   const handleSendMessage = async (input: string) => {
-    if (!input.trim() || !chatId) return
+    if ((!input.trim() && !pendingFile) || !chatId) return
 
     const { data: { session } } = await supabase.auth.getSession()
     if (!session) {
@@ -278,19 +226,12 @@ const Chat = () => {
       return
     }
 
-    if (isBlocked) {
+    if (isBlocked || isCaseBlocked) {
       toast({
-        title: "Account Blocked",
-        description: "Your account has been blocked from sending prompts. Please contact support for assistance.",
-        variant: "destructive",
-      })
-      return
-    }
-
-    if (isCaseBlocked) {
-      toast({
-        title: "Case Creation Blocked",
-        description: "Your account has been blocked from creating new cases. Please contact support for assistance.",
+        title: isBlocked ? "Account Blocked" : "Case Creation Blocked",
+        description: isBlocked 
+          ? "Your account has been blocked from sending prompts. Please contact support for assistance."
+          : "Your account has been blocked from creating new cases. Please contact support for assistance.",
         variant: "destructive",
       })
       return
@@ -300,38 +241,23 @@ const Chat = () => {
     setLatestUserPrompt(input)
 
     try {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('subscription_status')
-        .eq('id', session.user.id)
-        .single()
+      let fileAttachment
+      if (pendingFile) {
+        const formData = new FormData()
+        formData.append('file', pendingFile)
+        formData.append('chatId', chatId)
+        formData.append('userId', session.user.id)
 
-      if (profile?.subscription_status === 'free') {
-        const last24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-        const { count } = await supabase
-          .from('medical_messages')
-          .select('*', { count: 'exact', head: true })
-          .eq('user_id', session.user.id)
-          .eq('role', 'user')
-          .gte('created_at', last24Hours);
+        const { data: uploadData, error: uploadError } = await supabase.functions.invoke('upload-chat-file', {
+          body: formData,
+        })
 
-        if (count && count >= 1) {
-          const { error: blockError } = await supabase
-            .from('profiles')
-            .update({ case_blocked: true })
-            .eq('id', session.user.id);
+        if (uploadError) throw uploadError
 
-          if (blockError) {
-            console.error("Error blocking user:", blockError);
-          }
-
-          toast({
-            title: "Daily Limit Reached",
-            description: "Free users can only create one case every 24 hours. Please upgrade to create more cases!",
-            variant: "destructive",
-          });
-          setIsLoading(false);
-          return;
+        fileAttachment = {
+          fileName: pendingFile.name,
+          fileUrl: uploadData.publicUrl,
+          contentType: pendingFile.type
         }
       }
 
@@ -340,9 +266,11 @@ const Chat = () => {
         id: tempUserMessageId,
         text: input,
         sender: 'user' as const,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        attachments: fileAttachment ? [fileAttachment] : undefined
       }
       setMessages(prev => [...prev, userMessage])
+      setPendingFile(null)
 
       const { data: messageData, error: messageError } = await supabase
         .from('medical_messages')
@@ -416,6 +344,9 @@ const Chat = () => {
       setMessages(prev => prev.filter(msg => !msg.id.startsWith('temp-ai-')))
     } finally {
       setIsLoading(false)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
     }
   }
 
@@ -528,6 +459,8 @@ const Chat = () => {
                           ? "Your account has been blocked from sending prompts" 
                           : isCaseBlocked 
                           ? "Your account has been blocked from creating new cases"
+                          : pendingFile
+                          ? `Write a message to send with ${pendingFile.name}`
                           : "Enter your case details here..."
                       }
                       minHeight={100}
@@ -536,6 +469,7 @@ const Chat = () => {
                       onFileSelect={handleFileUpload}
                       isLoading={isLoading}
                       disabled={isBlocked || isCaseBlocked}
+                      pendingFileName={pendingFile?.name}
                     />
                     {isBlocked ? (
                       <p className="text-xs text-red-500">
