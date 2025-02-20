@@ -13,16 +13,14 @@ serve(async (req) => {
   }
 
   try {
-    const { prompt } = await req.json()
+    const { prompt, image } = await req.json()
 
-    const openAIApiKey = Deno.env.get('OPENAI_API_KEY')
-    if (!openAIApiKey) {
-      throw new Error('OPENAI_API_KEY is required')
-    }
+    const messages = [
+      {
+        role: "system",
+        content: `Use GPT-4o model
 
-    const systemPrompt = `*Use GPT-4o model
-
-Think like a doctor – analyze symptoms, suggest possible diagnoses, recommend tests, treatments, and referrals
+Think like a doctor – analyze symptoms, suggest any possible diagnoses (add percentage of possibility), recommend tests, treatments, and referrals
 
 Purpose: Help healthcare professionals avoid malpractice with the highest level of professionalism, deep, legal soundness, and evidence-based guidance and do report summarizing when needed
 
@@ -38,70 +36,68 @@ Compliance: Align with HIPAA, GDPR, AMA, AHA, and HHS
 
 Emergency: Prioritize immediate action in life-threatening and emergency cases
 
-Reports: If the prompt starts with "report:" summarize and format it professionally for an appointment report
+Reports: If the prompt starts with "report:" or a file is attached with a report, summarize and format it professionally for an appointment report
 
 Other: if asked, Only answer relevant medical/legal queries, also when told to fix something
 
-*max 600 words to all answers`
+Images: If an image is attached, analyze it and base your answer also on this
 
-    // Add logging for debugging
-    console.log('Sending request to OpenAI with prompt:', prompt)
+*max 600 words to all answers`
+      }
+    ]
+
+    // If there's an image, add it to the conversation
+    if (image) {
+      messages.push({
+        role: "user",
+        content: [
+          { type: "text", text: prompt },
+          { type: "image_url", image_url: image }
+        ]
+      })
+    } else {
+      messages.push({
+        role: "user",
+        content: prompt
+      })
+    }
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
+        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         model: 'gpt-4o',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: prompt }
-        ],
-        max_tokens: 1000,
+        messages: messages,
         temperature: 0.7,
+        max_tokens: 1000,
       }),
     })
 
-    // Add logging for the OpenAI response
-    console.log('OpenAI response status:', response.status)
-
-    if (!response.ok) {
-      const errorData = await response.json()
-      console.error('OpenAI API error:', errorData)
-      throw new Error(`OpenAI API error: ${JSON.stringify(errorData)}`)
-    }
-
     const data = await response.json()
-    console.log('OpenAI response data:', data)
-
-    // Ensure we have a valid response before sending it back
-    if (!data.choices?.[0]?.message?.content) {
-      throw new Error('Invalid response format from OpenAI')
+    
+    if (!response.ok) {
+      throw new Error(data.error?.message || 'OpenAI API error')
     }
-
-    const aiResponse = data.choices[0].message.content
 
     return new Response(
-      JSON.stringify({ response: aiResponse }),
-      { 
+      JSON.stringify({
+        response: data.choices[0].message.content,
+      }),
+      {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      },
+      }
     )
   } catch (error) {
-    console.error('Error in medical-ai-chat function:', error)
-    
-    // Return a properly formatted error response
+    console.error('Error:', error)
     return new Response(
-      JSON.stringify({ 
-        error: error.message || 'An unexpected error occurred',
-        timestamp: new Date().toISOString(),
-      }),
-      { 
+      JSON.stringify({ error: error.message }),
+      {
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
     )
   }
 })
