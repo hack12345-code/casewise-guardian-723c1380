@@ -27,8 +27,8 @@ const placeholders = [
 export function AIInput({
   id = "ai-input",
   placeholder = "",
-  minHeight = 52,
-  maxHeight = 200,
+  minHeight = 120, // Increased from 52
+  maxHeight = 300, // Increased from 200
   onSubmit,
   className,
   isLoading = false,
@@ -96,7 +96,9 @@ export function AIInput({
             "overflow-y-auto resize-none",
             "focus-visible:ring-0 focus-visible:ring-offset-0",
             "transition-[height] duration-100 ease-out",
-            "leading-[1.2] py-[16px]",
+            "leading-[1.4]", // Increased from 1.2
+            "text-base", // Increased from text-sm
+            "py-[20px]", // Increased from 16px
             `min-h-[${minHeight}px]`,
             `max-h-[${maxHeight}px]`,
             "[&::-webkit-resizer]:hidden",
@@ -153,4 +155,3 @@ export function AIInput({
     </div>
   );
 }
-
