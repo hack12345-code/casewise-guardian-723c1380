@@ -42,10 +42,10 @@ export function AIInput({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const placeholders = [
-    "Describe a patient presenting with severe chest pain and shortness of breath...",
-    "Enter details about a patient's recurring symptoms and test results...",
-    "Share information about a complex case requiring a second opinion...",
-    "Document concerns about potential medical malpractice risks..."
+    "I have a 45-year-old patient presenting with persistent fatigue, unintentional weight loss, and intermittent night sweats. Blood work shows mild anemia but no obvious signs of infection...",
+    "A 62-year-old patient with a history of hypertension and hyperlipidemia reports episodic chest discomfort that is not triggered by exertion...",
+    "A previously healthy 5-year-old presents with a persistent dry cough, low-grade fever, and mild wheezing. Chest X-ray is inconclusive...",
+    "A 68-year-old patient, two weeks post-total knee replacement, reports increasing swelling, warmth, and discomfort around the surgical site. No systemic symptoms, but CRP is mildly elevated..."
   ];
 
   useEffect(() => {
