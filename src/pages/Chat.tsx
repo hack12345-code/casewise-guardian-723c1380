@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { Navbar } from "@/components/Navbar"
@@ -540,23 +539,20 @@ const Chat = () => {
                         Attach File
                       </Button>
                     </div>
-                    <div className="min-h-[200px]"> {/* Added this wrapper div */}
-                      <AIInput
-                        placeholder={
-                          isBlocked 
-                            ? "Your account has been blocked from sending prompts" 
-                            : isCaseBlocked 
-                            ? "Your account has been blocked from creating new cases"
-                            : "Enter your case details here..."
-                        }
-                        minHeight={180} // Increased from 120
-                        maxHeight={400} // Increased from 300
-                        onSubmit={handleSendMessage}
-                        isLoading={isLoading}
-                        disabled={isBlocked || isCaseBlocked}
-                        className="h-full" // Added height class
-                      />
-                    </div>
+                    <AIInput
+                      placeholder={
+                        isBlocked 
+                          ? "Your account has been blocked from sending prompts" 
+                          : isCaseBlocked 
+                          ? "Your account has been blocked from creating new cases"
+                          : "Enter your case details here..."
+                      }
+                      minHeight={100}
+                      maxHeight={200}
+                      onSubmit={handleSendMessage}
+                      isLoading={isLoading}
+                      disabled={isBlocked || isCaseBlocked}
+                    />
                     {isBlocked ? (
                       <p className="text-xs text-red-500 mt-2">
                         Your account has been blocked from sending prompts. Please contact support for assistance.
