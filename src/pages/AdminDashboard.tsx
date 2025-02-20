@@ -106,101 +106,61 @@ const AdminDashboard = () => {
 
   const { toast } = useToast();
 
+  const fetchUsers = async () => {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      toast({
+        title: "Error fetching users",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (data) {
+      const last24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      
+      const userPrompts = await Promise.all(
+        data.map(async (user) => {
+          const { count: promptCount } = await supabase
+            .from('medical_messages')
+            .select('*', { count: 'exact', head: true })
+            .eq('user_id', user.id)
+            .eq('role', 'user')
+            .gte('created_at', last24Hours);
+
+          const { count: casesCount } = await supabase
+            .from('medical_chats')
+            .select('*', { count: 'exact', head: true })
+            .eq('user_id', user.id);
+
+          return {
+            id: user.id,
+            name: user.full_name || 'N/A',
+            email: user.email,
+            subscription: user.subscription_status || 'Free',
+            country: user.country || 'N/A',
+            sector: user.medical_sector || 'N/A',
+            lastActive: new Date(user.updated_at).toLocaleDateString(),
+            isBlocked: user.is_blocked,
+            caseBlocked: user.case_blocked,
+            promptsLastDay: promptCount || 0,
+            totalCases: casesCount || 0
+          };
+        })
+      );
+
+      setUsers(userPrompts);
+    }
+  };
+
   useEffect(() => {
-    const fetchUsers = async () => {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        toast({
-          title: "Error fetching users",
-          description: error.message,
-          variant: "destructive",
-        });
-        return;
-      }
-
-      if (data) {
-        const last24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-        
-        const userPrompts = await Promise.all(
-          data.map(async (user) => {
-            const { count: promptCount } = await supabase
-              .from('medical_messages')
-              .select('*', { count: 'exact', head: true })
-              .eq('user_id', user.id)
-              .eq('role', 'user')
-              .gte('created_at', last24Hours);
-
-            const { count: casesCount } = await supabase
-              .from('medical_chats')
-              .select('*', { count: 'exact', head: true })
-              .eq('user_id', user.id);
-
-            return {
-              id: user.id,
-              name: user.full_name || 'N/A',
-              email: user.email,
-              subscription: user.subscription_status || 'Free',
-              country: user.country || 'N/A',
-              sector: user.medical_sector || 'N/A',
-              lastActive: new Date(user.updated_at).toLocaleDateString(),
-              isBlocked: user.is_blocked,
-              caseBlocked: user.case_blocked,
-              promptsLastDay: promptCount || 0,
-              totalCases: casesCount || 0
-            };
-          })
-        );
-
-        setUsers(userPrompts);
-      }
-    };
-
-    const fetchEnterpriseLeads = async () => {
-      const { data, error } = await supabase
-        .from('enterprise_leads')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        toast({
-          title: "Error fetching enterprise leads",
-          description: error.message,
-          variant: "destructive",
-        });
-        return;
-      }
-
-      setEnterpriseLeads(data || []);
-    };
-
-    const fetchBlogPosts = async () => {
-      const { data, error } = await supabase
-        .from('blog_posts')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        toast({
-          title: "Error fetching blog posts",
-          description: error.message,
-          variant: "destructive",
-        });
-        return;
-      }
-
-      setBlogPosts(data || []);
-    };
-
-    // Initial fetch
     fetchUsers();
-    fetchEnterpriseLeads();
-    fetchBlogPosts();
 
-    // Subscribe to medical_chats changes
     const casesChannel = supabase
       .channel('medical_chats_changes')
       .on(
@@ -211,13 +171,11 @@ const AdminDashboard = () => {
           table: 'medical_chats'
         },
         () => {
-          // Refresh users data when cases change
           fetchUsers();
         }
       )
       .subscribe();
 
-    // Subscribe to new chat notifications and messages
     const chatChannel = supabase
       .channel('admin_notifications')
       .on(
@@ -226,13 +184,11 @@ const AdminDashboard = () => {
         (payload) => {
           setSupportMessages(prev => [...prev, payload.payload]);
           
-          // Show notification for new chat
           toast({
             title: "New Support Chat",
             description: "A new user has started a support conversation",
           });
 
-          // Refresh users data when a new chat is created
           fetchUsers();
         }
       )
@@ -253,7 +209,6 @@ const AdminDashboard = () => {
               });
               newMessages[chatIndex].message = payload.payload.message;
 
-              // If it's a user message, show a notification
               if (payload.payload.sender === 'user') {
                 toast({
                   title: "New Message",
@@ -265,7 +220,6 @@ const AdminDashboard = () => {
             return newMessages;
           });
 
-          // Store updated messages in localStorage
           const existingMessages = JSON.parse(localStorage.getItem("support-messages") || "[]");
           const chatIndex = existingMessages.findIndex((chat: any) => chat.id === payload.payload.chatId);
           
@@ -315,14 +269,12 @@ const AdminDashboard = () => {
         return;
       }
 
-      // Update local state
       setUsers(users.map(user => 
         user.id === selectedUser.id 
           ? { ...user, isBlocked: newBlockedStatus }
           : user
       ));
       
-      // Update selected user state
       setSelectedUser(prev => prev ? { ...prev, isBlocked: newBlockedStatus } : null);
       
       toast({
@@ -330,7 +282,6 @@ const AdminDashboard = () => {
         description: `${selectedUser.email} has been ${newBlockedStatus ? 'blocked from sending prompts' : 'unblocked'}`,
       });
 
-      // Refresh user data
       fetchUsers();
     } catch (error: any) {
       console.error('Error in handleBlockUser:', error);
@@ -368,14 +319,12 @@ const AdminDashboard = () => {
         return;
       }
 
-      // Update local state
       setUsers(users.map(user => 
         user.id === selectedUser.id 
           ? { ...user, caseBlocked: newBlockedStatus }
           : user
       ));
       
-      // Update selected user state
       setSelectedUser(prev => prev ? { ...prev, caseBlocked: newBlockedStatus } : null);
       
       toast({
@@ -383,7 +332,6 @@ const AdminDashboard = () => {
         description: `${selectedUser.email} has been ${newBlockedStatus ? 'blocked from creating new cases' : 'allowed to create cases again'}`,
       });
 
-      // Refresh user data
       fetchUsers();
     } catch (error: any) {
       console.error('Error in handleBlockCases:', error);
