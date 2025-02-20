@@ -1,4 +1,4 @@
-<lov-code>
+
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,7 +12,16 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/Navbar";
-import { Users, DollarSign, Building2, BarChart3, MessageSquare, CircleDot, CirclePlay, CheckCircle } from "lucide-react";
+import { 
+  Users, 
+  DollarSign, 
+  Building2, 
+  BarChart3, 
+  MessageSquare, 
+  CircleDot, 
+  CirclePlay, 
+  CheckCircle 
+} from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -98,6 +107,7 @@ const AdminDashboard = () => {
   const [isChatDialogOpen, setIsChatDialogOpen] = useState(false);
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [isNewBlogPostDialogOpen, setIsNewBlogPostDialogOpen] = useState(false);
+  const [editingPostId, setEditingPostId] = useState<string | null>(null);
   const [newBlogPost, setNewBlogPost] = useState({
     title: "",
     excerpt: "",
@@ -196,7 +206,6 @@ const AdminDashboard = () => {
       setBlogPosts(data || []);
     };
 
-    // Initial fetch
     fetchUsers();
     fetchEnterpriseLeads();
     fetchBlogPosts();
@@ -569,14 +578,6 @@ const AdminDashboard = () => {
         return;
       }
 
-      setIsNewBlogPostDialogOpen(false);
-      setNewBlogPost({
-        title: "",
-        excerpt: "",
-        content: "",
-        readTime: "",
-      });
-
       const { data: updatedPosts, error: fetchError } = await supabase
         .from('blog_posts')
         .select('*')
@@ -592,10 +593,17 @@ const AdminDashboard = () => {
       }
 
       setBlogPosts(updatedPosts || []);
+      setIsNewBlogPostDialogOpen(false);
+      setNewBlogPost({
+        title: "",
+        excerpt: "",
+        content: "",
+        readTime: "",
+      });
       
       toast({
         title: "Blog post created",
-        description: "Your new blog post has been created successfully.",
+        description: "Your blog post has been created successfully.",
       });
     } catch (error: any) {
       toast({
@@ -606,61 +614,6 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleDeleteBlogPost = async (postId: string) => {
-    try {
-      const { error } = await supabase
-        .from('blog_posts')
-        .delete()
-        .eq('id', postId);
-
-      if (error) {
-        toast({
-          title: "Error deleting blog post",
-          description: error.message,
-          variant: "destructive",
-        });
-        return;
-      }
-
-      setBlogPosts(blogPosts.filter(post => post.id !== postId));
-      toast({
-        title: "Blog post deleted",
-        description: "The blog post has been deleted successfully.",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleResetPassword = async (userId: string, userEmail: string) => {
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(userEmail, {
-        redirectTo: `${window.location.origin}/dashboard/settings`,
-      });
-
-      if (error) throw error;
-      
-      toast({
-        title: "Password reset email sent",
-        description: `A password reset email has been sent to ${userEmail}`,
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error resetting password",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  };
-
-  // Add these new state variables at the top of the component with the other states
-  const [editingPostId, setEditingPostId] = useState<string | null>(null);
-
-  // Add this new function with the other handlers
   const handleUpdateBlogPost = async () => {
     try {
       if (!editingPostId) return;
@@ -712,6 +665,36 @@ const AdminDashboard = () => {
       toast({
         title: "Blog post updated",
         description: "Your blog post has been updated successfully.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteBlogPost = async (postId: string) => {
+    try {
+      const { error } = await supabase
+        .from('blog_posts')
+        .delete()
+        .eq('id', postId);
+
+      if (error) {
+        toast({
+          title: "Error deleting blog post",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setBlogPosts(blogPosts.filter(post => post.id !== postId));
+      toast({
+        title: "Blog post deleted",
+        description: "The blog post has been deleted successfully.",
       });
     } catch (error: any) {
       toast({
@@ -958,7 +941,18 @@ const AdminDashboard = () => {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>Blog Posts</CardTitle>
-                <Button onClick={() => setIsNewBlogPostDialogOpen(true)}>Add New Post</Button>
+                <Button onClick={() => {
+                  setEditingPostId(null);
+                  setNewBlogPost({
+                    title: "",
+                    excerpt: "",
+                    content: "",
+                    readTime: "",
+                  });
+                  setIsNewBlogPostDialogOpen(true);
+                }}>
+                  Add New Post
+                </Button>
               </CardHeader>
               <CardContent className="p-0">
                 <Table>
@@ -1032,3 +1026,60 @@ const AdminDashboard = () => {
                   </div>
                   <div className="grid gap-2">
                     <label htmlFor="excerpt">Excerpt</label>
+                    <Textarea
+                      id="excerpt"
+                      value={newBlogPost.excerpt}
+                      onChange={(e) => setNewBlogPost({ ...newBlogPost, excerpt: e.target.value })}
+                      placeholder="Enter a brief excerpt"
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <label htmlFor="content">Content</label>
+                    <Textarea
+                      id="content"
+                      value={newBlogPost.content}
+                      onChange={(e) => setNewBlogPost({ ...newBlogPost, content: e.target.value })}
+                      placeholder="Enter the full blog post content"
+                      className="min-h-[200px]"
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <label htmlFor="readTime">Read Time</label>
+                    <Input
+                      id="readTime"
+                      value={newBlogPost.readTime}
+                      onChange={(e) => setNewBlogPost({ ...newBlogPost, readTime: e.target.value })}
+                      placeholder="e.g. 5 min read"
+                    />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      setIsNewBlogPostDialogOpen(false);
+                      setEditingPostId(null);
+                      setNewBlogPost({
+                        title: "",
+                        excerpt: "",
+                        content: "",
+                        readTime: "",
+                      });
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button onClick={() => editingPostId ? handleUpdateBlogPost() : handleAddBlogPost()}>
+                    {editingPostId ? 'Update Post' : 'Create Post'}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
+  );
+};
+
+export default AdminDashboard;
