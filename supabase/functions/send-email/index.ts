@@ -8,6 +8,7 @@ import { corsHeaders } from '../_shared/cors.ts'
 const resend = new Resend(Deno.env.get('RESEND_API_KEY'))
 
 Deno.serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
