@@ -991,27 +991,81 @@ const AdminDashboard = () => {
             </Dialog>
           </TabsContent>
         </Tabs>
-      </div>
 
-      <Dialog open={isManageDialogOpen} onOpenChange={setIsManageDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Manage User Account</DialogTitle>
-            <DialogDescription>
-              {selectedUser?.email}
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="grid gap-4 py-4">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Prompts in last 24h:</span>
-                <span className="font-mono">{selectedUser?.promptsLastDay}</span>
+        <Dialog open={isManageDialogOpen} onOpenChange={setIsManageDialogOpen}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Manage User Account</DialogTitle>
+              <DialogDescription>
+                {selectedUser?.email}
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="grid gap-4 py-4">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Prompts in last 24h:</span>
+                  <span className="font-mono">{selectedUser?.promptsLastDay}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Total Cases:</span>
+                  <span className="font-mono">{selectedUser?.totalCases}</span>
+                </div>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Total Cases:</span>
-                <span className="font-mono">{selectedUser?.totalCases}</span>
+
+              <div className="space-y-2">
+                <h4 className="text-sm font-medium">Subscription Status</h4>
+                <Select
+                  onValueChange={handleUpdateSubscription}
+                  defaultValue={selectedUser?.subscription}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select subscription status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="free">Free</SelectItem>
+                    <SelectItem value="pro">Pro</SelectItem>
+                    <SelectItem value="enterprise">Enterprise</SelectItem>
+                    <SelectItem value="cancelled">Cancelled</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
+              
+              <Button
+                variant={selectedUser?.isBlocked ? "outline" : "destructive"}
+                onClick={handleBlockUser}
+                className="w-full"
+              >
+                {selectedUser?.isBlocked ? 'Unblock Prompts' : 'Block Prompts'}
+              </Button>
+              
+              <Button
+                variant={selectedUser?.caseBlocked ? "outline" : "destructive"}
+                onClick={handleBlockCases}
+                className="w-full"
+              >
+                {selectedUser?.caseBlocked ? 'Unblock Case Creation' : 'Block Case Creation'}
+              </Button>
+
+              <Button
+                variant="destructive"
+                onClick={handleDeleteAccount}
+                className="w-full"
+              >
+                Delete Account
+              </Button>
             </div>
+            
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsManageDialogOpen(false)}>
+                Close
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+    </div>
+  );
+};
 
-            <div className="space-y
+export default AdminDashboard;
