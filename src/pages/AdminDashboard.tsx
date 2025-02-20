@@ -1,4 +1,3 @@
-<lov-code>
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -1042,3 +1041,48 @@ const AdminDashboard = () => {
                       id="title"
                       value={newBlogPost.title}
                       onChange={(e) => setNewBlogPost({ ...newBlogPost, title: e.target.value })}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <label htmlFor="excerpt">Excerpt</label>
+                    <Textarea
+                      id="excerpt"
+                      value={newBlogPost.excerpt}
+                      onChange={(e) => setNewBlogPost({ ...newBlogPost, excerpt: e.target.value })}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <label htmlFor="content">Content</label>
+                    <Textarea
+                      id="content"
+                      value={newBlogPost.content}
+                      onChange={(e) => setNewBlogPost({ ...newBlogPost, content: e.target.value })}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <label htmlFor="readTime">Read Time</label>
+                    <Input
+                      id="readTime"
+                      value={newBlogPost.readTime}
+                      onChange={(e) => setNewBlogPost({ ...newBlogPost, readTime: e.target.value })}
+                    />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="secondary" onClick={() => setIsNewBlogPostDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button variant="primary" onClick={editingPostId ? handleUpdateBlogPost : handleAddBlogPost}>
+                    {editingPostId ? 'Update' : 'Create'}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
+  );
+};
+
+export default AdminDashboard;
