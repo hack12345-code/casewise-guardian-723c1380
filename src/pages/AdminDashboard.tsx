@@ -294,30 +294,52 @@ const AdminDashboard = () => {
     
     const newBlockedStatus = !selectedUser.isBlocked;
     
-    const { error } = await supabase
-      .from('profiles')
-      .update({ is_blocked: newBlockedStatus })
-      .eq('id', selectedUser.id);
+    try {
+      console.log('Attempting to block/unblock user:', selectedUser.id, 'New status:', newBlockedStatus);
+      
+      const { error } = await supabase
+        .from('profiles')
+        .update({ 
+          is_blocked: newBlockedStatus,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', selectedUser.id);
 
-    if (error) {
+      if (error) {
+        console.error('Error blocking user:', error);
+        toast({
+          title: "Error updating user status",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Update local state
+      setUsers(users.map(user => 
+        user.id === selectedUser.id 
+          ? { ...user, isBlocked: newBlockedStatus }
+          : user
+      ));
+      
+      // Update selected user state
+      setSelectedUser(prev => prev ? { ...prev, isBlocked: newBlockedStatus } : null);
+      
       toast({
-        title: "Error updating user status",
+        title: newBlockedStatus ? "User blocked" : "User unblocked",
+        description: `${selectedUser.email} has been ${newBlockedStatus ? 'blocked from sending prompts' : 'unblocked'}`,
+      });
+
+      // Refresh user data
+      fetchUsers();
+    } catch (error: any) {
+      console.error('Error in handleBlockUser:', error);
+      toast({
+        title: "Error",
         description: error.message,
         variant: "destructive",
       });
-      return;
     }
-    
-    setUsers(users.map(user => 
-      user.id === selectedUser.id 
-        ? { ...user, isBlocked: newBlockedStatus }
-        : user
-    ));
-    
-    toast({
-      title: newBlockedStatus ? "User blocked" : "User unblocked",
-      description: `${selectedUser.email} has been ${newBlockedStatus ? 'blocked from sending prompts' : 'unblocked'}`,
-    });
   };
 
   const handleBlockCases = async () => {
@@ -325,30 +347,52 @@ const AdminDashboard = () => {
     
     const newBlockedStatus = !selectedUser.caseBlocked;
     
-    const { error } = await supabase
-      .from('profiles')
-      .update({ case_blocked: newBlockedStatus })
-      .eq('id', selectedUser.id);
+    try {
+      console.log('Attempting to block/unblock case creation:', selectedUser.id, 'New status:', newBlockedStatus);
+      
+      const { error } = await supabase
+        .from('profiles')
+        .update({ 
+          case_blocked: newBlockedStatus,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', selectedUser.id);
 
-    if (error) {
+      if (error) {
+        console.error('Error blocking case creation:', error);
+        toast({
+          title: "Error updating case blocking status",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Update local state
+      setUsers(users.map(user => 
+        user.id === selectedUser.id 
+          ? { ...user, caseBlocked: newBlockedStatus }
+          : user
+      ));
+      
+      // Update selected user state
+      setSelectedUser(prev => prev ? { ...prev, caseBlocked: newBlockedStatus } : null);
+      
       toast({
-        title: "Error updating case blocking status",
+        title: newBlockedStatus ? "Cases blocked" : "Cases unblocked",
+        description: `${selectedUser.email} has been ${newBlockedStatus ? 'blocked from creating new cases' : 'allowed to create cases again'}`,
+      });
+
+      // Refresh user data
+      fetchUsers();
+    } catch (error: any) {
+      console.error('Error in handleBlockCases:', error);
+      toast({
+        title: "Error",
         description: error.message,
         variant: "destructive",
       });
-      return;
     }
-    
-    setUsers(users.map(user => 
-      user.id === selectedUser.id 
-        ? { ...user, caseBlocked: newBlockedStatus }
-        : user
-    ));
-    
-    toast({
-      title: newBlockedStatus ? "Cases blocked" : "Cases unblocked",
-      description: `${selectedUser.email} has been ${newBlockedStatus ? 'blocked from creating new cases' : 'allowed to create cases again'}`,
-    });
   };
 
   const handleUpdateSubscription = async (newStatus: string) => {
@@ -1010,6 +1054,22 @@ const AdminDashboard = () => {
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">Total Cases:</span>
                   <span className="font-mono">{selectedUser?.totalCases}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Prompt Status:</span>
+                  <span className={`px-2 py-1 rounded-full text-xs ${
+                    selectedUser?.isBlocked ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+                  }`}>
+                    {selectedUser?.isBlocked ? 'Blocked' : 'Active'}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Case Creation:</span>
+                  <span className={`px-2 py-1 rounded-full text-xs ${
+                    selectedUser?.caseBlocked ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+                  }`}>
+                    {selectedUser?.caseBlocked ? 'Blocked' : 'Active'}
+                  </span>
                 </div>
               </div>
 
