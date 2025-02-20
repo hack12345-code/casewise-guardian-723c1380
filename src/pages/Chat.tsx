@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { Navbar } from "@/components/Navbar"
@@ -288,6 +289,7 @@ const Chat = () => {
         timestamp: new Date().toISOString(),
         attachments: fileAttachment ? [fileAttachment] : undefined
       }
+
       setMessages(prev => [...prev, userMessage])
       setPendingFile(null)
 
@@ -297,7 +299,8 @@ const Chat = () => {
           chat_id: chatId,
           content: input,
           role: 'user',
-          user_id: session.user.id
+          user_id: session.user.id,
+          attachments: fileAttachment ? [fileAttachment] : undefined
         })
         .select()
         .single()
@@ -456,15 +459,33 @@ const Chat = () => {
                           ))}
                           {message.attachments?.map((attachment, index) => (
                             <div key={index} className="mt-2">
-                              <a 
-                                href={attachment.fileUrl} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-2 text-sm underline"
-                              >
-                                <Paperclip className="w-4 h-4" />
-                                {attachment.fileName}
-                              </a>
+                              {attachment.contentType.startsWith('image/') ? (
+                                <div className="mt-2 relative">
+                                  <img 
+                                    src={attachment.fileUrl} 
+                                    alt={attachment.fileName}
+                                    className="max-w-full rounded-lg"
+                                  />
+                                  <a 
+                                    href={attachment.fileUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded-full hover:bg-black/70 transition-colors"
+                                  >
+                                    Open
+                                  </a>
+                                </div>
+                              ) : (
+                                <a 
+                                  href={attachment.fileUrl} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className="flex items-center gap-2 text-sm"
+                                >
+                                  <Paperclip className="w-4 h-4" />
+                                  {attachment.fileName}
+                                </a>
+                              )}
                             </div>
                           ))}
                           <span className="text-xs opacity-70 mt-2 block">

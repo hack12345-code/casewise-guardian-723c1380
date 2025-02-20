@@ -42,10 +42,10 @@ export function AIInput({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const placeholders = [
-    "What would you like to ask?",
-    "How can I assist you today?",
-    "Enter your medical query here...",
-    "Ask me anything about your case..."
+    "Describe a patient presenting with severe chest pain and shortness of breath...",
+    "Enter details about a patient's recurring symptoms and test results...",
+    "Share information about a complex case requiring a second opinion...",
+    "Document concerns about potential medical malpractice risks..."
   ];
 
   useEffect(() => {
