@@ -20,7 +20,7 @@ const Index = () => {
   }, [location]);
 
   return (
-    <div className="min-h-screen flex flex-col max-w-none m-0 p-0">
+    <div className="min-h-screen flex flex-col">
       <Navbar />
       <main className="pt-16 flex-1">
         <ApiKeyInput />
