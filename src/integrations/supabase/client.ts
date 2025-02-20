@@ -1,5 +1,5 @@
 
-import { createClient, SupabaseClient, PostgrestFilterBuilder } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
 const SUPABASE_URL = "https://bdyudlqxufggzdzolayb.supabase.co";
@@ -17,7 +17,7 @@ const createCustomClient = () => {
     const originalInsert = queryBuilder.insert;
 
     if (table === 'medical_messages' || table === 'medical_chats') {
-      queryBuilder.insert = async function<T>(values: T) {
+      queryBuilder.insert = async function<T extends Database['public']['Tables'][TableName]['Insert']>(values: T) {
         // First get the user id
         const { data: { user } } = await client.auth.getUser();
         if (!user?.id) {
@@ -29,7 +29,7 @@ const createCustomClient = () => {
           .from('profiles')
           .select('is_blocked, case_blocked')
           .eq('id', user.id)
-          .single();
+          .maybeSingle();
 
         if (profile?.is_blocked) {
           throw new Error('Your account is blocked from sending messages.');
