@@ -106,61 +106,101 @@ const AdminDashboard = () => {
 
   const { toast } = useToast();
 
-  const fetchUsers = async () => {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      toast({
-        title: "Error fetching users",
-        description: error.message,
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (data) {
-      const last24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-      
-      const userPrompts = await Promise.all(
-        data.map(async (user) => {
-          const { count: promptCount } = await supabase
-            .from('medical_messages')
-            .select('*', { count: 'exact', head: true })
-            .eq('user_id', user.id)
-            .eq('role', 'user')
-            .gte('created_at', last24Hours);
-
-          const { count: casesCount } = await supabase
-            .from('medical_chats')
-            .select('*', { count: 'exact', head: true })
-            .eq('user_id', user.id);
-
-          return {
-            id: user.id,
-            name: user.full_name || 'N/A',
-            email: user.email,
-            subscription: user.subscription_status || 'Free',
-            country: user.country || 'N/A',
-            sector: user.medical_sector || 'N/A',
-            lastActive: new Date(user.updated_at).toLocaleDateString(),
-            isBlocked: user.is_blocked,
-            caseBlocked: user.case_blocked,
-            promptsLastDay: promptCount || 0,
-            totalCases: casesCount || 0
-          };
-        })
-      );
-
-      setUsers(userPrompts);
-    }
-  };
-
   useEffect(() => {
-    fetchUsers();
+    const fetchUsers = async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('created_at', { ascending: false });
 
+      if (error) {
+        toast({
+          title: "Error fetching users",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (data) {
+        const last24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+        
+        const userPrompts = await Promise.all(
+          data.map(async (user) => {
+            const { count: promptCount } = await supabase
+              .from('medical_messages')
+              .select('*', { count: 'exact', head: true })
+              .eq('user_id', user.id)
+              .eq('role', 'user')
+              .gte('created_at', last24Hours);
+
+            const { count: casesCount } = await supabase
+              .from('medical_chats')
+              .select('*', { count: 'exact', head: true })
+              .eq('user_id', user.id);
+
+            return {
+              id: user.id,
+              name: user.full_name || 'N/A',
+              email: user.email,
+              subscription: user.subscription_status || 'Free',
+              country: user.country || 'N/A',
+              sector: user.medical_sector || 'N/A',
+              lastActive: new Date(user.updated_at).toLocaleDateString(),
+              isBlocked: user.is_blocked,
+              caseBlocked: user.case_blocked,
+              promptsLastDay: promptCount || 0,
+              totalCases: casesCount || 0
+            };
+          })
+        );
+
+        setUsers(userPrompts);
+      }
+    };
+
+    const fetchEnterpriseLeads = async () => {
+      const { data, error } = await supabase
+        .from('enterprise_leads')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        toast({
+          title: "Error fetching enterprise leads",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setEnterpriseLeads(data || []);
+    };
+
+    const fetchBlogPosts = async () => {
+      const { data, error } = await supabase
+        .from('blog_posts')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        toast({
+          title: "Error fetching blog posts",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setBlogPosts(data || []);
+    };
+
+    // Initial fetch
+    fetchUsers();
+    fetchEnterpriseLeads();
+    fetchBlogPosts();
+
+    // Subscribe to medical_chats changes
     const casesChannel = supabase
       .channel('medical_chats_changes')
       .on(
@@ -171,11 +211,13 @@ const AdminDashboard = () => {
           table: 'medical_chats'
         },
         () => {
+          // Refresh users data when cases change
           fetchUsers();
         }
       )
       .subscribe();
 
+    // Subscribe to new chat notifications and messages
     const chatChannel = supabase
       .channel('admin_notifications')
       .on(
@@ -184,11 +226,13 @@ const AdminDashboard = () => {
         (payload) => {
           setSupportMessages(prev => [...prev, payload.payload]);
           
+          // Show notification for new chat
           toast({
             title: "New Support Chat",
             description: "A new user has started a support conversation",
           });
 
+          // Refresh users data when a new chat is created
           fetchUsers();
         }
       )
@@ -209,6 +253,7 @@ const AdminDashboard = () => {
               });
               newMessages[chatIndex].message = payload.payload.message;
 
+              // If it's a user message, show a notification
               if (payload.payload.sender === 'user') {
                 toast({
                   title: "New Message",
@@ -220,6 +265,7 @@ const AdminDashboard = () => {
             return newMessages;
           });
 
+          // Store updated messages in localStorage
           const existingMessages = JSON.parse(localStorage.getItem("support-messages") || "[]");
           const chatIndex = existingMessages.findIndex((chat: any) => chat.id === payload.payload.chatId);
           
@@ -243,104 +289,35 @@ const AdminDashboard = () => {
     };
   }, [toast]);
 
-  const handleBlockUser = async () => {
-    if (!selectedUser) return;
-    
-    const newBlockedStatus = !selectedUser.isBlocked;
-    
-    try {
-      console.log('Attempting to block/unblock user:', selectedUser.id, 'New status:', newBlockedStatus);
-      
-      const { error } = await supabase
-        .from('profiles')
-        .update({ 
-          is_blocked: newBlockedStatus,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', selectedUser.id);
-
-      if (error) {
-        console.error('Error blocking user:', error);
-        toast({
-          title: "Error updating user status",
-          description: error.message,
-          variant: "destructive",
-        });
-        return;
-      }
-
-      setUsers(users.map(user => 
-        user.id === selectedUser.id 
-          ? { ...user, isBlocked: newBlockedStatus }
-          : user
-      ));
-      
-      setSelectedUser(prev => prev ? { ...prev, isBlocked: newBlockedStatus } : null);
-      
-      toast({
-        title: newBlockedStatus ? "User blocked" : "User unblocked",
-        description: `${selectedUser.email} has been ${newBlockedStatus ? 'blocked from sending prompts' : 'unblocked'}`,
-      });
-
-      fetchUsers();
-    } catch (error: any) {
-      console.error('Error in handleBlockUser:', error);
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  };
-
   const handleBlockCases = async () => {
     if (!selectedUser) return;
     
     const newBlockedStatus = !selectedUser.caseBlocked;
     
-    try {
-      console.log('Attempting to block/unblock case creation:', selectedUser.id, 'New status:', newBlockedStatus);
-      
-      const { error } = await supabase
-        .from('profiles')
-        .update({ 
-          case_blocked: newBlockedStatus,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', selectedUser.id);
+    const { error } = await supabase
+      .from('profiles')
+      .update({ case_blocked: newBlockedStatus })
+      .eq('id', selectedUser.id);
 
-      if (error) {
-        console.error('Error blocking case creation:', error);
-        toast({
-          title: "Error updating case blocking status",
-          description: error.message,
-          variant: "destructive",
-        });
-        return;
-      }
-
-      setUsers(users.map(user => 
-        user.id === selectedUser.id 
-          ? { ...user, caseBlocked: newBlockedStatus }
-          : user
-      ));
-      
-      setSelectedUser(prev => prev ? { ...prev, caseBlocked: newBlockedStatus } : null);
-      
+    if (error) {
       toast({
-        title: newBlockedStatus ? "Cases blocked" : "Cases unblocked",
-        description: `${selectedUser.email} has been ${newBlockedStatus ? 'blocked from creating new cases' : 'allowed to create cases again'}`,
-      });
-
-      fetchUsers();
-    } catch (error: any) {
-      console.error('Error in handleBlockCases:', error);
-      toast({
-        title: "Error",
+        title: "Error updating case blocking status",
         description: error.message,
         variant: "destructive",
       });
+      return;
     }
+    
+    setUsers(users.map(user => 
+      user.id === selectedUser.id 
+        ? { ...user, caseBlocked: newBlockedStatus }
+        : user
+    ));
+    
+    toast({
+      title: newBlockedStatus ? "Cases blocked" : "Cases unblocked",
+      description: `${selectedUser.email} has been ${newBlockedStatus ? 'blocked from creating new cases' : 'allowed to create cases again'}`,
+    });
   };
 
   const handleUpdateSubscription = async (newStatus: string) => {
@@ -370,6 +347,38 @@ const AdminDashboard = () => {
       title: "Subscription updated",
       description: `${selectedUser.email}'s subscription has been updated to ${newStatus}`,
     });
+  };
+
+  const handleBlockUser = async () => {
+    if (!selectedUser) return;
+    
+    const newBlockedStatus = !selectedUser.isBlocked;
+    
+    const { error } = await supabase
+      .from('profiles')
+      .update({ is_blocked: newBlockedStatus })
+      .eq('id', selectedUser.id);
+
+    if (error) {
+      toast({
+        title: "Error updating user status",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setUsers(users.map(user => 
+      user.id === selectedUser.id 
+        ? { ...user, isBlocked: newBlockedStatus }
+        : user
+    ));
+    
+    toast({
+      title: newBlockedStatus ? "User blocked" : "User unblocked",
+      description: `${selectedUser.email} has been ${newBlockedStatus ? 'blocked from sending prompts' : 'unblocked'}`,
+    });
+    setIsManageDialogOpen(false);
   };
 
   const handleBlockPrompts = async () => {
@@ -983,95 +992,139 @@ const AdminDashboard = () => {
             </Dialog>
           </TabsContent>
         </Tabs>
+      </div>
 
-        <Dialog open={isManageDialogOpen} onOpenChange={setIsManageDialogOpen}>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Manage User Account</DialogTitle>
-              <DialogDescription>
-                {selectedUser?.email}
-              </DialogDescription>
-            </DialogHeader>
-            
-            <div className="grid gap-4 py-4">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Prompts in last 24h:</span>
-                  <span className="font-mono">{selectedUser?.promptsLastDay}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Total Cases:</span>
-                  <span className="font-mono">{selectedUser?.totalCases}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Prompt Status:</span>
-                  <span className={`px-2 py-1 rounded-full text-xs ${
-                    selectedUser?.isBlocked ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
-                  }`}>
-                    {selectedUser?.isBlocked ? 'Blocked' : 'Active'}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Case Creation:</span>
-                  <span className={`px-2 py-1 rounded-full text-xs ${
-                    selectedUser?.caseBlocked ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
-                  }`}>
-                    {selectedUser?.caseBlocked ? 'Blocked' : 'Active'}
-                  </span>
-                </div>
+      <Dialog open={isManageDialogOpen} onOpenChange={setIsManageDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Manage User Account</DialogTitle>
+            <DialogDescription>
+              {selectedUser?.email}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid gap-4 py-4">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Prompts in last 24h:</span>
+                <span className="font-mono">{selectedUser?.promptsLastDay}</span>
               </div>
-
-              <div className="space-y-2">
-                <h4 className="text-sm font-medium">Subscription Status</h4>
-                <Select
-                  onValueChange={handleUpdateSubscription}
-                  defaultValue={selectedUser?.subscription}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select subscription status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="free">Free</SelectItem>
-                    <SelectItem value="pro">Pro</SelectItem>
-                    <SelectItem value="enterprise">Enterprise</SelectItem>
-                    <SelectItem value="cancelled">Cancelled</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Total Cases:</span>
+                <span className="font-mono">{selectedUser?.totalCases}</span>
               </div>
-              
-              <Button
-                variant={selectedUser?.isBlocked ? "outline" : "destructive"}
-                onClick={handleBlockUser}
-                className="w-full"
-              >
-                {selectedUser?.isBlocked ? 'Unblock Prompts' : 'Block Prompts'}
-              </Button>
-              
-              <Button
-                variant={selectedUser?.caseBlocked ? "outline" : "destructive"}
-                onClick={handleBlockCases}
-                className="w-full"
-              >
-                {selectedUser?.caseBlocked ? 'Unblock Case Creation' : 'Block Case Creation'}
-              </Button>
+            </div>
 
-              <Button
-                variant="destructive"
-                onClick={handleDeleteAccount}
-                className="w-full"
+            <div className="space-y-2">
+              <h4 className="text-sm font-medium">Subscription Status</h4>
+              <Select
+                onValueChange={handleUpdateSubscription}
+                defaultValue={selectedUser?.subscription}
               >
-                Delete Account
-              </Button>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select subscription status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="free">Free</SelectItem>
+                  <SelectItem value="pro">Pro</SelectItem>
+                  <SelectItem value="enterprise">Enterprise</SelectItem>
+                  <SelectItem value="cancelled">Cancelled</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsManageDialogOpen(false)}>
-                Close
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </div>
+            <Button
+              variant={selectedUser?.caseBlocked ? "outline" : "destructive"}
+              onClick={handleBlockPrompts}
+              className="w-full"
+            >
+              {selectedUser?.caseBlocked ? 'Unblock Prompts' : 'Block Prompts'}
+            </Button>
+            
+            <Button
+              variant={selectedUser?.isBlocked ? "outline" : "destructive"}
+              onClick={handleBlockUser}
+              className="w-full"
+            >
+              {selectedUser?.isBlocked ? 'Unblock User' : 'Block User'}
+            </Button>
+
+            <Button
+              variant="destructive"
+              onClick={handleDeleteAccount}
+              className="w-full"
+            >
+              Delete Account
+            </Button>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsManageDialogOpen(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isChatDialogOpen} onOpenChange={setIsChatDialogOpen}>
+        <DialogContent className="sm:max-w-[600px] h-[80vh]">
+          <DialogHeader>
+            <DialogTitle>Chat with {selectedChat?.userName}</DialogTitle>
+            <DialogDescription>
+              Support conversation
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex flex-col h-full">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              {selectedChat?.messages.map((message) => (
+                <div
+                  key={message.id}
+                  className={`flex ${
+                    message.sender === "admin" ? "justify-end" : "justify-start"
+                  }`}
+                >
+                  <div
+                    className={`max-w-[80%] p-4 rounded-lg ${
+                      message.sender === "admin"
+                        ? "bg-blue-600 text-white"
+                        : "bg-gray-100 text-gray-900"
+                    }`}
+                  >
+                    <p className="text-sm">{message.text}</p>
+                    <span className="text-xs opacity-70 mt-2 block">
+                      {new Date(message.timestamp).toLocaleTimeString()}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            <div className="p-4 border-t mt-4">
+              <AIInput
+                placeholder="Type your response..."
+                minHeight={80}
+                maxHeight={120}
+                onSubmit={handleSendMessage}
+              />
+              <div className="flex justify-end mt-4 gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setIsChatDialogOpen(false)}
+                >
+                  Close
+                </Button>
+                <Button
+                  variant="default"
+                  onClick={() => selectedChat && handleResolveChat(selectedChat.id)}
+                >
+                  Mark as Resolved
+                </Button>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
