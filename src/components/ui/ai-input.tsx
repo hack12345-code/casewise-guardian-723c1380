@@ -1,5 +1,6 @@
+
 import { CornerRightUp, Mic, Loader2, Paperclip } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react"; // Added useRef to imports
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
 import { useAutoResizeTextarea } from "@/hooks/use-auto-resize-textarea";
