@@ -39,6 +39,54 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_files: {
+        Row: {
+          chat_id: string | null
+          content_type: string | null
+          created_at: string
+          file_name: string
+          file_path: string
+          id: string
+          size: number | null
+          user_id: string | null
+        }
+        Insert: {
+          chat_id?: string | null
+          content_type?: string | null
+          created_at?: string
+          file_name: string
+          file_path: string
+          id?: string
+          size?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          chat_id?: string | null
+          content_type?: string | null
+          created_at?: string
+          file_name?: string
+          file_path?: string
+          id?: string
+          size?: number | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_files_chat_id_fkey"
+            columns: ["chat_id"]
+            isOneToOne: false
+            referencedRelation: "medical_chats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_files_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       enterprise_leads: {
         Row: {
           company_name: string

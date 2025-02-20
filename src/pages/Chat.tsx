@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { Navbar } from "@/components/Navbar"
 import { Card } from "@/components/ui/card"
@@ -6,18 +6,31 @@ import { useToast } from "@/components/ui/use-toast"
 import { AIInput } from "@/components/ui/ai-input"
 import { Response } from "@/components/Response"
 import { supabase } from "@/integrations/supabase/client"
-import { Loader2 } from "lucide-react"
+import { Loader2, Paperclip, X } from "lucide-react"
+import { Button } from "@/components/ui/button"
 
 interface Message {
   id: string
   text: string
   sender: "user" | "ai"
   timestamp: string
+  attachments?: Array<{
+    fileName: string
+    fileUrl: string
+    contentType: string
+  }>
+}
+
+interface ChatFile {
+  id: string
+  file_name: string
+  file_path: string
+  content_type: string
 }
 
 interface UserProfile {
-  is_blocked: boolean;
-  case_blocked: boolean;
+  is_blocked: boolean
+  case_blocked: boolean
 }
 
 const Chat = () => {
@@ -30,6 +43,8 @@ const Chat = () => {
   const [latestUserPrompt, setLatestUserPrompt] = useState("")
   const [isBlocked, setIsBlocked] = useState(false)
   const [isCaseBlocked, setIsCaseBlocked] = useState(false)
+  const [chatFiles, setChatFiles] = useState<ChatFile[]>([])
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -44,7 +59,6 @@ const Chat = () => {
         return
       }
 
-      // Check if user is blocked
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('is_blocked, case_blocked')
@@ -63,7 +77,6 @@ const Chat = () => {
     }
     checkAuth()
 
-    // Subscribe to chat messages
     let channel = supabase
       .channel(`chat:${chatId}`)
       .on(
@@ -106,12 +119,11 @@ const Chat = () => {
       setIsLoading(true)
 
       try {
-        // Load existing chat
         const { data: chatData, error: chatError } = await supabase
           .from('medical_chats')
           .select('case_title')
           .eq('id', chatId)
-          .eq('user_id', session.user.id)  // Make sure user owns this chat
+          .eq('user_id', session.user.id)
           .maybeSingle()
 
         if (chatError) throw chatError
@@ -128,7 +140,6 @@ const Chat = () => {
 
         setCaseTitle(chatData.case_title)
 
-        // Get chat messages
         const { data: messagesData, error: messagesError } = await supabase
           .from('medical_messages')
           .select('*')
@@ -145,22 +156,19 @@ const Chat = () => {
             timestamp: msg.created_at
           }))
           setMessages(formattedMessages)
-          
-          // Find the latest user message for the prompt
+
           const latestUserMessage = [...messagesData]
             .reverse()
             .find(msg => msg.role === 'user')
           if (latestUserMessage) {
             setLatestUserPrompt(latestUserMessage.content)
 
-            // Get AI response for the initial message
             if (messagesData.length === 1) {
               const { data: aiResponse, error } = await supabase.functions.invoke('medical-ai-chat', {
                 body: { prompt: latestUserMessage.content }
               })
 
               if (!error && aiResponse?.response) {
-                // Store AI response in the database
                 const { error: messageError } = await supabase
                   .from('medical_messages')
                   .insert({
@@ -193,6 +201,68 @@ const Chat = () => {
       initializeChat()
     }
   }, [chatId, navigate, toast])
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file || !chatId) return
+
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) {
+      toast({
+        title: "Session expired",
+        description: "Please login again to continue.",
+        variant: "destructive",
+      })
+      navigate('/login')
+      return
+    }
+
+    setIsLoading(true)
+
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('chatId', chatId)
+      formData.append('userId', session.user.id)
+
+      const { data, error } = await supabase.functions.invoke('upload-chat-file', {
+        body: formData,
+      })
+
+      if (error) throw error
+
+      const fileMessage: Message = {
+        id: crypto.randomUUID(),
+        text: `Uploaded file: ${file.name}`,
+        sender: 'user',
+        timestamp: new Date().toISOString(),
+        attachments: [{
+          fileName: file.name,
+          fileUrl: data.publicUrl,
+          contentType: file.type
+        }]
+      }
+
+      setMessages(prev => [...prev, fileMessage])
+
+      toast({
+        title: "File uploaded successfully",
+        description: "The file has been added to the chat.",
+      })
+    } catch (error: any) {
+      console.error("Upload error:", error)
+      toast({
+        title: "Error uploading file",
+        description: error.message || "Failed to upload file",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+    }
+  }
 
   const handleSendMessage = async (input: string) => {
     if (!input.trim() || !chatId) return
@@ -230,7 +300,6 @@ const Chat = () => {
     setLatestUserPrompt(input)
 
     try {
-      // Check free user limits
       const { data: profile } = await supabase
         .from('profiles')
         .select('subscription_status')
@@ -247,7 +316,6 @@ const Chat = () => {
           .gte('created_at', last24Hours);
 
         if (count && count >= 1) {
-          // Automatically block the user from creating more cases
           const { error: blockError } = await supabase
             .from('profiles')
             .update({ case_blocked: true })
@@ -267,7 +335,6 @@ const Chat = () => {
         }
       }
 
-      // Add user message immediately to the UI
       const tempUserMessageId = `temp-${Date.now()}`
       const userMessage = {
         id: tempUserMessageId,
@@ -277,7 +344,6 @@ const Chat = () => {
       }
       setMessages(prev => [...prev, userMessage])
 
-      // Send the message to the database
       const { data: messageData, error: messageError } = await supabase
         .from('medical_messages')
         .insert({
@@ -291,7 +357,6 @@ const Chat = () => {
 
       if (messageError) throw messageError
 
-      // Update chat timestamp
       const { error: updateError } = await supabase
         .from('medical_chats')
         .update({
@@ -302,7 +367,6 @@ const Chat = () => {
 
       if (updateError) throw updateError
 
-      // Add AI response immediately with loading state
       const tempAiMessageId = `temp-ai-${Date.now()}`
       const loadingMessage = {
         id: tempAiMessageId,
@@ -325,7 +389,6 @@ const Chat = () => {
         throw new Error("Invalid response from AI service")
       }
 
-      // Replace loading message with actual AI response
       setMessages(prev => prev.map(msg => 
         msg.id === tempAiMessageId 
           ? { ...msg, text: data.response }
@@ -350,7 +413,6 @@ const Chat = () => {
         description: error.message || "Failed to process your request",
         variant: "destructive",
       })
-      // Remove loading message if there was an error
       setMessages(prev => prev.filter(msg => !msg.id.startsWith('temp-ai-')))
     } finally {
       setIsLoading(false)
@@ -439,6 +501,19 @@ const Chat = () => {
                               {paragraph}
                             </p>
                           ))}
+                          {message.attachments?.map((attachment, index) => (
+                            <div key={index} className="mt-2">
+                              <a 
+                                href={attachment.fileUrl} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 text-sm underline"
+                              >
+                                <Paperclip className="w-4 h-4" />
+                                {attachment.fileName}
+                              </a>
+                            </div>
+                          ))}
                           <span className="text-xs opacity-70 mt-2 block">
                             {new Date(message.timestamp).toLocaleTimeString()}
                           </span>
@@ -446,7 +521,24 @@ const Chat = () => {
                       </div>
                     ))}
                   </div>
-                  <div className="p-3 md:p-4 border-t">
+                  <div className="p-3 md:p-4 border-t space-y-4">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleFileUpload}
+                        className="hidden"
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={isBlocked || isCaseBlocked}
+                      >
+                        <Paperclip className="w-4 h-4 mr-2" />
+                        Attach File
+                      </Button>
+                    </div>
                     <AIInput
                       placeholder={
                         isBlocked 
