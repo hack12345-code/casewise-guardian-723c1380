@@ -5,6 +5,7 @@ import { Footer } from "@/components/Footer";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 const Blog = () => {
   const { data: blogPosts, isLoading } = useQuery({
@@ -30,11 +31,15 @@ const Blog = () => {
               <div className="h-8 bg-gray-200 rounded w-1/4 mx-auto"></div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {[1, 2, 3].map((n) => (
-                  <div key={n} className="bg-white rounded-lg shadow-md p-6 space-y-4">
-                    <div className="h-6 bg-gray-200 rounded w-3/4"></div>
-                    <div className="h-20 bg-gray-200 rounded"></div>
-                    <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                  </div>
+                  <Card key={n} className="bg-card">
+                    <CardHeader className="space-y-4">
+                      <div className="h-6 bg-gray-200 rounded w-3/4"></div>
+                      <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-20 bg-gray-200 rounded"></div>
+                    </CardContent>
+                  </Card>
                 ))}
               </div>
             </div>
@@ -52,30 +57,36 @@ const Blog = () => {
         <div className="container mx-auto px-4">
           <header className="mb-12 text-center">
             <h1 className="text-4xl font-bold inline-flex items-center justify-center gap-3">
-              <Book className="w-8 h-8 text-blue-600" />
-              Blog
+              <Book className="w-8 h-8 text-primary" />
+              Latest Articles
             </h1>
+            <p className="mt-4 text-muted-foreground max-w-2xl mx-auto">
+              Stay informed with our latest insights on medical practice and risk management
+            </p>
           </header>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
             {blogPosts?.map((post) => (
-              <article 
-                key={post.id}
-                className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
-              >
-                <Link to={`/blog/${post.id}`} className="p-6 block">
-                  <h2 className="text-xl font-semibold mb-3 text-gray-900 hover:text-blue-600 transition-colors">
-                    {post.title}
-                  </h2>
-                  <p className="text-gray-600 mb-4">
-                    {post.excerpt}
-                  </p>
-                  <div className="flex justify-between items-center text-sm text-gray-500">
-                    <time dateTime={post.created_at}>{new Date(post.created_at || '').toLocaleDateString()}</time>
-                    <span>{post.read_time}</span>
-                  </div>
+              <Card key={post.id} className="group hover:shadow-lg transition-shadow duration-300">
+                <Link to={`/blog/${post.id}`}>
+                  <CardHeader className="space-y-2">
+                    <h2 className="text-xl font-semibold group-hover:text-primary transition-colors">
+                      {post.title}
+                    </h2>
+                    <div className="flex justify-between items-center text-sm text-muted-foreground">
+                      <time dateTime={post.created_at}>
+                        {new Date(post.created_at || '').toLocaleDateString()}
+                      </time>
+                      <span>{post.read_time}</span>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground line-clamp-3">
+                      {post.excerpt}
+                    </p>
+                  </CardContent>
                 </Link>
-              </article>
+              </Card>
             ))}
           </div>
         </div>
@@ -86,4 +97,3 @@ const Blog = () => {
 };
 
 export default Blog;
-
