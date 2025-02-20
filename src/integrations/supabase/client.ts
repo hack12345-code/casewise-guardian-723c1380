@@ -5,27 +5,28 @@ import type { Database } from './types';
 const SUPABASE_URL = "https://bdyudlqxufggzdzolayb.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJkeXVkbHF4dWZnZ3pkem9sYXliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk0NzIwMDcsImV4cCI6MjA1NTA0ODAwN30.eJP_nC3ylOJaX-tWirZQjlArHjsqOp3kHy_UxY5u7zA";
 
-type TableName = keyof Database['public']['Tables'];
-
 const createCustomClient = () => {
-  const client = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+  const client = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+    auth: {
+      autoRefreshToken: true,
+      persistSession: true,
+    },
+  });
 
-  // Intercept all medical_messages inserts to check if user is blocked
-  const originalFrom = client.from;
-  client.from = ((table: TableName) => {
+  // Create a wrapper for the from method
+  const originalFrom = client.from.bind(client);
+  const enhancedFrom = (table: keyof Database['public']['Tables']) => {
     const queryBuilder = originalFrom(table);
+    
     if (table === 'medical_messages' || table === 'medical_chats') {
       const originalInsert = queryBuilder.insert.bind(queryBuilder);
-      queryBuilder.insert = async function(values: Database['public']['Tables'][TableName]['Insert']) {
-        // First get the user id
+      const newInsert = async (values: Database['public']['Tables'][typeof table]['Insert']) => {
         const { data: { user } } = await client.auth.getUser();
         if (!user?.id) {
           throw new Error('User not authenticated');
         }
 
-        // Check if user is blocked before allowing insert
-        const { data: profile } = await client
-          .from('profiles')
+        const { data: profile } = await originalFrom('profiles')
           .select('is_blocked, case_blocked')
           .eq('id', user.id)
           .maybeSingle();
@@ -40,10 +41,16 @@ const createCustomClient = () => {
 
         return originalInsert(values);
       };
+
+      // Preserve the original insert method's type signature
+      queryBuilder.insert = newInsert as typeof queryBuilder.insert;
     }
 
     return queryBuilder;
-  }) as SupabaseClient<Database>['from'];
+  };
+
+  // Replace the from method with our enhanced version
+  client.from = enhancedFrom as typeof client.from;
 
   return client;
 };
