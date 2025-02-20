@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { Navbar } from "@/components/Navbar"
@@ -497,15 +496,7 @@ const Chat = () => {
                   </div>
                   <div className="p-2 md:p-3 border-t">
                     <AIInput
-                      placeholder={
-                        isBlocked 
-                          ? "Your account has been blocked from sending prompts" 
-                          : isCaseBlocked 
-                          ? "Your account has been blocked from creating new cases"
-                          : pendingFile
-                          ? `Write a message to send with ${pendingFile.name}`
-                          : "Enter your case details here..."
-                      }
+                      placeholder=""
                       minHeight={100}
                       maxHeight={200}
                       onSubmit={handleSendMessage}

@@ -211,7 +211,7 @@ export const Hero = () => {
           <div className="flex flex-col md:flex-row gap-8 items-center justify-center">
             <div className="w-full max-w-2xl relative z-50">
               <AIInput 
-                placeholder="Enter your case details here... Be specific about the patient's condition and any concerns."
+                placeholder=""
                 minHeight={250}
                 maxHeight={450}
                 onSubmit={handleSubmit}
