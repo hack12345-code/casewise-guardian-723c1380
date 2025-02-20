@@ -521,24 +521,7 @@ const Chat = () => {
                       </div>
                     ))}
                   </div>
-                  <div className="p-2 md:p-3 border-t space-y-2">
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="file"
-                        ref={fileInputRef}
-                        onChange={handleFileUpload}
-                        className="hidden"
-                      />
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => fileInputRef.current?.click()}
-                        disabled={isBlocked || isCaseBlocked}
-                      >
-                        <Paperclip className="w-4 h-4 mr-2" />
-                        Attach File
-                      </Button>
-                    </div>
+                  <div className="p-2 md:p-3 border-t">
                     <AIInput
                       placeholder={
                         isBlocked 
@@ -550,6 +533,7 @@ const Chat = () => {
                       minHeight={100}
                       maxHeight={200}
                       onSubmit={handleSendMessage}
+                      onFileSelect={handleFileUpload}
                       isLoading={isLoading}
                       disabled={isBlocked || isCaseBlocked}
                     />

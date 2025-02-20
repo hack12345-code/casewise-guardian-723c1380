@@ -1,5 +1,4 @@
-
-import { CornerRightUp, Mic, Loader2 } from "lucide-react";
+import { CornerRightUp, Mic, Loader2, Paperclip } from "lucide-react";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,6 +10,7 @@ interface AIInputProps {
   minHeight?: number
   maxHeight?: number
   onSubmit?: (value: string) => void
+  onFileSelect?: (e: React.ChangeEvent<HTMLInputElement>) => void
   className?: string
   isLoading?: boolean
   disabled?: boolean
@@ -30,6 +30,7 @@ export function AIInput({
   minHeight = 100,
   maxHeight = 200,
   onSubmit,
+  onFileSelect,
   className,
   isLoading = false,
   disabled = false
@@ -43,6 +44,7 @@ export function AIInput({
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const [isTyping, setIsTyping] = useState(true);
   const [currentTextIndex, setCurrentTextIndex] = useState(0);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     let typingTimer: NodeJS.Timeout;
@@ -89,16 +91,16 @@ export function AIInput({
           id={id}
           placeholder={currentPlaceholder}
           className={cn(
-            "max-w-xl bg-black/5 dark:bg-white/5 rounded-3xl pl-6 pr-16",
+            "max-w-xl bg-black/5 dark:bg-white/5 rounded-3xl pl-6 pr-24",
             "placeholder:text-black/50 dark:placeholder:text-white/50",
             "border-none ring-black/20 dark:ring-white/20",
             "text-black dark:text-white text-wrap",
             "overflow-y-auto resize-none",
             "focus-visible:ring-0 focus-visible:ring-offset-0",
             "transition-[height] duration-100 ease-out",
-            "leading-[1.3]", // Reduced from 1.5
-            "text-sm", // Changed from text-base
-            "py-[20px]", // Reduced from 24px
+            "leading-[1.3]",
+            "text-sm",
+            "py-[20px]",
             `min-h-[${minHeight}px]`,
             `max-h-[${maxHeight}px]`,
             "[&::-webkit-resizer]:hidden",
@@ -119,6 +121,13 @@ export function AIInput({
           disabled={disabled || isLoading}
         />
 
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={onFileSelect}
+          className="hidden"
+        />
+
         {isLoading ? (
           <div className="absolute top-1/2 -translate-y-1/2 right-3">
             <Loader2 className="w-4 h-4 text-black/70 dark:text-white/70 animate-spin" />
@@ -128,10 +137,19 @@ export function AIInput({
             <div
               className={cn(
                 "absolute top-1/2 -translate-y-1/2 rounded-xl bg-black/5 dark:bg-white/5 py-1 px-1 transition-all duration-200",
-                inputValue ? "right-10" : "right-3"
+                inputValue ? "right-[4.5rem]" : "right-[3.5rem]"
               )}
             >
               <Mic className="w-4 h-4 text-black/70 dark:text-white/70" />
+            </div>
+            <div
+              className={cn(
+                "absolute top-1/2 -translate-y-1/2 rounded-xl bg-black/5 dark:bg-white/5 py-1 px-1 transition-all duration-200 cursor-pointer",
+                inputValue ? "right-10" : "right-3"
+              )}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <Paperclip className="w-4 h-4 text-black/70 dark:text-white/70" />
             </div>
             <button
               onClick={handleReset}
