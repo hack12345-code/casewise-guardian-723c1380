@@ -1,3 +1,4 @@
+<lov-code>
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -656,6 +657,71 @@ const AdminDashboard = () => {
     }
   };
 
+  // Add these new state variables at the top of the component with the other states
+  const [editingPostId, setEditingPostId] = useState<string | null>(null);
+
+  // Add this new function with the other handlers
+  const handleUpdateBlogPost = async () => {
+    try {
+      if (!editingPostId) return;
+
+      const { error } = await supabase
+        .from('blog_posts')
+        .update({
+          title: newBlogPost.title,
+          excerpt: newBlogPost.excerpt,
+          content: newBlogPost.content,
+          read_time: newBlogPost.readTime,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', editingPostId);
+
+      if (error) {
+        toast({
+          title: "Error updating blog post",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const { data: updatedPosts, error: fetchError } = await supabase
+        .from('blog_posts')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (fetchError) {
+        toast({
+          title: "Error fetching blog posts",
+          description: fetchError.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setBlogPosts(updatedPosts || []);
+      setIsNewBlogPostDialogOpen(false);
+      setEditingPostId(null);
+      setNewBlogPost({
+        title: "",
+        excerpt: "",
+        content: "",
+        readTime: "",
+      });
+      
+      toast({
+        title: "Blog post updated",
+        description: "Your blog post has been updated successfully.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
@@ -914,7 +980,20 @@ const AdminDashboard = () => {
                         <TableCell>{post.read_time}</TableCell>
                         <TableCell>
                           <div className="flex gap-2">
-                            <Button variant="outline" size="sm">
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => {
+                                setNewBlogPost({
+                                  title: post.title,
+                                  excerpt: post.excerpt,
+                                  content: post.content,
+                                  readTime: post.read_time
+                                });
+                                setEditingPostId(post.id);
+                                setIsNewBlogPostDialogOpen(true);
+                              }}
+                            >
                               Edit
                             </Button>
                             <Button 
@@ -936,9 +1015,9 @@ const AdminDashboard = () => {
             <Dialog open={isNewBlogPostDialogOpen} onOpenChange={setIsNewBlogPostDialogOpen}>
               <DialogContent className="sm:max-w-[625px]">
                 <DialogHeader>
-                  <DialogTitle>Create New Blog Post</DialogTitle>
+                  <DialogTitle>{editingPostId ? 'Edit Blog Post' : 'Create New Blog Post'}</DialogTitle>
                   <DialogDescription>
-                    Fill in the details for your new blog post. All fields are required.
+                    Fill in the details for your {editingPostId ? 'updated' : 'new'} blog post. All fields are required.
                   </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
@@ -953,180 +1032,3 @@ const AdminDashboard = () => {
                   </div>
                   <div className="grid gap-2">
                     <label htmlFor="excerpt">Excerpt</label>
-                    <Textarea
-                      id="excerpt"
-                      value={newBlogPost.excerpt}
-                      onChange={(e) => setNewBlogPost({ ...newBlogPost, excerpt: e.target.value })}
-                      placeholder="Enter a brief excerpt"
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <label htmlFor="content">Content</label>
-                    <Textarea
-                      id="content"
-                      value={newBlogPost.content}
-                      onChange={(e) => setNewBlogPost({ ...newBlogPost, content: e.target.value })}
-                      placeholder="Enter the full blog post content"
-                      className="min-h-[200px]"
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <label htmlFor="readTime">Read Time</label>
-                    <Input
-                      id="readTime"
-                      value={newBlogPost.readTime}
-                      onChange={(e) => setNewBlogPost({ ...newBlogPost, readTime: e.target.value })}
-                      placeholder="e.g. 5 min read"
-                    />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setIsNewBlogPostDialogOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button onClick={handleAddBlogPost}>
-                    Create Post
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </TabsContent>
-        </Tabs>
-      </div>
-
-      <Dialog open={isManageDialogOpen} onOpenChange={setIsManageDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Manage User Account</DialogTitle>
-            <DialogDescription>
-              {selectedUser?.email}
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="grid gap-4 py-4">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Prompts in last 24h:</span>
-                <span className="font-mono">{selectedUser?.promptsLastDay}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Total Cases:</span>
-                <span className="font-mono">{selectedUser?.totalCases}</span>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <h4 className="text-sm font-medium">Subscription Status</h4>
-              <Select
-                onValueChange={handleUpdateSubscription}
-                defaultValue={selectedUser?.subscription}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select subscription status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="free">Free</SelectItem>
-                  <SelectItem value="pro">Pro</SelectItem>
-                  <SelectItem value="enterprise">Enterprise</SelectItem>
-                  <SelectItem value="cancelled">Cancelled</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <Button
-              variant={selectedUser?.caseBlocked ? "outline" : "destructive"}
-              onClick={handleBlockPrompts}
-              className="w-full"
-            >
-              {selectedUser?.caseBlocked ? 'Unblock Prompts' : 'Block Prompts'}
-            </Button>
-            
-            <Button
-              variant={selectedUser?.isBlocked ? "outline" : "destructive"}
-              onClick={handleBlockUser}
-              className="w-full"
-            >
-              {selectedUser?.isBlocked ? 'Unblock User' : 'Block User'}
-            </Button>
-
-            <Button
-              variant="destructive"
-              onClick={handleDeleteAccount}
-              className="w-full"
-            >
-              Delete Account
-            </Button>
-          </div>
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsManageDialogOpen(false)}>
-              Close
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={isChatDialogOpen} onOpenChange={setIsChatDialogOpen}>
-        <DialogContent className="sm:max-w-[600px] h-[80vh]">
-          <DialogHeader>
-            <DialogTitle>Chat with {selectedChat?.userName}</DialogTitle>
-            <DialogDescription>
-              Support conversation
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="flex flex-col h-full">
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {selectedChat?.messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`flex ${
-                    message.sender === "admin" ? "justify-end" : "justify-start"
-                  }`}
-                >
-                  <div
-                    className={`max-w-[80%] p-4 rounded-lg ${
-                      message.sender === "admin"
-                        ? "bg-blue-600 text-white"
-                        : "bg-gray-100 text-gray-900"
-                    }`}
-                  >
-                    <p className="text-sm">{message.text}</p>
-                    <span className="text-xs opacity-70 mt-2 block">
-                      {new Date(message.timestamp).toLocaleTimeString()}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-            
-            <div className="p-4 border-t mt-4">
-              <AIInput
-                placeholder="Type your response..."
-                minHeight={80}
-                maxHeight={120}
-                onSubmit={handleSendMessage}
-              />
-              <div className="flex justify-end mt-4 gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => setIsChatDialogOpen(false)}
-                >
-                  Close
-                </Button>
-                <Button
-                  variant="default"
-                  onClick={() => selectedChat && handleResolveChat(selectedChat.id)}
-                >
-                  Mark as Resolved
-                </Button>
-              </div>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-    </div>
-  );
-};
-
-export default AdminDashboard;
