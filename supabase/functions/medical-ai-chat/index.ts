@@ -84,72 +84,15 @@ serve(async (req) => {
         model: 'gpt-4o-mini',
         messages: messages,
         max_tokens: 800, // Approximately 600 words
-        stream: true, // Enable streaming for typing animation
       }),
     });
 
-    // Create a TransformStream to handle the streaming response
-    const stream = new TransformStream();
-    const writer = stream.writable.getWriter();
-    const encoder = new TextEncoder();
-    let fullResponse = '';
+    const data = await response.json();
+    const generatedText = data.choices[0].message.content;
 
-    try {
-      const reader = response.body?.getReader();
-      if (!reader) throw new Error('No response body');
-
-      // Process the stream
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        // Parse the chunk and extract the content
-        const chunk = new TextDecoder().decode(value);
-        const lines = chunk.split('\n').filter(line => line.trim() !== '');
-        
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const data = line.slice(6);
-            if (data === '[DONE]') continue;
-            
-            try {
-              const parsed = JSON.parse(data);
-              const content = parsed.choices[0]?.delta?.content || '';
-              fullResponse += content;
-              
-              // Send the updated content
-              await writer.write(encoder.encode(JSON.stringify({ 
-                response: fullResponse,
-                chunk: content,
-                done: false 
-              }) + '\n'));
-            } catch (e) {
-              console.error('Error parsing chunk:', e);
-            }
-          }
-        }
-      }
-
-      // Send the final complete response
-      await writer.write(encoder.encode(JSON.stringify({ 
-        response: fullResponse,
-        done: true 
-      }) + '\n'));
-      await writer.close();
-    } catch (error) {
-      await writer.abort(error);
-      throw error;
-    }
-
-    return new Response(stream.readable, {
-      headers: { 
-        ...corsHeaders,
-        'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive'
-      },
+    return new Response(JSON.stringify({ response: generatedText }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
-
   } catch (error) {
     console.error('Error in medical-ai-chat function:', error);
     return new Response(JSON.stringify({ error: error.message }), {
