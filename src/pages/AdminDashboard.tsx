@@ -1,4 +1,4 @@
-
+<lov-code>
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -705,6 +705,27 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleResetPassword = async (userId: string, userEmail: string) => {
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(userEmail, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Password reset email sent",
+        description: `A password reset link has been sent to ${userEmail}`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error resetting password",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
@@ -1021,65 +1042,3 @@ const AdminDashboard = () => {
                       id="title"
                       value={newBlogPost.title}
                       onChange={(e) => setNewBlogPost({ ...newBlogPost, title: e.target.value })}
-                      placeholder="Enter the blog post title"
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <label htmlFor="excerpt">Excerpt</label>
-                    <Textarea
-                      id="excerpt"
-                      value={newBlogPost.excerpt}
-                      onChange={(e) => setNewBlogPost({ ...newBlogPost, excerpt: e.target.value })}
-                      placeholder="Enter a brief excerpt"
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <label htmlFor="content">Content</label>
-                    <Textarea
-                      id="content"
-                      value={newBlogPost.content}
-                      onChange={(e) => setNewBlogPost({ ...newBlogPost, content: e.target.value })}
-                      placeholder="Enter the full blog post content"
-                      className="min-h-[200px]"
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <label htmlFor="readTime">Read Time</label>
-                    <Input
-                      id="readTime"
-                      value={newBlogPost.readTime}
-                      onChange={(e) => setNewBlogPost({ ...newBlogPost, readTime: e.target.value })}
-                      placeholder="e.g. 5 min read"
-                    />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => {
-                      setIsNewBlogPostDialogOpen(false);
-                      setEditingPostId(null);
-                      setNewBlogPost({
-                        title: "",
-                        excerpt: "",
-                        content: "",
-                        readTime: "",
-                      });
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                  <Button onClick={() => editingPostId ? handleUpdateBlogPost() : handleAddBlogPost()}>
-                    {editingPostId ? 'Update Post' : 'Create Post'}
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </TabsContent>
-        </Tabs>
-      </div>
-    </div>
-  );
-};
-
-export default AdminDashboard;
