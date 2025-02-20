@@ -157,6 +157,7 @@ export type Database = {
       }
       medical_messages: {
         Row: {
+          attachments: Json | null
           chat_id: string
           content: string
           created_at: string | null
@@ -165,6 +166,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          attachments?: Json | null
           chat_id: string
           content: string
           created_at?: string | null
@@ -173,6 +175,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          attachments?: Json | null
           chat_id?: string
           content?: string
           created_at?: string | null
