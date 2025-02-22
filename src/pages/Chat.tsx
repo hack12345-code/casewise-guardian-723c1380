@@ -232,17 +232,17 @@ const Chat = () => {
   }
 
   const handleSendMessage = async (input: string) => {
-    if ((!input.trim() && !pendingFiles.length) || !chatId) return
+    if ((!input.trim() && !pendingFiles.length) || !chatId) return;
 
-    const { data: { session } } = await supabase.auth.getSession()
+    const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
       toast({
         title: "Session expired",
         description: "Please login again to continue.",
         variant: "destructive",
-      })
-      navigate('/login')
-      return
+      });
+      navigate('/login');
+      return;
     }
 
     if (isBlocked || isCaseBlocked) {
@@ -252,51 +252,51 @@ const Chat = () => {
           ? "Your account has been blocked from sending prompts. Please contact support for assistance."
           : "Your account has been blocked from creating new cases. Please contact support for assistance.",
         variant: "destructive",
-      })
-      return
+      });
+      return;
     }
 
-    setIsLoading(true)
-    setLatestUserPrompt(input)
+    setIsLoading(true);
+    setLatestUserPrompt(input);
 
     try {
       let fileAttachments = [];
       let imageData;
 
       for (const file of pendingFiles) {
-        if (file.type.startsWith('image/')) {
-          imageData = await convertFileToBase64(file);
-        }
-
-        const formData = new FormData()
-        formData.append('file', file)
-        formData.append('chatId', chatId)
-        formData.append('userId', session.user.id)
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('chatId', chatId);
+        formData.append('userId', session.user.id);
 
         const { data: uploadData, error: uploadError } = await supabase.functions.invoke('upload-chat-file', {
           body: formData,
-        })
+        });
 
-        if (uploadError) throw uploadError
+        if (uploadError) throw uploadError;
+
+        if (file.type.startsWith('image/')) {
+          imageData = await convertFileToBase64(file);
+        }
 
         fileAttachments.push({
           fileName: file.name,
           fileUrl: uploadData.publicUrl,
           contentType: file.type
-        })
+        });
       }
 
-      const tempUserMessageId = `temp-${Date.now()}`
+      const tempUserMessageId = `temp-${Date.now()}`;
       const userMessage = {
         id: tempUserMessageId,
         text: input,
         sender: 'user' as const,
         timestamp: new Date().toISOString(),
         attachments: fileAttachments.length > 0 ? fileAttachments : undefined
-      }
+      };
 
-      setMessages(prev => [...prev, userMessage])
-      setPendingFiles([])
+      setMessages(prev => [...prev, userMessage]);
+      setPendingFiles([]);
 
       const { data: messageData, error: messageError } = await supabase
         .from('medical_messages')
@@ -308,9 +308,9 @@ const Chat = () => {
           attachments: fileAttachments.length > 0 ? fileAttachments : undefined
         })
         .select()
-        .single()
+        .single();
 
-      if (messageError) throw messageError
+      if (messageError) throw messageError;
 
       const { error: updateError } = await supabase
         .from('medical_chats')
@@ -318,40 +318,37 @@ const Chat = () => {
           updated_at: new Date().toISOString()
         })
         .eq('id', chatId)
-        .eq('user_id', session.user.id)
+        .eq('user_id', session.user.id);
 
-      if (updateError) throw updateError
+      if (updateError) throw updateError;
 
-      const tempAiMessageId = `temp-ai-${Date.now()}`
+      const tempAiMessageId = `temp-ai-${Date.now()}`;
       const loadingMessage = {
         id: tempAiMessageId,
         text: "Analyzing your input...",
         sender: 'ai' as const,
         timestamp: new Date().toISOString()
-      }
-      setMessages(prev => [...prev, loadingMessage])
+      };
+      setMessages(prev => [...prev, loadingMessage]);
 
       const { data, error } = await supabase.functions.invoke('medical-ai-chat', {
         body: { 
-          prompt: input,
-          imageData: imageData
-        },
-      })
+          prompt: input || "Analyze the attached files.",
+          imageData
+        }
+      });
 
-      if (error) {
-        console.error("Edge function error:", error)
-        throw new Error("Failed to get AI response. Please try again.")
-      }
+      if (error) throw error;
 
       if (!data || !data.response) {
-        throw new Error("Invalid response from AI service")
+        throw new Error("Invalid response from AI service");
       }
 
       setMessages(prev => prev.map(msg => 
         msg.id === tempAiMessageId 
           ? { ...msg, text: data.response }
           : msg
-      ))
+      ));
 
       const { error: aiError } = await supabase
         .from('medical_messages')
@@ -360,22 +357,22 @@ const Chat = () => {
           content: data.response,
           role: 'assistant',
           user_id: session.user.id
-        })
+        });
 
-      if (aiError) throw aiError
+      if (aiError) throw aiError;
 
     } catch (error: any) {
-      console.error("Error:", error)
+      console.error("Error:", error);
       toast({
         title: "Error",
         description: error.message || "Failed to process your request",
         variant: "destructive",
-      })
-      setMessages(prev => prev.filter(msg => !msg.id.startsWith('temp-ai-')))
+      });
+      setMessages(prev => prev.filter(msg => !msg.id.startsWith('temp-ai-')));
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
       if (fileInputRef.current) {
-        fileInputRef.current.value = ''
+        fileInputRef.current.value = '';
       }
     }
   }
