@@ -261,7 +261,7 @@ const Chat = () => {
 
     try {
       let fileAttachments = [];
-      let imageData;
+      let imageDataArray = [];
 
       for (const file of pendingFiles) {
         const formData = new FormData();
@@ -276,7 +276,8 @@ const Chat = () => {
         if (uploadError) throw uploadError;
 
         if (file.type.startsWith('image/')) {
-          imageData = await convertFileToBase64(file);
+          const base64Data = await convertFileToBase64(file);
+          imageDataArray.push(base64Data);
         }
 
         fileAttachments.push({
@@ -297,6 +298,25 @@ const Chat = () => {
 
       setMessages(prev => [...prev, userMessage]);
       setPendingFiles([]);
+
+      const chatHistory = messages.slice(-10).map(msg => ({
+        role: msg.sender === 'user' ? 'user' : 'assistant',
+        content: msg.text
+      }));
+
+      const { data, error } = await supabase.functions.invoke('medical-ai-chat', {
+        body: { 
+          prompt: input || "Analyze the attached files.",
+          imageDataArray,
+          chatHistory
+        }
+      });
+
+      if (error) throw error;
+
+      if (!data || !data.response) {
+        throw new Error("Invalid response from AI service");
+      }
 
       const { data: messageData, error: messageError } = await supabase
         .from('medical_messages')
@@ -322,33 +342,14 @@ const Chat = () => {
 
       if (updateError) throw updateError;
 
-      const tempAiMessageId = `temp-ai-${Date.now()}`;
-      const loadingMessage = {
-        id: tempAiMessageId,
-        text: "Analyzing your input...",
+      const aiMessage = {
+        id: `ai-${Date.now()}`,
+        text: data.response,
         sender: 'ai' as const,
         timestamp: new Date().toISOString()
       };
-      setMessages(prev => [...prev, loadingMessage]);
 
-      const { data, error } = await supabase.functions.invoke('medical-ai-chat', {
-        body: { 
-          prompt: input || "Analyze the attached files.",
-          imageData
-        }
-      });
-
-      if (error) throw error;
-
-      if (!data || !data.response) {
-        throw new Error("Invalid response from AI service");
-      }
-
-      setMessages(prev => prev.map(msg => 
-        msg.id === tempAiMessageId 
-          ? { ...msg, text: data.response }
-          : msg
-      ));
+      setMessages(prev => [...prev, aiMessage]);
 
       const { error: aiError } = await supabase
         .from('medical_messages')
@@ -368,7 +369,7 @@ const Chat = () => {
         description: error.message || "Failed to process your request",
         variant: "destructive",
       });
-      setMessages(prev => prev.filter(msg => !msg.id.startsWith('temp-ai-')));
+      setMessages(prev => prev.filter(msg => !msg.id.startsWith('temp-')));
     } finally {
       setIsLoading(false);
       if (fileInputRef.current) {

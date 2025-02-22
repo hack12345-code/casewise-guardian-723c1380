@@ -41,52 +41,64 @@ serve(async (req) => {
   }
 
   try {
-    const { prompt, imageData } = await req.json()
+    const { prompt, imageDataArray, chatHistory } = await req.json()
 
     if (!openAIApiKey) {
       throw new Error("OpenAI API key not configured")
     }
 
-    let messages = []
+    // Start with system message and chat history
+    let messages = [
+      { role: "system", content: systemPrompt },
+      // Add previous chat history if available
+      ...(chatHistory || []).map((msg: { role: string, content: string }) => ({
+        role: msg.role,
+        content: msg.content
+      }))
+    ]
+
+    // Prepare the current message content
+    let currentContent: any[] = []
     
-    if (imageData) {
-      // If there's an image, format the message with both text and image
-      messages = [
-        {
-          role: "system",
-          content: systemPrompt
-        },
-        {
-          role: "user",
-          content: [
-            {
-              type: "text",
-              text: prompt || "Please analyze this medical image in detail."
-            },
-            {
-              type: "image_url",
-              image_url: {
-                url: `data:image/jpeg;base64,${imageData}`
-              }
-            }
-          ]
-        }
-      ]
-    } else {
-      // If there's no image, use text-only format
-      messages = [
-        {
-          role: "system",
-          content: systemPrompt
-        },
-        {
-          role: "user",
-          content: prompt
-        }
-      ]
+    // Add text prompt if provided
+    if (prompt) {
+      currentContent.push({
+        type: "text",
+        text: prompt
+      })
     }
 
-    console.log("Sending request to OpenAI with prompt and image:", !!imageData)
+    // Add all images if provided
+    if (Array.isArray(imageDataArray) && imageDataArray.length > 0) {
+      imageDataArray.forEach((imageData: string) => {
+        currentContent.push({
+          type: "image_url",
+          image_url: {
+            url: `data:image/jpeg;base64,${imageData}`
+          }
+        })
+      })
+
+      // If no prompt is provided but we have images, add a default analysis request
+      if (!prompt) {
+        currentContent.unshift({
+          type: "text",
+          text: "Please analyze these medical images in detail and provide your professional assessment."
+        })
+      }
+    }
+
+    // Add the current message to the conversation
+    messages.push({
+      role: "user",
+      content: imageDataArray?.length ? currentContent : prompt
+    })
+
+    console.log("Sending request to OpenAI with prompt and images:", {
+      hasPrompt: !!prompt,
+      numberOfImages: imageDataArray?.length || 0,
+      historyLength: chatHistory?.length || 0
+    })
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -96,7 +108,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         model: "gpt-4o",
-        messages: messages,
+        messages,
         max_tokens: 1000,
         temperature: 0.7,
       }),
@@ -114,7 +126,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         response: data.choices[0].message.content,
-        isImageAnalysis: !!imageData
+        isImageAnalysis: !!imageDataArray?.length
       }), 
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
