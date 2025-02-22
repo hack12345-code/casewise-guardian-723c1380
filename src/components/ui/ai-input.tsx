@@ -1,3 +1,4 @@
+
 import { CornerRightUp, Mic, Loader2, Paperclip, X } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
@@ -90,26 +91,28 @@ export function AIInput({
   return (
     <div className={cn("w-full py-4", className)}>
       <div className="relative max-w-xl w-full mx-auto">
-        {pendingFiles.length > 0 && (
-          <div className="absolute -top-24 left-0 right-0 bg-blue-50 p-2 rounded-md text-sm max-h-32 overflow-y-auto">
-            <div className="space-y-2">
-              {pendingFiles.map((file, index) => (
-                <div key={index} className="flex items-center justify-between bg-white/50 p-1.5 rounded">
-                  <span className="text-blue-600 flex items-center gap-2">
-                    <Paperclip className="w-4 h-4" />
-                    {file.name}
-                  </span>
-                  <button
-                    onClick={() => onFileRemove?.(file.name)}
-                    className="p-1 hover:bg-blue-100 rounded-full transition-colors"
-                  >
-                    <X className="w-4 h-4 text-blue-600" />
-                  </button>
-                </div>
-              ))}
+        <div className="space-y-2 mb-2">
+          {pendingFiles.length > 0 && (
+            <div className="bg-blue-50 p-2 rounded-md text-sm max-h-32 overflow-y-auto">
+              <div className="space-y-2">
+                {pendingFiles.map((file, index) => (
+                  <div key={index} className="flex items-center justify-between bg-white/50 p-1.5 rounded">
+                    <span className="text-blue-600 flex items-center gap-2">
+                      <Paperclip className="w-4 h-4" />
+                      {file.name}
+                    </span>
+                    <button
+                      onClick={() => onFileRemove?.(file.name)}
+                      className="p-1 hover:bg-blue-100 rounded-full transition-colors"
+                    >
+                      <X className="w-4 h-4 text-blue-600" />
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
         <Textarea
           id={id}
           placeholder={placeholder || currentPlaceholder}
