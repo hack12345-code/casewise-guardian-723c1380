@@ -31,7 +31,7 @@ Reports: If the prompt starts with "report:" or a file is attached with a report
 
 Other: if asked, Only answer relevant medical/legal queries, also when told to fix something. also create a checklist of essential health checks and supplements doctors should recommend based on age, gender and risk factor regardless of the complaint
 
-Images: If an image is attached, analyze it and base your answer also on this, create a full answer like in a regular prompt
+Images: Analyze medical images in detail - identify visible conditions, anomalies, or concerns. Provide professional medical interpretation and suggested follow-up actions.
 
 *max 650 words to all answers`
 
@@ -43,30 +43,50 @@ serve(async (req) => {
   try {
     const { prompt, imageData } = await req.json()
 
-    const messages = [
-      { role: "system", content: systemPrompt },
-      { role: "user", content: prompt }
-    ]
+    if (!openAIApiKey) {
+      throw new Error("OpenAI API key not configured")
+    }
 
-    // If there's image data, add it to the message content
+    let messages = []
+    
     if (imageData) {
-      messages[1].content = {
-        type: "text",
-        text: prompt
-      }
-      messages[1].content = [
+      // If there's an image, format the message with both text and image
+      messages = [
         {
-          type: "text",
-          text: prompt
+          role: "system",
+          content: systemPrompt
         },
         {
-          type: "image_url",
-          image_url: {
-            url: imageData
-          }
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text: prompt || "Please analyze this medical image in detail."
+            },
+            {
+              type: "image_url",
+              image_url: {
+                url: `data:image/jpeg;base64,${imageData}`
+              }
+            }
+          ]
+        }
+      ]
+    } else {
+      // If there's no image, use text-only format
+      messages = [
+        {
+          role: "system",
+          content: systemPrompt
+        },
+        {
+          role: "user",
+          content: prompt
         }
       ]
     }
+
+    console.log("Sending request to OpenAI with prompt and image:", !!imageData)
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -85,20 +105,30 @@ serve(async (req) => {
     const data = await response.json()
     
     if (!response.ok) {
+      console.error("OpenAI API error:", data)
       throw new Error(data.error?.message || 'Failed to get AI response')
     }
 
-    const aiResponse = data.choices[0].message.content
+    console.log("Received response from OpenAI")
 
-    return new Response(JSON.stringify({ response: aiResponse }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    })
-  } catch (error) {
-    console.error('Error:', error)
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        response: data.choices[0].message.content,
+        isImageAnalysis: !!imageData
+      }), 
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      }
+    )
+
+  } catch (error) {
+    console.error('Error in medical-ai-chat function:', error)
+    return new Response(
+      JSON.stringify({ 
+        error: error.message || "An unknown error occurred",
+        isImageAnalysis: false
+      }), 
       { 
-        status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     )
