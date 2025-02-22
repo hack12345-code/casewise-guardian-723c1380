@@ -49,7 +49,9 @@ const Chat = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+    setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+    }, 100)
   }
 
   useEffect(() => {
@@ -360,7 +362,9 @@ const Chat = () => {
       };
 
       setMessages(prev => [...prev, aiMessage]);
-      scrollToBottom();
+      setTimeout(() => {
+        scrollToBottom();
+      }, 100);
 
       const { error: aiError } = await supabase
         .from('medical_messages')
