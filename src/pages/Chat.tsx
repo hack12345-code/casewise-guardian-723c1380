@@ -44,7 +44,6 @@ const Chat = () => {
   const [isBlocked, setIsBlocked] = useState(false)
   const [isCaseBlocked, setIsCaseBlocked] = useState(false)
   const [pendingFile, setPendingFile] = useState<File | null>(null)
-  const [pendingFiles, setPendingFiles] = useState<File[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -218,31 +217,27 @@ const Chat = () => {
   };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.target.files || [])
-    if (!files.length || !chatId) return
-    setPendingFiles(prev => [...prev, ...files])
+    const file = event.target.files?.[0]
+    if (!file || !chatId) return
+    setPendingFile(file)
     toast({
-      title: `${files.length} file${files.length > 1 ? 's' : ''} ready to be sent`,
-      description: "Write your message and the files will be sent together.",
+      title: "File ready to be sent",
+      description: "Write your message and the file will be sent together.",
     })
   }
 
-  const handleFileRemove = (fileName: string) => {
-    setPendingFiles(prev => prev.filter(file => file.name !== fileName))
-  }
-
   const handleSendMessage = async (input: string) => {
-    if ((!input.trim() && !pendingFiles.length) || !chatId) return;
+    if ((!input.trim() && !pendingFile) || !chatId) return
 
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session } } = await supabase.auth.getSession()
     if (!session) {
       toast({
         title: "Session expired",
         description: "Please login again to continue.",
         variant: "destructive",
-      });
-      navigate('/login');
-      return;
+      })
+      navigate('/login')
+      return
     }
 
     if (isBlocked || isCaseBlocked) {
@@ -252,51 +247,50 @@ const Chat = () => {
           ? "Your account has been blocked from sending prompts. Please contact support for assistance."
           : "Your account has been blocked from creating new cases. Please contact support for assistance.",
         variant: "destructive",
-      });
-      return;
+      })
+      return
     }
 
-    setIsLoading(true);
-    setLatestUserPrompt(input);
+    setIsLoading(true)
+    setLatestUserPrompt(input)
 
     try {
-      let fileAttachments = [];
+      let fileAttachment;
       let imageData;
+      if (pendingFile) {
+        if (pendingFile.type.startsWith('image/')) {
+          imageData = await convertFileToBase64(pendingFile);
+        }
 
-      for (const file of pendingFiles) {
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('chatId', chatId);
-        formData.append('userId', session.user.id);
+        const formData = new FormData()
+        formData.append('file', pendingFile)
+        formData.append('chatId', chatId)
+        formData.append('userId', session.user.id)
 
         const { data: uploadData, error: uploadError } = await supabase.functions.invoke('upload-chat-file', {
           body: formData,
-        });
+        })
 
-        if (uploadError) throw uploadError;
+        if (uploadError) throw uploadError
 
-        if (file.type.startsWith('image/')) {
-          imageData = await convertFileToBase64(file);
-        }
-
-        fileAttachments.push({
-          fileName: file.name,
+        fileAttachment = {
+          fileName: pendingFile.name,
           fileUrl: uploadData.publicUrl,
-          contentType: file.type
-        });
+          contentType: pendingFile.type
+        }
       }
 
-      const tempUserMessageId = `temp-${Date.now()}`;
+      const tempUserMessageId = `temp-${Date.now()}`
       const userMessage = {
         id: tempUserMessageId,
         text: input,
         sender: 'user' as const,
         timestamp: new Date().toISOString(),
-        attachments: fileAttachments.length > 0 ? fileAttachments : undefined
-      };
+        attachments: fileAttachment ? [fileAttachment] : undefined
+      }
 
-      setMessages(prev => [...prev, userMessage]);
-      setPendingFiles([]);
+      setMessages(prev => [...prev, userMessage])
+      setPendingFile(null)
 
       const { data: messageData, error: messageError } = await supabase
         .from('medical_messages')
@@ -305,12 +299,12 @@ const Chat = () => {
           content: input,
           role: 'user',
           user_id: session.user.id,
-          attachments: fileAttachments.length > 0 ? fileAttachments : undefined
+          attachments: fileAttachment ? [fileAttachment] : undefined
         })
         .select()
-        .single();
+        .single()
 
-      if (messageError) throw messageError;
+      if (messageError) throw messageError
 
       const { error: updateError } = await supabase
         .from('medical_chats')
@@ -318,37 +312,40 @@ const Chat = () => {
           updated_at: new Date().toISOString()
         })
         .eq('id', chatId)
-        .eq('user_id', session.user.id);
+        .eq('user_id', session.user.id)
 
-      if (updateError) throw updateError;
+      if (updateError) throw updateError
 
-      const tempAiMessageId = `temp-ai-${Date.now()}`;
+      const tempAiMessageId = `temp-ai-${Date.now()}`
       const loadingMessage = {
         id: tempAiMessageId,
         text: "Analyzing your input...",
         sender: 'ai' as const,
         timestamp: new Date().toISOString()
-      };
-      setMessages(prev => [...prev, loadingMessage]);
+      }
+      setMessages(prev => [...prev, loadingMessage])
 
       const { data, error } = await supabase.functions.invoke('medical-ai-chat', {
         body: { 
-          prompt: input || "Analyze the attached files.",
-          imageData
-        }
-      });
+          prompt: input,
+          imageData: imageData
+        },
+      })
 
-      if (error) throw error;
+      if (error) {
+        console.error("Edge function error:", error)
+        throw new Error("Failed to get AI response. Please try again.")
+      }
 
       if (!data || !data.response) {
-        throw new Error("Invalid response from AI service");
+        throw new Error("Invalid response from AI service")
       }
 
       setMessages(prev => prev.map(msg => 
         msg.id === tempAiMessageId 
           ? { ...msg, text: data.response }
           : msg
-      ));
+      ))
 
       const { error: aiError } = await supabase
         .from('medical_messages')
@@ -357,22 +354,22 @@ const Chat = () => {
           content: data.response,
           role: 'assistant',
           user_id: session.user.id
-        });
+        })
 
-      if (aiError) throw aiError;
+      if (aiError) throw aiError
 
     } catch (error: any) {
-      console.error("Error:", error);
+      console.error("Error:", error)
       toast({
         title: "Error",
         description: error.message || "Failed to process your request",
         variant: "destructive",
-      });
-      setMessages(prev => prev.filter(msg => !msg.id.startsWith('temp-ai-')));
+      })
+      setMessages(prev => prev.filter(msg => !msg.id.startsWith('temp-ai-')))
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
       if (fileInputRef.current) {
-        fileInputRef.current.value = '';
+        fileInputRef.current.value = ''
       }
     }
   }
@@ -504,10 +501,9 @@ const Chat = () => {
                       maxHeight={200}
                       onSubmit={handleSendMessage}
                       onFileSelect={handleFileUpload}
-                      onFileRemove={handleFileRemove}
                       isLoading={isLoading}
                       disabled={isBlocked || isCaseBlocked}
-                      pendingFiles={pendingFiles}
+                      pendingFileName={pendingFile?.name}
                     />
                     {isBlocked ? (
                       <p className="text-xs text-red-500">
