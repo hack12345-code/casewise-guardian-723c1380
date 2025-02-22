@@ -304,6 +304,7 @@ const Chat = () => {
       };
 
       setMessages(prev => [...prev, userMessage]);
+      scrollToBottom();
       setPendingFiles([]);
 
       const chatHistory = messages.slice(-10).map(msg => ({
@@ -357,6 +358,7 @@ const Chat = () => {
       };
 
       setMessages(prev => [...prev, aiMessage]);
+      scrollToBottom();
 
       const { error: aiError } = await supabase
         .from('medical_messages')
