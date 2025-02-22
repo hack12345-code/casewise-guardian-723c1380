@@ -43,30 +43,32 @@ serve(async (req) => {
   try {
     const { prompt, imageData } = await req.json()
 
+    if (!openAIApiKey) {
+      throw new Error("OpenAI API key not configured")
+    }
+
     const messages = [
       { role: "system", content: systemPrompt },
       { role: "user", content: prompt }
     ]
 
-    // If there's image data, add it to the message content
+    // If there's image data, add it as a message with proper format
     if (imageData) {
-      messages[1].content = {
-        type: "text",
-        text: prompt
-      }
-      messages[1].content = [
-        {
-          type: "text",
-          text: prompt
-        },
-        {
-          type: "image_url",
-          image_url: {
-            url: imageData
+      messages[1] = {
+        role: "user",
+        content: [
+          { type: "text", text: prompt || "Analyze this medical image." },
+          {
+            type: "image_url",
+            image_url: {
+              url: `data:image/jpeg;base64,${imageData}`
+            }
           }
-        }
-      ]
+        ]
+      }
     }
+
+    console.log("Sending request to OpenAI with prompt:", prompt)
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -76,7 +78,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         model: "gpt-4o",
-        messages: messages,
+        messages,
         max_tokens: 1000,
         temperature: 0.7,
       }),
@@ -85,6 +87,7 @@ serve(async (req) => {
     const data = await response.json()
     
     if (!response.ok) {
+      console.error("OpenAI API error:", data)
       throw new Error(data.error?.message || 'Failed to get AI response')
     }
 
@@ -92,13 +95,15 @@ serve(async (req) => {
 
     return new Response(JSON.stringify({ response: aiResponse }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 200
     })
+
   } catch (error) {
-    console.error('Error:', error)
+    console.error('Error in medical-ai-chat function:', error)
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error.message || "An unknown error occurred" }), 
       { 
-        status: 500,
+        status: 200, // Changed from 500 to 200 to avoid non-2xx error
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     )
