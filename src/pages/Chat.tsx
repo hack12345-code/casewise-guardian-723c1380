@@ -44,6 +44,7 @@ const Chat = () => {
   const [isBlocked, setIsBlocked] = useState(false)
   const [isCaseBlocked, setIsCaseBlocked] = useState(false)
   const [pendingFile, setPendingFile] = useState<File | null>(null)
+  const [pendingFiles, setPendingFiles] = useState<File[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -217,17 +218,21 @@ const Chat = () => {
   };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (!file || !chatId) return
-    setPendingFile(file)
+    const files = Array.from(event.target.files || [])
+    if (!files.length || !chatId) return
+    setPendingFiles(prev => [...prev, ...files])
     toast({
-      title: "File ready to be sent",
-      description: "Write your message and the file will be sent together.",
+      title: `${files.length} file${files.length > 1 ? 's' : ''} ready to be sent`,
+      description: "Write your message and the files will be sent together.",
     })
   }
 
+  const handleFileRemove = (fileName: string) => {
+    setPendingFiles(prev => prev.filter(file => file.name !== fileName))
+  }
+
   const handleSendMessage = async (input: string) => {
-    if ((!input.trim() && !pendingFile) || !chatId) return
+    if ((!input.trim() && !pendingFiles.length) || !chatId) return
 
     const { data: { session } } = await supabase.auth.getSession()
     if (!session) {
@@ -255,15 +260,16 @@ const Chat = () => {
     setLatestUserPrompt(input)
 
     try {
-      let fileAttachment;
+      let fileAttachments = [];
       let imageData;
-      if (pendingFile) {
-        if (pendingFile.type.startsWith('image/')) {
-          imageData = await convertFileToBase64(pendingFile);
+
+      for (const file of pendingFiles) {
+        if (file.type.startsWith('image/')) {
+          imageData = await convertFileToBase64(file);
         }
 
         const formData = new FormData()
-        formData.append('file', pendingFile)
+        formData.append('file', file)
         formData.append('chatId', chatId)
         formData.append('userId', session.user.id)
 
@@ -273,11 +279,11 @@ const Chat = () => {
 
         if (uploadError) throw uploadError
 
-        fileAttachment = {
-          fileName: pendingFile.name,
+        fileAttachments.push({
+          fileName: file.name,
           fileUrl: uploadData.publicUrl,
-          contentType: pendingFile.type
-        }
+          contentType: file.type
+        })
       }
 
       const tempUserMessageId = `temp-${Date.now()}`
@@ -286,11 +292,11 @@ const Chat = () => {
         text: input,
         sender: 'user' as const,
         timestamp: new Date().toISOString(),
-        attachments: fileAttachment ? [fileAttachment] : undefined
+        attachments: fileAttachments.length > 0 ? fileAttachments : undefined
       }
 
       setMessages(prev => [...prev, userMessage])
-      setPendingFile(null)
+      setPendingFiles([])
 
       const { data: messageData, error: messageError } = await supabase
         .from('medical_messages')
@@ -299,7 +305,7 @@ const Chat = () => {
           content: input,
           role: 'user',
           user_id: session.user.id,
-          attachments: fileAttachment ? [fileAttachment] : undefined
+          attachments: fileAttachments.length > 0 ? fileAttachments : undefined
         })
         .select()
         .single()
@@ -501,9 +507,10 @@ const Chat = () => {
                       maxHeight={200}
                       onSubmit={handleSendMessage}
                       onFileSelect={handleFileUpload}
+                      onFileRemove={handleFileRemove}
                       isLoading={isLoading}
                       disabled={isBlocked || isCaseBlocked}
-                      pendingFileName={pendingFile?.name}
+                      pendingFiles={pendingFiles}
                     />
                     {isBlocked ? (
                       <p className="text-xs text-red-500">
