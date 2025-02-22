@@ -1,4 +1,3 @@
-
 import { CornerRightUp, Mic, Loader2, Paperclip, X } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
@@ -158,41 +157,31 @@ export function AIInput({
             <Loader2 className="w-4 h-4 text-black/70 dark:text-white/70 animate-spin" />
           </div>
         ) : (
-          <>
-            <div
-              className={cn(
-                "absolute top-1/2 -translate-y-1/2 rounded-xl bg-black/5 dark:bg-white/5 py-1 px-1 transition-all duration-200",
-                inputValue ? "right-[4.5rem]" : "right-[3.5rem]"
-              )}
-            >
+          <div className="absolute top-1/2 -translate-y-1/2 right-3 flex items-center gap-2">
+            <div className="rounded-xl bg-black/5 dark:bg-white/5 py-1 px-1">
               <Mic className="w-4 h-4 text-black/70 dark:text-white/70" />
             </div>
             <div
-              className={cn(
-                "absolute top-1/2 -translate-y-1/2 rounded-xl bg-black/5 dark:bg-white/5 py-1 px-1 transition-all duration-200 cursor-pointer",
-                inputValue ? "right-10" : "right-3"
-              )}
+              className="rounded-xl bg-black/5 dark:bg-white/5 py-1 px-1 cursor-pointer"
               onClick={() => fileInputRef.current?.click()}
             >
               <Paperclip className="w-4 h-4 text-black/70 dark:text-white/70" />
             </div>
-            <button
-              onClick={handleReset}
-              type="button"
-              disabled={disabled || isLoading}
-              className={cn(
-                "absolute top-1/2 -translate-y-1/2 right-3",
-                "rounded-xl bg-black/5 dark:bg-white/5 py-1 px-1",
-                "transition-all duration-200",
-                inputValue || pendingFiles.length > 0
-                  ? "opacity-100 scale-100" 
-                  : "opacity-0 scale-95 pointer-events-none",
-                disabled ? "opacity-50 cursor-not-allowed" : ""
-              )}
-            >
-              <CornerRightUp className="w-4 h-4 text-black/70 dark:text-white/70" />
-            </button>
-          </>
+            {(inputValue || pendingFiles.length > 0) && (
+              <button
+                onClick={handleReset}
+                type="button"
+                disabled={disabled || isLoading}
+                className={cn(
+                  "rounded-xl bg-black/5 dark:bg-white/5 py-1 px-1",
+                  "transition-all duration-200",
+                  disabled ? "opacity-50 cursor-not-allowed" : ""
+                )}
+              >
+                <CornerRightUp className="w-4 h-4 text-black/70 dark:text-white/70" />
+              </button>
+            )}
+          </div>
         )}
       </div>
     </div>
